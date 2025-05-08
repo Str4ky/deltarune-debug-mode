@@ -12,14 +12,7 @@ Scripts de debug mode customisés pour Undertale Mod Tool fonctionnant avec Delt
 - Allez dans le menu `Scripts` puis `Deltarune` et choisissez l'option adaptée
 - Laissez-vous guider par les fenêtres et les options de l'interface
 
-## Fonctionnalités
-- Déplacements de salles en salles
-- Sauvegarde au moment souhaité
-- Mettre en pause/reprendre le jeu
-- Afficher les collisions du joueur
-- FPS affichés en permanence
-
-## Contrôles
+## Fonctionnalités et contrôles associés
 | Touches | Description  |
 |---|---|
 | Suppr | Se rendre à la salle précédente |
