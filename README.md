@@ -25,6 +25,8 @@ Scripts de debug mode customisés pour Undertale Mod Tool fonctionnant avec Delt
 | Suppr | Se rendre à la salle précédente |
 | Insert | Se rendre à la salle suivante |
 | Entrer | Voir les collisions du joueur |
+| F10 | Activer/Désactiver le debug mode |
+| Retour arrière | Sauter le segement de Gaster |
 | S | Sauvegarder la partie |
 | R | Redémarrer le jeu |
 | P | Mettre en pause/reprendre le jeu |
