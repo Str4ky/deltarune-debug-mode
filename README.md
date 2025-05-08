@@ -26,4 +26,4 @@ Scripts de debug mode customisés pour Undertale Mod Tool fonctionnant avec Delt
 
 ## Crédits
 
-Ces scripts vous sont proposés par Straky et Jazzky
+Ces scripts vous sont proposés par [Straky](https://github.com/Str4ky) et [Jazzky](https://github.com/Jazzky)
