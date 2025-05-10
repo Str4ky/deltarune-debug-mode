@@ -24,8 +24,8 @@ Scripts de debug mode customisés pour Undertale Mod Tool fonctionnant avec Delt
 | R | Redémarrer le jeu |
 | P | Mettre en pause/reprendre le jeu |
 | W | Instantanément gagner un combat |
-| H | Se redonner toute sa barre de vie |
-| T | Se redonner toute sa barre de TP |
+| H | Remplir toute sa barre de vie |
+| T | Remplir toute sa barre de TP |
 
 ## Crédits
 
