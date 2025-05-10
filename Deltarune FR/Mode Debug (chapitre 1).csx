@@ -11,25 +11,12 @@ Non = Désactiver le mode debug
 (Choisissez bien l'option souhaitée. Si vous avez une erreur, c'est que vous avez choisi la mauvaise.)
 ");
 
-UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data)
+GlobalDecompileContext globalDecompileContext = new(Data);
+Underanalyzer.Decompiler.IDecompileSettings decompilerSettings = new Underanalyzer.Decompiler.DecompileSettings();
+UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, globalDecompileContext, decompilerSettings)
 {
     ThrowOnNoOpFindReplace = true
 };
-
-/* Chapitre 1 : changer les valeurs "false" en "true" dans le contrôleur debug (désuet)
-string debugController = "gml_Object_obj_debugcontroller_Create_0";
-
-if (Data.Code.ByName(debugController) == null)
-    throw new ScriptException("Impossible de trouver : debugcontroller du Chapitre 1.");
-
-if (enable) {
-    importGroup.QueueFindReplace(debugController, "false", "true");
-}
-else
-{
-    importGroup.QueueFindReplace(debugController, "true", "false");
-}
-importGroup.Import();*/
 
 // Variable gamestart
 var gamestart = Data.Code.ByName("gml_GlobalScript_scr_gamestart");
@@ -170,6 +157,82 @@ if (obj_device_contact is not null) // Vérifie que l'objet existe
     );
     ChangeSelection(obj_device_contact);
 }
+importGroup.Import();
+
+// Fonctions de combat
+
+// Script fullheal
+Data.Scripts.Add(new UndertaleScript() // Ajoute et répertorie le Script
+{
+    Name = Data.Strings.MakeString("scr_debug_fullheal"),
+    Code = new UndertaleCode() // Ajoute le Code
+    {
+        Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_fullheal"),
+        LocalsCount = 1,
+        
+    }
+});
+Data.Code.Add(Data.Scripts[Data.Scripts.Count - 1].Code); // Répertorie le Code
+
+var existingVar = Data.Variables.ByName("scr_debug_fullheal");
+if (existingVar == null) // Add only if it doesn't already exist
+{
+    var debug_fullheal_var = new UndertaleVariable() // Ajoute la variable
+    {
+        Name = Data.Strings.MakeString("scr_debug_fullheal"),
+    };
+    Data.Variables.Add(debug_fullheal_var);
+}
+
+Data.CodeLocals.Add(new UndertaleCodeLocals() // Ajoute et répertorie le CodeLocals
+{
+    Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_fullheal"),
+}
+);
+
+importGroup.QueueAppend(Data.Scripts[Data.Scripts.Count - 1].Code, @"
+function scr_debug_fullheal()
+{
+    with (obj_dmgwriter)
+    {
+        if (delaytimer >= 1)
+            killactive = 1;
+    }
+    
+    scr_healallitemspell(999);
+    
+    for (i = 0; i < 3; i++)
+    {
+        with (global.charinstance[i])
+            tu--;
+    }
+}");
 
 importGroup.Import();
+ChangeSelection(Data.Scripts[Data.Scripts.Count - 1]);
+
+// Script battlecontroller
+var obj_battlecontroller = Data.Code.ByName("gml_Object_obj_battlecontroller_Step_0");
+if (obj_battlecontroller is not null) // Vérifie que l'objet existe
+{
+    importGroup.QueueAppend("gml_Object_obj_battlecontroller_Step_0",
+    @"if (global.debug == 1)
+    {
+        if (keyboard_check_pressed(ord(""W"")))
+            scr_wincombat();
+        if (keyboard_check_pressed(ord(""H"")))
+            scr_debug_fullheal();
+        if (keyboard_check_pressed(ord(""T"")))
+        {
+            if (global.tension < 250)
+                global.tension = 250;
+            else
+                global.tension = 0;
+        }
+    }"
+);
+    ChangeSelection(obj_battlecontroller);
+}
+importGroup.Import();
+
 ScriptMessage("Mode debug du Chapitre 1 " + (enable ? "activé" : "désactivé") + ".\r\n" + "Pour activer le mode debug en jeu, appuyez sur F10.");
