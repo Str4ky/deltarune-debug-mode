@@ -12,7 +12,7 @@ Scripts de debug mode customisés pour Undertale Mod Tool fonctionnant avec Delt
 - Allez dans le menu `Scripts` puis `Deltarune` et choisissez l'option adaptée
 - Laissez-vous guider par les fenêtres et les options de l'interface
 
-## Fonctionnalités et contrôles associés
+## Fonctionnalités et contrôles associés (chapitre 1)
 | Touches | Description  |
 |---|---|
 | Suppr | Se rendre à la salle précédente |
@@ -26,6 +26,9 @@ Scripts de debug mode customisés pour Undertale Mod Tool fonctionnant avec Delt
 | W | Instantanément gagner un combat |
 | H | Remplir toute sa barre de vie |
 | T | Remplir toute sa barre de TP |
+
+## Fonctionnalités et contrôles associés (chapitre 2)
+Celles de base du jeu laissées par Toby (il a laissé toutes les fonctions du debug mode dans le chapitre 2
 
 ## Crédits
 
