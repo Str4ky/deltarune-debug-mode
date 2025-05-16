@@ -1,5 +1,6 @@
-# Deltarune custom debug mode scripts
+# Scripts de debug mode custom pour Deltarune=
 Scripts de debug mode customisés pour Undertale Mod Tool fonctionnant avec Deltarune
+Fonctionnent uniquement avec la nouvelle LTS du jeu.
 
 ## Installation
 
@@ -9,26 +10,30 @@ Scripts de debug mode customisés pour Undertale Mod Tool fonctionnant avec Delt
 ## Utilisation
 
 - Ouvrez le data.win du chapitre de votre choix avec Undertale Mod Tool
-- Allez dans le menu `Scripts` puis `Deltarune` et choisissez l'option adaptée
+- Allez dans le menu `Scripts` puis `Deltarune FR` et choisissez l'option adaptée
 - Laissez-vous guider par les fenêtres et les options de l'interface
 
-## Fonctionnalités et contrôles associés (chapitre 1)
-| Touches | Description  |
+## Fonctionnalités et contrôles associées (Chapitre 1)
+| Touches | Descriptions |
 |---|---|
+| F10 | Activer/désactiver le debug mode |
+| S | Sauvegarder la partie |
+| L | Charger la dernière sauvegarde |
+| R | Redémarrer le jeu |
+| P | Mettre en pause/reprendre le jeu |
+| M+1 / M+2 | Ajouter/retirer 100 D$ |
 | Suppr | Se rendre à la salle précédente |
 | Insert | Se rendre à la salle suivante |
 | Entrer | Voir les collisions du joueur |
-| F10 | Activer/Désactiver le debug mode |
-| Retour arrière | Sauter le segement de Gaster |
-| S | Sauvegarder la partie |
-| R | Redémarrer le jeu |
-| P | Mettre en pause/reprendre le jeu |
-| W | Instantanément gagner un combat |
-| H | Remplir toute sa barre de vie |
-| T | Remplir toute sa barre de TP |
+| Retour arrière | Passer le segment d'intro |
+| W | Gagner instantanément un combat |
+| V | Passer le tour de l'ennemi |
+| H | Restaurer les HP du party |
+| T | Remplir/vider la barre de TP |
 
 ## Fonctionnalités et contrôles associés (chapitre 2)
-Celles de base du jeu laissées par Toby (il a laissé toutes les fonctions du debug mode dans le chapitre 2
+La majeure partie des fonctions de debug du Chapitre 2 ont été conservé dans la dernière LTS du jeu.
+Les [contrôles](https://www.reddit.com/r/Underminers/comments/q08yf8/what_are_the_deltarune_chapter_2_debug_commands/) y sont donc les originaux.
 
 ## Crédits
 
