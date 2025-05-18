@@ -14,7 +14,7 @@ Fonctionnent uniquement avec la nouvelle LTS du jeu.
 - Allez dans le menu `Scripts` puis `Deltarune FR` et choisissez l'option adaptée.
 - Laissez-vous guider par les fenêtres et les options de l'interface.
 
-## Fonctionnalités et contrôles associées (Chapitre 1)
+## Fonctionnalités et contrôles associés (Chapitre 1)
 | Touches | Descriptions |
 |---|---|
 | F10 | Activer/désactiver le debug mode |
@@ -32,7 +32,7 @@ Fonctionnent uniquement avec la nouvelle LTS du jeu.
 | H | Restaurer les HP du party |
 | T | Remplir/vider la barre de TP |
 
-## Fonctionnalités et contrôles associées (Chapitre 2)
+## Fonctionnalités et contrôles associés (Chapitre 2)
 La majeure partie des fonctions de debug du Chapitre 2 ont été conservées dans la dernière LTS du jeu.
 
 Les [contrôles](https://www.reddit.com/r/Underminers/comments/q08yf8/what_are_the_deltarune_chapter_2_debug_commands/) y sont donc les originaux.
