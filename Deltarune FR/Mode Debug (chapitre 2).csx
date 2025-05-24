@@ -150,7 +150,8 @@ if (existingVar_gui == null) // Vérifie que l'objet existe
     UndertaleVariable obj_debug_gui_VAR = new UndertaleVariable(); // Ajoute la Variable
     obj_debug_gui_VAR.Name = Data.Strings.MakeString("obj_debug_gui");
     Data.Variables.Add(obj_debug_gui_VAR); // Répertorie la Variable
-};
+}
+;
 
 importGroup.Import();
 
@@ -230,7 +231,7 @@ if (obj_darkcontroller_step is not null) // Vérifie que l'objet existe
 }
 importGroup.Import();
 
-// Fonctions du jeu (compteur FPS / fonction de pause)
+// Fonctions du jeu (compteur FPS / fonction de pause / fonciton de changement de FPS)
 var obj_time_draw = Data.Code.ByName("gml_Object_obj_time_Draw_0");
 if (obj_time_draw is not null) // Vérifie que l'objet existe
 {
@@ -264,6 +265,26 @@ if (obj_time_draw is not null) // Vérifie que l'objet existe
             {
                 room_speed = 30;
                 scr_debug_print(""FPS à 30"");
+            }
+        }
+    };
+    if (scr_debug())
+    {
+        if (keyboard_check_pressed(ord(""O"")))
+        {
+            if (room_speed == 120 || room_speed == 1)
+            {
+                room_speed = 30;
+                scr_debug_print(""FPS à 30"");
+            }
+            else if (room_speed == 60)
+            {
+                room_speed = 120;
+                scr_debug_print(""FPS à 120"");
+            }
+            else if (room_speed == 30) {
+                room_speed = 60;
+                scr_debug_print(""FPS à 60"");
             }
         }
     };
@@ -319,8 +340,8 @@ var obj_battlecontroller_step = Data.Code.ByName("gml_Object_obj_battlecontrolle
 if (obj_battlecontroller_step is not null) // Vérifie que l'objet existe
 {   // Fullheal function
     importGroup.QueueFindReplace(obj_battlecontroller_step,
-    "scr_debug_fullheal();","");
-    importGroup.QueueFindReplace(obj_battlecontroller_step, 
+    "scr_debug_fullheal();", "");
+    importGroup.QueueFindReplace(obj_battlecontroller_step,
     "if (scr_debug_keycheck(113))",
     @"if (keyboard_check_pressed(ord(""H"")))
     {
@@ -345,14 +366,14 @@ if (obj_battlecontroller_step is not null) // Vérifie que l'objet existe
     ");
     // Tension functions
     importGroup.QueueFindReplace(obj_battlecontroller_step,
-    "if (scr_debug_keycheck(120))","");
+    "if (scr_debug_keycheck(120))", "");
     importGroup.QueueFindReplace(obj_battlecontroller_step,
-    "if (scr_debug_keycheck(121))","");
+    "if (scr_debug_keycheck(121))", "");
     importGroup.QueueFindReplace(obj_battlecontroller_step,
-    "global.tension = 0;","");
+    "global.tension = 0;", "");
     importGroup.QueueFindReplace(obj_battlecontroller_step,
-    "global.tension = 250;","");
-    
+    "global.tension = 250;", "");
+
     importGroup.QueueAppend(obj_battlecontroller_step, @"
     if (scr_debug())
     {
@@ -374,6 +395,5 @@ if (obj_battlecontroller_step is not null) // Vérifie que l'objet existe
 
     ChangeSelection(obj_battlecontroller_step);
 }
-importGroup.Import();
 
 ScriptMessage("Mode debug du Chapitre 2 " + (enable ? "ajouté" : "désactivé") + ".\r\n" + "Pour activer le mode debug en jeu, appuyer sur F10.");

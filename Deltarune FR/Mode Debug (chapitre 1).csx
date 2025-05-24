@@ -30,8 +30,8 @@ UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, globalDecompile
 UndertaleScript scr_debug_print = new UndertaleScript(); // Ajoute le Script
 scr_debug_print.Name = Data.Strings.MakeString("scr_debug_print");
 scr_debug_print.Code = new UndertaleCode(); // Ajoute le Code
-    scr_debug_print.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_print");
-    scr_debug_print.Code.LocalsCount = 1;
+scr_debug_print.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_print");
+scr_debug_print.Code.LocalsCount = 1;
 
 Data.Scripts.Add(scr_debug_print); // Répertorie le Script
 Data.Code.Add(scr_debug_print.Code); // Répertorie le Code
@@ -40,10 +40,11 @@ Data.Code.Add(scr_debug_print.Code); // Répertorie le Code
 var existingVar_debug_print = Data.Variables.ByName("scr_debug_print");
 if (existingVar_debug_print == null) // Vérifie que l'objet existe
 {
-UndertaleVariable scr_debug_print_VAR = new UndertaleVariable(); // Ajoute la Variable
-scr_debug_print_VAR.Name = Data.Strings.MakeString("scr_debug_print");
-Data.Variables.Add(scr_debug_print_VAR); // Répertorie la Variable
-};
+    UndertaleVariable scr_debug_print_VAR = new UndertaleVariable(); // Ajoute la Variable
+    scr_debug_print_VAR.Name = Data.Strings.MakeString("scr_debug_print");
+    Data.Variables.Add(scr_debug_print_VAR); // Répertorie la Variable
+}
+;
 
 UndertaleCodeLocals scr_debug_print_CL = new UndertaleCodeLocals(); // Ajoute le CL
 scr_debug_print_CL.Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_print");
@@ -175,7 +176,8 @@ if (existingVar_gui == null) // Vérifie que l'objet existe
     UndertaleVariable obj_debug_gui_VAR = new UndertaleVariable(); // Ajoute la Variable
     obj_debug_gui_VAR.Name = Data.Strings.MakeString("obj_debug_gui");
     Data.Variables.Add(obj_debug_gui_VAR); // Répertorie la Variable
-};
+}
+;
 
 importGroup.Import();
 ChangeSelection(scr_debug_print.Code);
@@ -288,7 +290,7 @@ if (obj_mainchara is not null) // Vérifie que l'objet existe
 }
 importGroup.Import();
 
-// Fonctions du jeu (compteur FPS / fonction de pause)
+// Fonctions du jeu (compteur FPS / fonction de pause / fonction de changement de FPS)
 var obj_time = Data.Code.ByName("gml_Object_obj_time_Draw_0");
 if (obj_time is not null) // Vérifie que l'objet existe
 {
@@ -312,6 +314,26 @@ if (obj_time is not null) // Vérifie que l'objet existe
             {
                 room_speed = 30;
                 scr_debug_print(""FPS à 30"");
+            }
+        }
+    };
+    if (global.debug == 1)
+    {
+        if (keyboard_check_pressed(ord(""O"")))
+        {
+            if (room_speed == 120 || room_speed == 1)
+            {
+                room_speed = 30;
+                scr_debug_print(""FPS à 30"");
+            }
+            else if (room_speed == 60)
+            {
+                room_speed = 120;
+                scr_debug_print(""FPS à 120"");
+            }
+            else if (room_speed == 30) {
+                room_speed = 60;
+                scr_debug_print(""FPS à 60"");
             }
         }
     };
@@ -344,8 +366,8 @@ importGroup.Import();
 UndertaleScript scr_debug_fullheal = new UndertaleScript(); // Ajoute le Script
 scr_debug_fullheal.Name = Data.Strings.MakeString("scr_debug_fullheal");
 scr_debug_fullheal.Code = new UndertaleCode(); // Ajoute le Code
-    scr_debug_fullheal.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_fullheal");
-    scr_debug_fullheal.Code.LocalsCount = 1;
+scr_debug_fullheal.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_fullheal");
+scr_debug_fullheal.Code.LocalsCount = 1;
 
 Data.Scripts.Add(scr_debug_fullheal); // Répertorie le Script
 Data.Code.Add(scr_debug_fullheal.Code); // Répertorie le Code
@@ -353,10 +375,11 @@ Data.Code.Add(scr_debug_fullheal.Code); // Répertorie le Code
 var existingVar_debug_fullheal = Data.Variables.ByName("scr_debug_fullheal");
 if (existingVar_debug_fullheal == null) // Add only if it doesn't already exist
 {
-UndertaleVariable scr_debug_fullheal_VAR = new UndertaleVariable(); // Ajoute la variable
-scr_debug_fullheal_VAR.Name = Data.Strings.MakeString("scr_debug_fullheal");
-Data.Variables.Add(scr_debug_fullheal_VAR);
-};
+    UndertaleVariable scr_debug_fullheal_VAR = new UndertaleVariable(); // Ajoute la variable
+    scr_debug_fullheal_VAR.Name = Data.Strings.MakeString("scr_debug_fullheal");
+    Data.Variables.Add(scr_debug_fullheal_VAR);
+}
+;
 
 UndertaleCodeLocals scr_debug_fullheal_CL = new UndertaleCodeLocals(); // Ajoute le CL
 scr_debug_fullheal_CL.Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_fullheal");
@@ -387,8 +410,8 @@ ChangeSelection(scr_debug_fullheal);
 UndertaleScript scr_turn_skip = new UndertaleScript(); // Ajoute le Script
 scr_turn_skip.Name = Data.Strings.MakeString("scr_turn_skip");
 scr_turn_skip.Code = new UndertaleCode(); // Ajoute le Code
-    scr_turn_skip.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_turn_skip");
-    scr_turn_skip.Code.LocalsCount = 1;
+scr_turn_skip.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_turn_skip");
+scr_turn_skip.Code.LocalsCount = 1;
 
 Data.Scripts.Add(scr_turn_skip); // Répertorie le Script
 Data.Code.Add(scr_turn_skip.Code); // Répertorie le Code
@@ -396,10 +419,11 @@ Data.Code.Add(scr_turn_skip.Code); // Répertorie le Code
 var existingVar_turn_skip = Data.Variables.ByName("scr_turn_skip");
 if (existingVar_turn_skip == null) // Add only if it doesn't already exist
 {
-UndertaleVariable scr_turn_skip_VAR = new UndertaleVariable(); // Ajoute la variable
-scr_turn_skip_VAR.Name = Data.Strings.MakeString("scr_turn_skip");
-Data.Variables.Add(scr_turn_skip_VAR);
-};
+    UndertaleVariable scr_turn_skip_VAR = new UndertaleVariable(); // Ajoute la variable
+    scr_turn_skip_VAR.Name = Data.Strings.MakeString("scr_turn_skip");
+    Data.Variables.Add(scr_turn_skip_VAR);
+}
+;
 
 UndertaleCodeLocals scr_turn_skip_CL = new UndertaleCodeLocals(); // Ajoute le CL
 scr_turn_skip_CL.Name = Data.Strings.MakeString("gml_GlobalScript_scr_turn_skip");

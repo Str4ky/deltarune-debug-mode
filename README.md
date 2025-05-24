@@ -1,4 +1,5 @@
 # Scripts de debug mode custom pour Deltarune
+
 Scripts de debug mode customisés pour Undertale Mod Tool fonctionnant avec Deltarune.
 
 Fonctionnent uniquement avec la nouvelle LTS du jeu.
@@ -15,24 +16,27 @@ Fonctionnent uniquement avec la nouvelle LTS du jeu.
 - Laissez-vous guider par les fenêtres et les options de l'interface.
 
 ## Fonctionnalités et contrôles associés (Chapitre 1 et 2)
-| Touches | Descriptions |
-|---|---|
-| F10 | Activer/désactiver le debug mode |
-| S | Sauvegarder la partie |
-| L | Charger la dernière sauvegarde |
-| R | Redémarrer le jeu |
-| P | Mettre en pause/reprendre le jeu |
-| M+1 / M+2 | Ajouter/retirer 100 D$ |
-| Suppr | Se rendre à la salle précédente |
-| Insert | Se rendre à la salle suivante |
-| Entrer | Voir les collisions du joueur |
-| Retour arrière | Passer le segment d'intro |
-| W | Gagner instantanément un combat |
-| V | Passer le tour de l'ennemi |
-| H | Restaurer les HP du party |
-| T | Remplir/vider la barre de TP |
+
+| Touches        | Descriptions                     |
+| -------------- | -------------------------------- |
+| F10            | Activer/désactiver le debug mode |
+| S              | Sauvegarder la partie            |
+| L              | Charger la dernière sauvegarde   |
+| R              | Redémarrer le jeu                |
+| P              | Mettre en pause/reprendre le jeu |
+| M+1 / M+2      | Ajouter/retirer 100 D$           |
+| Suppr          | Se rendre à la salle précédente  |
+| Insert         | Se rendre à la salle suivante    |
+| Entrer         | Voir les collisions du joueur    |
+| Retour arrière | Passer le segment d'intro        |
+| W              | Gagner instantanément un combat  |
+| V              | Passer le tour de l'ennemi       |
+| H              | Restaurer les HP du party        |
+| T              | Remplir/vider la barre de TP     |
+| O              | Basculer entre 30, 60 et 120 FPS |
 
 ## Autres fonctions
+
 Certaines fonctions de debug déjà implémentées du Chapitre 2 ont été conservées dans la dernière LTS du jeu.
 
 Pour celles-ci, les [contrôles](https://www.reddit.com/r/Underminers/comments/q08yf8/what_are_the_deltarune_chapter_2_debug_commands/) y sont donc les originaux.
