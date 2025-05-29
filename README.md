@@ -39,7 +39,7 @@ Fonctionnent uniquement avec la nouvelle LTS du jeu.
 
 Certaines fonctions de debug déjà implémentées du Chapitre 2 ont été conservées dans la dernière LTS du jeu.
 
-Pour celles-ci, les [contrôles](https://www.reddit.com/r/Underminers/comments/q08yf8/what_are_the_deltarune_chapter_2_debug_commands/) y sont donc les originaux.
+Pour celles-ci, les [contrôles](https://tcrf.net/Proto_talk:Deltarune/Chapter_1_%26_2_Demo_(2021)#The_Debug_Mode:~:text=September%202021%20(UTC)-,Debug%20Mode%20controls,-Credits%20to%20SgvSth) y sont donc les originaux.
 
 ## Crédits
 
