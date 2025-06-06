@@ -2,7 +2,7 @@
 
 Scripts de debug mode customisés pour Undertale Mod Tool fonctionnant avec Deltarune.
 
-Fonctionnent uniquement avec la nouvelle LTS du jeu.
+Fonctionnent uniquement avec la demo LTS et la version payante du jeu.
 
 ## Installation
 
