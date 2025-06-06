@@ -5,7 +5,7 @@ EnsureDataLoaded();
 if (Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapter 1" &&
     Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapitre 1")
 {
-    ScriptError("Erreur 0 : Ce script fonctionne uniquement pour la dernière version LTS de Deltarune et s'applique seulement au Chapitre 1.");
+    ScriptError("Erreur 0 : Ce script fonctionne uniquement pour la version LTS de la démo et la version payante de Deltarune. \r\nS'applique seulement au Chapitre 1.");
     return;
 }
 
@@ -27,6 +27,9 @@ UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, globalDecompile
 // Fonction de Log debug
 
 // Script debug print
+var scr_debug_print = Data.Scripts.ByName("scr_debug_print");
+if (scr_debug_print == null) // Vérifie que le script existe
+{
 UndertaleScript scr_debug_print = new UndertaleScript(); // Ajoute le Script
 scr_debug_print.Name = Data.Strings.MakeString("scr_debug_print");
 scr_debug_print.Code = new UndertaleCode(); // Ajoute le Code
@@ -35,22 +38,23 @@ scr_debug_print.Code.LocalsCount = 1;
 
 Data.Scripts.Add(scr_debug_print); // Répertorie le Script
 Data.Code.Add(scr_debug_print.Code); // Répertorie le Code
-
+};
 
 var existingVar_debug_print = Data.Variables.ByName("scr_debug_print");
-if (existingVar_debug_print == null) // Vérifie que l'objet existe
+if (existingVar_debug_print == null) // Vérifie que la variable existe
 {
-    UndertaleVariable scr_debug_print_VAR = new UndertaleVariable(); // Ajoute la Variable
-    scr_debug_print_VAR.Name = Data.Strings.MakeString("scr_debug_print");
-    Data.Variables.Add(scr_debug_print_VAR); // Répertorie la Variable
-}
-;
+UndertaleVariable scr_debug_print_VAR = new UndertaleVariable(); // Ajoute la Variable
+scr_debug_print_VAR.Name = Data.Strings.MakeString("scr_debug_print");
+Data.Variables.Add(scr_debug_print_VAR); // Répertorie la Variable
+};
 
 UndertaleCodeLocals scr_debug_print_CL = new UndertaleCodeLocals(); // Ajoute le CL
 scr_debug_print_CL.Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_print");
 Data.CodeLocals.Add(scr_debug_print_CL); // Répertorie le CL
 
-importGroup.QueueReplace(scr_debug_print.Code, @"
+
+var scr_debug_print2 = Data.Scripts.ByName("scr_debug_print");
+importGroup.QueueReplace(scr_debug_print2.Code, @"
 function scr_debug_print(arg0)
 {
     
@@ -98,16 +102,32 @@ enum e__VW
 }
 ");
 
-ChangeSelection(scr_debug_print);
+ChangeSelection(scr_debug_print2);
 // Ne pas ajouter de importGroup.Import() !!!
 
 // GameObject debug gui
+var obj_debug_gui = Data.GameObjects.ByName("obj_debug_gui");
+if (obj_debug_gui == null) // Vérifie que l'objet existe
+{
 UndertaleGameObject obj_debug_gui = new UndertaleGameObject(); // Ajoute le GameObject
 obj_debug_gui.Name = Data.Strings.MakeString("obj_debug_gui");
 obj_debug_gui.Visible = (true);
 obj_debug_gui.CollisionShape = (CollisionShapeFlags)1;
 obj_debug_gui.Awake = (true);
-importGroup.QueueAppend(obj_debug_gui.EventHandlerFor(EventType.Create, (uint)0, Data), @"
+
+Data.GameObjects.Add(obj_debug_gui); // Répertorie le GameObject
+};
+
+var existingVar_gui = Data.Variables.ByName("obj_debug_gui");
+if (existingVar_gui == null) // Vérifie que la variable existe
+{
+    UndertaleVariable obj_debug_gui_VAR = new UndertaleVariable(); // Ajoute la Variable
+    obj_debug_gui_VAR.Name = Data.Strings.MakeString("obj_debug_gui");
+    Data.Variables.Add(obj_debug_gui_VAR); // Répertorie la Variable
+};
+
+var obj_debug_gui2 = Data.GameObjects.ByName("obj_debug_gui");
+importGroup.QueueReplace(obj_debug_gui2.EventHandlerFor(EventType.Create, (uint)0, Data), @"
 message[0] = """";
 debugmessage = """";
 timer[0] = 90;
@@ -116,7 +136,7 @@ messagecount = 0;
 totaltimer = 0;
 ");
 
-importGroup.QueueAppend(obj_debug_gui.EventHandlerFor(EventType.Step, (uint)0, Data), @"
+importGroup.QueueReplace(obj_debug_gui2.EventHandlerFor(EventType.Step, (uint)0, Data), @"
 if (timer[0] > 0)
 {
     timer[0]--;
@@ -149,7 +169,7 @@ if (timer[0] <= 0)
 }
 ");
 
-importGroup.QueueAppend(obj_debug_gui.EventHandlerFor(EventType.Draw, (uint)64, Data), @"
+importGroup.QueueReplace(obj_debug_gui2.EventHandlerFor(EventType.Draw, (uint)64, Data), @"
 var fnt = draw_get_font();
 draw_set_font(fnt_comicsans);
 var col = draw_get_color();
@@ -164,23 +184,12 @@ draw_set_color(col);
 draw_set_font(fnt);
 ");
 
-importGroup.QueueAppend(obj_debug_gui.EventHandlerFor(EventType.PreCreate, (uint)0, Data), @"
+importGroup.QueueReplace(obj_debug_gui2.EventHandlerFor(EventType.PreCreate, (uint)0, Data), @"
 event_inherited();
 ");
 
-Data.GameObjects.Add(obj_debug_gui); // Répertorie le GameObject
-
-var existingVar_gui = Data.Variables.ByName("obj_debug_gui");
-if (existingVar_gui == null) // Vérifie que l'objet existe
-{
-    UndertaleVariable obj_debug_gui_VAR = new UndertaleVariable(); // Ajoute la Variable
-    obj_debug_gui_VAR.Name = Data.Strings.MakeString("obj_debug_gui");
-    Data.Variables.Add(obj_debug_gui_VAR); // Répertorie la Variable
-}
-;
-
 importGroup.Import();
-ChangeSelection(scr_debug_print.Code);
+ChangeSelection(scr_debug_print2.Code);
 
 // Variable au gamestart
 var scr_gamestart = Data.Code.ByName("gml_GlobalScript_scr_gamestart");
@@ -284,6 +293,165 @@ if (obj_mainchara is not null) // Vérifie que l'objet existe
             room_goto_next();
         if (keyboard_check_pressed(vk_delete))
             room_goto_previous();
+        if (keyboard_check(ord(""3"")) && keyboard_check(ord(""D"")))
+        {
+            global.char[0] = 1;
+            global.char[1] = 0;
+            global.char[2] = 0;
+            global.interact = 0;
+            global.darkzone = 1;
+            room_goto(room_dark1);
+        }
+        
+        if (keyboard_check(ord(""4"")) && keyboard_check(ord(""D"")))
+        {
+            global.char[0] = 1;
+            global.char[1] = 3;
+            global.char[2] = 2;
+            global.interact = 0;
+            global.darkzone = 1;
+            room_goto(room_field_checkers5);
+        }
+        
+        if (keyboard_check(ord(""5"")) && keyboard_check(ord(""D"")))
+        {
+            global.char[0] = 1;
+            global.char[1] = 0;
+            global.char[2] = 0;
+            global.interact = 0;
+            global.darkzone = 1;
+            room_goto(room_castle_tutorial);
+        }
+        
+        if (keyboard_check(ord(""6"")) && keyboard_check(ord(""D"")))
+        {
+            global.char[0] = 1;
+            global.char[1] = 3;
+            global.char[2] = 0;
+            global.interact = 0;
+            global.darkzone = 1;
+            room_goto(room_field1);
+        }
+        
+        if (keyboard_check(ord(""7"")) && keyboard_check(ord(""D"")))
+        {
+            global.char[0] = 1;
+            global.char[1] = 3;
+            global.char[2] = 0;
+            global.interact = 0;
+            global.darkzone = 1;
+            room_goto(room_forest_area3);
+        }
+        
+        if (keyboard_check(ord(""8"")) && keyboard_check(ord(""D"")))
+        {
+            global.char[0] = 1;
+            global.char[1] = 3;
+            global.char[2] = 0;
+            global.interact = 0;
+            global.darkzone = 1;
+            room_goto(room_forest_fightsusie);
+        }
+        
+        if (keyboard_check(ord(""9"")) && keyboard_check(ord(""D"")))
+        {
+            global.char[0] = 2;
+            global.char[1] = 0;
+            global.char[2] = 0;
+            global.interact = 0;
+            global.darkzone = 1;
+            global.plot = 154;
+            room_goto(room_cc_prison_cells);
+        }
+        
+        if (keyboard_check(ord(""6"")) && keyboard_check(ord(""J"")))
+        {
+            global.char[0] = 1;
+            global.char[1] = 3;
+            global.char[2] = 0;
+            global.interact = 0;
+            global.darkzone = 1;
+            global.charauto[2] = 0;
+            room_goto(room_battletest);
+        }
+        
+        if (keyboard_check(ord(""7"")) && keyboard_check(ord(""J"")))
+        {
+            global.char[0] = 1;
+            global.char[1] = 2;
+            global.char[2] = 3;
+            global.interact = 0;
+            global.darkzone = 1;
+            global.charauto[2] = 0;
+            room_goto(room_battletest);
+        }
+        
+        if (keyboard_check(ord(""8"")) && keyboard_check(ord(""J"")))
+        {
+            global.char[0] = 1;
+            global.char[1] = 2;
+            global.char[2] = 3;
+            global.interact = 0;
+            global.darkzone = 1;
+            global.charauto[2] = 0;
+            global.plot = 165;
+            scr_keyitemget(5);
+            global.tempflag[4] = 1;
+            
+            repeat (13)
+                scr_weaponget(5);
+            
+            room_goto(room_cc_prison_prejoker);
+        }
+        
+        if (keyboard_check(ord(""9"")) && keyboard_check(ord(""J"")))
+        {
+            global.char[0] = 1;
+            global.char[1] = 2;
+            global.char[2] = 3;
+            global.interact = 0;
+            global.darkzone = 1;
+            global.charauto[2] = 0;
+            global.flag[248] = 0;
+            room_goto(room_cc_kingbattle);
+        }
+        
+        if (keyboard_check(ord(""2"")) && keyboard_check(ord(""W"")))
+        {
+            global.interact = 0;
+            global.darkzone = 0;
+            room_goto(room_town_krisyard);
+        }
+        
+        if (keyboard_check(ord(""3"")) && keyboard_check(ord(""W"")))
+        {
+            global.interact = 0;
+            global.darkzone = 0;
+            room_goto(room_schooldoor);
+        }
+        
+        if (keyboard_check(ord(""4"")) && keyboard_check(ord(""W"")))
+        {
+            global.interact = 0;
+            global.darkzone = 0;
+            room_goto(room_school_unusedroom);
+        }
+        
+        if (keyboard_check(ord(""5"")) && keyboard_check(ord(""W"")))
+        {
+            global.interact = 0;
+            global.darkzone = 0;
+            global.plot = 251;
+            room_goto(room_town_school);
+        }
+        
+        if (keyboard_check(ord(""6"")) && keyboard_check(ord(""W"")))
+        {
+            global.interact = 0;
+            global.darkzone = 0;
+            global.plot = 251;
+            room_goto(room_town_north);
+        }
     }
     ");
     ChangeSelection(obj_mainchara);
@@ -354,7 +522,6 @@ if (obj_device_contact is not null) // Vérifie que l'objet existe
             global.flag[6] = 0;
             snd_free_all();
             room_goto(room_krisroom);
-            scr_debug_print(""Segment passé"");
         }
     }
     ");
@@ -363,6 +530,9 @@ if (obj_device_contact is not null) // Vérifie que l'objet existe
 importGroup.Import();
 
 // Script fullheal
+var scr_debug_fullheal = Data.Scripts.ByName("scr_debug_fullheal");
+if (scr_debug_fullheal == null) // Vérifie que le script existe
+{
 UndertaleScript scr_debug_fullheal = new UndertaleScript(); // Ajoute le Script
 scr_debug_fullheal.Name = Data.Strings.MakeString("scr_debug_fullheal");
 scr_debug_fullheal.Code = new UndertaleCode(); // Ajoute le Code
@@ -373,19 +543,20 @@ Data.Scripts.Add(scr_debug_fullheal); // Répertorie le Script
 Data.Code.Add(scr_debug_fullheal.Code); // Répertorie le Code
 
 var existingVar_debug_fullheal = Data.Variables.ByName("scr_debug_fullheal");
-if (existingVar_debug_fullheal == null) // Add only if it doesn't already exist
+if (existingVar_debug_fullheal == null) // Vérifie que la variable existe
 {
-    UndertaleVariable scr_debug_fullheal_VAR = new UndertaleVariable(); // Ajoute la variable
-    scr_debug_fullheal_VAR.Name = Data.Strings.MakeString("scr_debug_fullheal");
-    Data.Variables.Add(scr_debug_fullheal_VAR);
-}
-;
+UndertaleVariable scr_debug_fullheal_VAR = new UndertaleVariable(); // Ajoute la variable
+scr_debug_fullheal_VAR.Name = Data.Strings.MakeString("scr_debug_fullheal");
+Data.Variables.Add(scr_debug_fullheal_VAR);
+};
 
 UndertaleCodeLocals scr_debug_fullheal_CL = new UndertaleCodeLocals(); // Ajoute le CL
 scr_debug_fullheal_CL.Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_fullheal");
 Data.CodeLocals.Add(scr_debug_fullheal_CL); // Répertorie le CL
+};
 
-importGroup.QueueAppend(scr_debug_fullheal.Code, @"
+var scr_debug_fullheal2 = Data.Scripts.ByName("scr_debug_fullheal");
+importGroup.QueueReplace(scr_debug_fullheal2.Code, @"
 function scr_debug_fullheal()
 {
     with (obj_dmgwriter)
@@ -404,9 +575,12 @@ function scr_debug_fullheal()
 }
 ");
 importGroup.Import();
-ChangeSelection(scr_debug_fullheal);
+ChangeSelection(scr_debug_fullheal2);
 
 // Script turn skip
+var scr_turn_skip = Data.Scripts.ByName("scr_turn_skip");
+if (scr_turn_skip == null) // Vérifie que le script existe
+{
 UndertaleScript scr_turn_skip = new UndertaleScript(); // Ajoute le Script
 scr_turn_skip.Name = Data.Strings.MakeString("scr_turn_skip");
 scr_turn_skip.Code = new UndertaleCode(); // Ajoute le Code
@@ -417,19 +591,20 @@ Data.Scripts.Add(scr_turn_skip); // Répertorie le Script
 Data.Code.Add(scr_turn_skip.Code); // Répertorie le Code
 
 var existingVar_turn_skip = Data.Variables.ByName("scr_turn_skip");
-if (existingVar_turn_skip == null) // Add only if it doesn't already exist
+if (existingVar_turn_skip == null) // Vérifie que la variable existe
 {
-    UndertaleVariable scr_turn_skip_VAR = new UndertaleVariable(); // Ajoute la variable
-    scr_turn_skip_VAR.Name = Data.Strings.MakeString("scr_turn_skip");
-    Data.Variables.Add(scr_turn_skip_VAR);
-}
-;
+UndertaleVariable scr_turn_skip_VAR = new UndertaleVariable(); // Ajoute la variable
+scr_turn_skip_VAR.Name = Data.Strings.MakeString("scr_turn_skip");
+Data.Variables.Add(scr_turn_skip_VAR);
+};
 
 UndertaleCodeLocals scr_turn_skip_CL = new UndertaleCodeLocals(); // Ajoute le CL
 scr_turn_skip_CL.Name = Data.Strings.MakeString("gml_GlobalScript_scr_turn_skip");
 Data.CodeLocals.Add(scr_turn_skip_CL); // Répertorie le CL
+};
 
-importGroup.QueueAppend(scr_turn_skip.Code, @"
+var scr_turn_skip2 = Data.Scripts.ByName("scr_turn_skip");
+importGroup.QueueAppend(scr_turn_skip2.Code, @"
 function scr_turn_skip()
 {
     if (global.mnfight == 2
@@ -442,7 +617,7 @@ function scr_turn_skip()
 }
 ");
 importGroup.Import();
-ChangeSelection(scr_turn_skip);
+ChangeSelection(scr_turn_skip2);
 
 // Fonctions de combat
 var obj_battlecontroller = Data.Code.ByName("gml_Object_obj_battlecontroller_Step_0");

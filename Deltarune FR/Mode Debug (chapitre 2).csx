@@ -5,7 +5,7 @@ EnsureDataLoaded();
 if (Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapter 2" &&
     Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapitre 2")
 {
-    ScriptError("Erreur 0 : Ce script fonctionne uniquement pour la dernière version LTS de Deltarune et s'applique seulement au Chapitre 2.");
+    ScriptError("Erreur 0 : Ce script fonctionne pour l'instant uniquement pour la version payante de Deltarune. \r\nS'applique seulement au Chapitre 2.");
     return;
 }
 
@@ -29,7 +29,7 @@ UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, globalDecompile
 // Script debug print
 UndertaleScript scr_debug_print = Data.Scripts.ByName("scr_debug_print");
 
-if (scr_debug_print is not null) // Vérifie que l'objet existe
+if (scr_debug_print is not null) // Vérifie que le script existe
 {
     importGroup.QueueReplace(scr_debug_print.Code, @"
     function scr_debug_print(arg0)
@@ -145,7 +145,7 @@ event_inherited();
 ");
 
 var existingVar_gui = Data.Variables.ByName("obj_debug_gui");
-if (existingVar_gui == null) // Vérifie que l'objet existe
+if (existingVar_gui == null) // Vérifie que la variable existe
 {
     UndertaleVariable obj_debug_gui_VAR = new UndertaleVariable(); // Ajoute la Variable
     obj_debug_gui_VAR.Name = Data.Strings.MakeString("obj_debug_gui");
@@ -328,7 +328,7 @@ function scr_turn_skip()
     && instance_exists(obj_growtangle))
     {
         global.turntimer = 0;
-        scr_debug_print(""Attaque passée"");
+        scr_debug_print(""Tour de l'ennemi passé"");
     }
 }
 ");
@@ -342,7 +342,7 @@ if (obj_battlecontroller_step is not null) // Vérifie que l'objet existe
     importGroup.QueueFindReplace(obj_battlecontroller_step,
     "scr_debug_fullheal();", "");
     importGroup.QueueFindReplace(obj_battlecontroller_step,
-    "if (scr_debug_keycheck(113))",
+    "if (scr_debug_keycheck(vk_f2))",
     @"if (keyboard_check_pressed(ord(""H"")))
     {
         scr_debug_fullheal();
@@ -351,7 +351,7 @@ if (obj_battlecontroller_step is not null) // Vérifie que l'objet existe
     ");
     // Wincombat function
     importGroup.QueueFindReplace(obj_battlecontroller_step,
-    "if (scr_debug_keycheck(116))", "if (keyboard_check_pressed(ord(\"W\")))");
+    "if (scr_debug_keycheck(vk_f5))", "if (keyboard_check_pressed(ord(\"W\")))");
     importGroup.QueueFindReplace(obj_battlecontroller_step,
     "scr_wincombat();", @"
     scr_wincombat();
@@ -366,9 +366,9 @@ if (obj_battlecontroller_step is not null) // Vérifie que l'objet existe
     ");
     // Tension functions
     importGroup.QueueFindReplace(obj_battlecontroller_step,
-    "if (scr_debug_keycheck(120))", "");
+    "if (scr_debug_keycheck(vk_f9))", "");
     importGroup.QueueFindReplace(obj_battlecontroller_step,
-    "if (scr_debug_keycheck(121))", "");
+    "if (scr_debug_keycheck(vk_f10))", "");
     importGroup.QueueFindReplace(obj_battlecontroller_step,
     "global.tension = 0;", "");
     importGroup.QueueFindReplace(obj_battlecontroller_step,
