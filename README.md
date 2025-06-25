@@ -2,7 +2,7 @@
 
 Scripts de debug mode customisés pour Undertale Mod Tool fonctionnant avec Deltarune.
 
-Fonctionnent uniquement avec la demo LTS et la version payante du jeu.
+Fonctionnent uniquement avec la démo LTS et la version payante du jeu.
 
 ## Installation
 
@@ -20,6 +20,7 @@ Fonctionnent uniquement avec la demo LTS et la version payante du jeu.
 | Touches        | Descriptions                     |
 | -------------- | -------------------------------- |
 | F10            | Activer/désactiver le debug mode |
+| D              | Ouvrir le menu Debug             |
 | S              | Sauvegarder la partie            |
 | L              | Charger la dernière sauvegarde   |
 | R              | Redémarrer le jeu                |
@@ -28,12 +29,12 @@ Fonctionnent uniquement avec la demo LTS et la version payante du jeu.
 | Suppr          | Se rendre à la salle précédente  |
 | Insert         | Se rendre à la salle suivante    |
 | Entrer         | Voir les collisions du joueur    |
-| Retour arrière | Passer le segment d'intro        |
 | W              | Gagner instantanément un combat  |
 | V              | Passer le tour de l'ennemi       |
 | H              | Restaurer les HP du party        |
 | T              | Remplir/vider la barre de TP     |
 | O              | Basculer entre 30, 60 et 120 FPS |
+| Retour arrière | Passer le segment d'intro (Ch1)  |
 
 ## Autres fonctions
 
