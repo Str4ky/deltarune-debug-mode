@@ -860,7 +860,7 @@ function dmenu_state_interact()
                 global.flag[34] = 1;
             }
             
-            if (global.dbutton_selected == 3)
+            if (global.dbutton_selected == 4)
             {
                 global.char[0] = 1;
                 global.char[1] = 2;
