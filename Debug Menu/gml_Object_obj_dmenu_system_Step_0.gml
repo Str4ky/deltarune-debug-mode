@@ -100,14 +100,138 @@ if (global.dmenu_active)
         global.dmenu_start_index = clamp(global.dmenu_start_index, 0, max(0, array_length(global.dbutton_options) - global.dbutton_max_visible));
     }
     
+    if (global.dbutton_layout == 2)
+    {
+        if (keyboard_check_pressed(vk_left))
+        {
+            var owned_count = 0;
+            
+            switch (global.dgiver_menu_state)
+            {
+                case "objects":
+                    scr_itemcheck(global.dbutton_indices[global.dgiver_button_selected - 1]);
+                    owned_count = itemcount;
+                    break;
+                
+                case "armors":
+                    scr_armorcheck_inventory(global.dbutton_indices[global.dgiver_button_selected - 1]);
+                    owned_count = itemcount;
+                    break;
+                
+                case "weapons":
+                    scr_weaponcheck_inventory(global.dbutton_indices[global.dgiver_button_selected - 1]);
+                    owned_count = itemcount;
+                    break;
+                
+                case "keyitems":
+                    scr_keyitemcheck(global.dbutton_indices[global.dgiver_button_selected - 1]);
+                    owned_count = itemcount;
+                    break;
+                
+                default:
+                    owned_count = 0;
+            }
+            
+            if (global.dgiver_amount > -owned_count)
+            {
+                global.dgiver_amount -= 1;
+                snd_play(snd_menumove);
+            }
+            else
+            {
+                snd_play(snd_error);
+            }
+        }
+        
+        if (keyboard_check_pressed(vk_right))
+        {
+            var owned_count = 0;
+            
+            switch (global.dgiver_menu_state)
+            {
+                case "objects":
+                    scr_itemcheck(0);
+                    owned_count = itemcount;
+                    break;
+                
+                case "armors":
+                    scr_armorcheck_inventory(0);
+                    owned_count = itemcount;
+                    break;
+                
+                case "weapons":
+                    scr_weaponcheck_inventory(0);
+                    owned_count = itemcount;
+                    break;
+                
+                case "keyitems":
+                    scr_keyitemcheck(0);
+                    owned_count = itemcount;
+                    break;
+                
+                default:
+                    owned_count = 0;
+            }
+            
+            if (global.dgiver_amount < owned_count)
+            {
+                global.dgiver_amount += 1;
+                snd_play(snd_menumove);
+            }
+            else
+            {
+                snd_play(snd_error);
+            }
+        }
+    }
+    
     if (keyboard_check_pressed(global.input_k[4]) || keyboard_check_pressed(global.input_k[7]))
     {
         snd_play(snd_select);
-        array_push(global.dmenu_state_history, global.dmenu_state);
-        array_push(global.dbutton_selected_history, global.dbutton_selected);
         
-        if (global.dmenu_state != "objects" && global.dmenu_state != "armors" && global.dmenu_state != "weapons" && global.dmenu_state != "keyitems")
+        if (global.dmenu_state != "givertab")
+        {
+            array_push(global.dmenu_state_history, global.dmenu_state);
+            array_push(global.dbutton_selected_history, global.dbutton_selected);
+        }
+        
+        if (global.dmenu_state == "objects" || global.dmenu_state == "armors" || global.dmenu_state == "weapons" || global.dmenu_state == "keyitems")
+        {
+            switch (global.dmenu_state)
+            {
+                case "objects":
+                    real_index = global.dbutton_indices[global.dbutton_selected - 1];
+                    scr_iteminfo(real_index);
+                    global.dgiver_bname = itemnameb;
+                    scr_debug_print(global.dgiver_bname + " sélectionné !");
+                    break;
+                
+                case "armors":
+                    real_index = global.dbutton_indices[global.dbutton_selected - 1];
+                    scr_armorinfo(real_index);
+                    global.dgiver_bname = armornametemp;
+                    scr_debug_print(string(global.dgiver_bname) + " sélectionné !");
+                    break;
+                
+                case "weapons":
+                    real_index = global.dbutton_indices[global.dbutton_selected - 1];
+                    scr_weaponinfo(real_index);
+                    global.dgiver_bname = weaponnametemp;
+                    scr_debug_print(string(global.dgiver_bname) + " sélectionné !");
+                    break;
+                
+                case "keyitems":
+                    real_index = global.dbutton_indices[global.dbutton_selected - 1];
+                    scr_keyiteminfo(real_index);
+                    global.dgiver_bname = tempkeyitemname;
+                    scr_debug_print(string(global.dgiver_bname) + " sélectionné !");
+                    break;
+            }
+        }
+        else if (global.dmenu_state != "givertab")
+        {
             scr_debug_print(string(global.dbutton_options[global.dbutton_selected - 1]) + " sélectionné !");
+        }
         
         dmenu_state_interact();
         global.dmenu_start_index = 0;

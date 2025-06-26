@@ -1,7 +1,14 @@
-global.ditemcount = 33;
-global.darmorcount = 22;
-global.dweaponcount = 22;
-global.dkeyitemcount = 15;
+if (global.ditemcount == 0)
+{
+    global.ditemcount = 33;
+    global.darmorcount = 22;
+    global.dweaponcount = 22;
+    global.dkeyitemcount = 15;
+    global.drecent_item = 16;
+    global.drecent_armor = 8;
+    global.drecent_weapon = 11;
+    global.drecent_keyitem = 8;
+}
 
 function dmenu_state_update()
 {
@@ -241,22 +248,35 @@ function dmenu_state_update()
         case "objects":
             global.dmenu_title = "Liste d'objets";
             global.dbutton_options = [];
+            global.dbutton_indices = [];
+            var max_len = 40;
             
-            for (var i = 1; i <= global.ditemcount; i++)
+            for (var i = global.drecent_item; i <= global.ditemcount; i++)
             {
                 scr_iteminfo(i);
-                var cleaned_desc = itemdescb;
-                
-                while (string_pos("#", cleaned_desc) > 0)
-                    cleaned_desc = string_replace(cleaned_desc, "#", " ");
-                
+                var cleaned_desc = string_replace_all(itemdescb, "#", " ");
                 var combined = itemnameb + " - " + cleaned_desc;
-                var max_len = 40;
                 
                 if (string_length(combined) > max_len)
                     combined = string_copy(combined, 1, max_len - 3) + "...";
                 
                 array_push(global.dbutton_options, combined);
+                array_push(global.dbutton_indices, i);
+            }
+            
+            var cutoff = min(global.drecent_item - 1, global.ditemcount);
+            
+            for (var i = 1; i <= cutoff; i++)
+            {
+                scr_iteminfo(i);
+                var cleaned_desc = string_replace_all(itemdescb, "#", " ");
+                var combined = itemnameb + " - " + cleaned_desc;
+                
+                if (string_length(combined) > max_len)
+                    combined = string_copy(combined, 1, max_len - 3) + "...";
+                
+                array_push(global.dbutton_options, combined);
+                array_push(global.dbutton_indices, i);
             }
             
             global.dmenu_box = 2;
@@ -266,22 +286,35 @@ function dmenu_state_update()
         case "armors":
             global.dmenu_title = "Liste d'armures";
             global.dbutton_options = [];
+            global.dbutton_indices = [];
+            var max_len = 40;
             
-            for (var i = 1; i <= global.darmorcount; i++)
+            for (var i = global.drecent_armor; i <= global.darmorcount; i++)
             {
                 scr_armorinfo(i);
-                var cleaned_desc = armordesctemp;
-                
-                while (string_pos("#", cleaned_desc) > 0)
-                    cleaned_desc = string_replace(cleaned_desc, "#", " ");
-                
+                var cleaned_desc = string_replace_all(armordesctemp, "#", " ");
                 var combined = armornametemp + " - " + cleaned_desc;
-                var max_len = 40;
                 
                 if (string_length(combined) > max_len)
                     combined = string_copy(combined, 1, max_len - 3) + "...";
                 
                 array_push(global.dbutton_options, combined);
+                array_push(global.dbutton_indices, i);
+            }
+            
+            var cutoff = min(global.drecent_armor - 1, global.darmorcount);
+            
+            for (var i = 1; i <= cutoff; i++)
+            {
+                scr_armorinfo(i);
+                var cleaned_desc = string_replace_all(armordesctemp, "#", " ");
+                var combined = armornametemp + " - " + cleaned_desc;
+                
+                if (string_length(combined) > max_len)
+                    combined = string_copy(combined, 1, max_len - 3) + "...";
+                
+                array_push(global.dbutton_options, combined);
+                array_push(global.dbutton_indices, i);
             }
             
             global.dmenu_box = 2;
@@ -291,22 +324,35 @@ function dmenu_state_update()
         case "weapons":
             global.dmenu_title = "Liste d'armes";
             global.dbutton_options = [];
+            global.dbutton_indices = [];
+            var max_len = 40;
             
-            for (var i = 1; i <= global.dweaponcount; i++)
+            for (var i = global.drecent_weapon; i <= global.dweaponcount; i++)
             {
                 scr_weaponinfo(i);
-                var cleaned_desc = weapondesctemp;
-                
-                while (string_pos("#", cleaned_desc) > 0)
-                    cleaned_desc = string_replace(cleaned_desc, "#", " ");
-                
+                var cleaned_desc = string_replace_all(weapondesctemp, "#", " ");
                 var combined = weaponnametemp + " - " + cleaned_desc;
-                var max_len = 40;
                 
                 if (string_length(combined) > max_len)
                     combined = string_copy(combined, 1, max_len - 3) + "...";
                 
                 array_push(global.dbutton_options, combined);
+                array_push(global.dbutton_indices, i);
+            }
+            
+            var cutoff = min(global.drecent_weapon - 1, global.dweaponcount);
+            
+            for (var i = 1; i <= cutoff; i++)
+            {
+                scr_weaponinfo(i);
+                var cleaned_desc = string_replace_all(weapondesctemp, "#", " ");
+                var combined = weaponnametemp + " - " + cleaned_desc;
+                
+                if (string_length(combined) > max_len)
+                    combined = string_copy(combined, 1, max_len - 3) + "...";
+                
+                array_push(global.dbutton_options, combined);
+                array_push(global.dbutton_indices, i);
             }
             
             global.dmenu_box = 2;
@@ -316,26 +362,46 @@ function dmenu_state_update()
         case "keyitems":
             global.dmenu_title = "Liste d'objets clés (Peut briser le jeu)";
             global.dbutton_options = [];
+            global.dbutton_indices = [];
+            var max_len = 40;
             
-            for (var i = 1; i <= global.dkeyitemcount; i++)
+            for (var i = global.drecent_keyitem; i <= global.dkeyitemcount; i++)
             {
                 scr_keyiteminfo(i);
-                var cleaned_desc = tempkeyitemdesc;
-                
-                while (string_pos("#", cleaned_desc) > 0)
-                    cleaned_desc = string_replace(cleaned_desc, "#", " ");
-                
+                var cleaned_desc = string_replace_all(tempkeyitemdesc, "#", " ");
                 var combined = tempkeyitemname + " - " + cleaned_desc;
-                var max_len = 40;
                 
                 if (string_length(combined) > max_len)
                     combined = string_copy(combined, 1, max_len - 3) + "...";
                 
                 array_push(global.dbutton_options, combined);
+                array_push(global.dbutton_indices, i);
+            }
+            
+            var cutoff = min(global.drecent_keyitem - 1, global.dkeyitemcount);
+            
+            for (var i = 1; i <= cutoff; i++)
+            {
+                scr_keyiteminfo(i);
+                var cleaned_desc = string_replace_all(tempkeyitemdesc, "#", " ");
+                var combined = tempkeyitemname + " - " + cleaned_desc;
+                
+                if (string_length(combined) > max_len)
+                    combined = string_copy(combined, 1, max_len - 3) + "...";
+                
+                array_push(global.dbutton_options, combined);
+                array_push(global.dbutton_indices, i);
             }
             
             global.dmenu_box = 2;
             global.dbutton_layout = 1;
+            break;
+        
+        case "givertab":
+            global.dmenu_title = "Ajouter combien à l'inventaire ?";
+            global.dgiver_amount = 1;
+            global.dmenu_box = 0;
+            global.dbutton_layout = 2;
             break;
         
         default:
@@ -982,39 +1048,145 @@ function dmenu_state_interact()
             break;
         
         case "objects":
-            scr_itemget(global.dbutton_selected);
-            scr_iteminfo(global.dbutton_selected);
-            scr_debug_print(itemnameb + " ajouté à l'inventaire");
-            global.dmenu_active = false;
-            global.interact = 0;
+            global.dgiver_menu_state = global.dmenu_state;
+            global.dbutton_selected = clamp(global.dbutton_selected, 0, array_length(global.dbutton_options) - 1);
+            global.dgiver_button_selected = global.dbutton_selected;
+            global.dmenu_state = "givertab";
+            global.dbutton_selected = 1;
             break;
         
         case "armors":
-            scr_armorget(global.dbutton_selected);
-            scr_armorinfo(global.dbutton_selected);
-            scr_debug_print(armornametemp + " ajouté à l'inventaire");
-            global.dmenu_active = false;
-            global.interact = 0;
+            global.dgiver_menu_state = global.dmenu_state;
+            global.dgiver_button_selected = global.dbutton_selected;
+            global.dmenu_state = "givertab";
+            global.dbutton_selected = 1;
             break;
         
         case "weapons":
-            scr_weaponget(global.dbutton_selected);
-            scr_weaponinfo(global.dbutton_selected);
-            scr_debug_print(weaponnametemp + " ajouté à l'inventaire");
-            global.dmenu_active = false;
-            global.interact = 0;
+            global.dgiver_menu_state = global.dmenu_state;
+            global.dgiver_button_selected = global.dbutton_selected;
+            global.dmenu_state = "givertab";
+            global.dbutton_selected = 1;
             break;
         
         case "keyitems":
-            scr_keyitemget(global.dbutton_selected);
-            scr_keyiteminfo(global.dbutton_selected);
-            scr_debug_print(tempkeyitemname + " ajouté à l'inventaire");
+            global.dgiver_menu_state = global.dmenu_state;
+            global.dgiver_button_selected = global.dbutton_selected;
+            global.dmenu_state = "givertab";
+            global.dbutton_selected = 1;
+            break;
+        
+        case "givertab":
+            if (global.dgiver_menu_state == "objects")
+            {
+                if (global.dgiver_amount > 0)
+                {
+                    real_index = global.dbutton_indices[global.dgiver_button_selected - 1];
+                    
+                    for (var i = 0; i < global.dgiver_amount; i++)
+                        scr_itemget(real_index);
+                    
+                    scr_debug_print(string(global.dgiver_amount) + " " + global.dgiver_bname + " ajouté à l'inventaire");
+                }
+                else if (global.dgiver_amount < 0)
+                {
+                    real_index = global.dbutton_indices[global.dgiver_button_selected - 1];
+                    
+                    for (var i = 0; i < abs(global.dgiver_amount); i++)
+                        scr_itemremove(real_index);
+                    
+                    scr_debug_print(string(abs(global.dgiver_amount)) + " " + global.dgiver_bname + " retiré de l'inventaire");
+                }
+                else
+                {
+                    scr_debug_print("Annulé");
+                }
+            }
+            
+            if (global.dgiver_menu_state == "armors")
+            {
+                if (global.dgiver_amount > 0)
+                {
+                    real_index = global.dbutton_indices[global.dgiver_button_selected - 1];
+                    
+                    for (var i = 0; i < global.dgiver_amount; i++)
+                        scr_armorget(real_index);
+                    
+                    scr_debug_print(string(global.dgiver_amount) + " " + global.dgiver_bname + " ajouté à l'inventaire");
+                }
+                else if (global.dgiver_amount < 0)
+                {
+                    real_index = global.dbutton_indices[global.dgiver_button_selected - 1];
+                    
+                    for (var i = 0; i < abs(global.dgiver_amount); i++)
+                        scr_armorremove(real_index);
+                    
+                    scr_debug_print(string(abs(global.dgiver_amount)) + " " + global.dgiver_bname + " retiré de l'inventaire");
+                }
+                else
+                {
+                    scr_debug_print("Annulé");
+                }
+            }
+            
+            if (global.dgiver_menu_state == "weapons")
+            {
+                if (global.dgiver_amount > 0)
+                {
+                    real_index = global.dbutton_indices[global.dgiver_button_selected - 1];
+                    
+                    for (var i = 0; i < global.dgiver_amount; i++)
+                        scr_weaponget(real_index);
+                    
+                    scr_debug_print(string(global.dgiver_amount) + " " + global.dgiver_bname + " ajouté à l'inventaire");
+                }
+                else if (global.dgiver_amount < 0)
+                {
+                    real_index = global.dbutton_indices[global.dgiver_button_selected - 1];
+                    
+                    for (var i = 0; i < abs(global.dgiver_amount); i++)
+                        scr_weaponremove(real_index);
+                    
+                    scr_debug_print(string(abs(global.dgiver_amount)) + " " + global.dgiver_bname + " retiré de l'inventaire");
+                }
+                else
+                {
+                    scr_debug_print("Annulé");
+                }
+            }
+            
+            if (global.dgiver_menu_state == "keyitems")
+            {
+                if (global.dgiver_amount > 0)
+                {
+                    real_index = global.dbutton_indices[global.dgiver_button_selected - 1];
+                    
+                    for (var i = 0; i < global.dgiver_amount; i++)
+                        scr_keyitemget(real_index);
+                    
+                    scr_debug_print(string(global.dgiver_amount) + " " + global.dgiver_bname + " ajouté à l'inventaire");
+                }
+                else if (global.dgiver_amount < 0)
+                {
+                    real_index = global.dbutton_indices[global.dgiver_button_selected - 1];
+                    
+                    for (var i = 0; i < abs(global.dgiver_amount); i++)
+                        scr_keyitemremove(real_index);
+                    
+                    scr_debug_print(string(abs(global.dgiver_amount)) + " " + global.dgiver_bname + " retiré de l'inventaire");
+                }
+                else
+                {
+                    scr_debug_print("Annulé");
+                }
+            }
+            
             global.dmenu_active = false;
             global.interact = 0;
             break;
         
         default:
             snd_play(snd_error);
-            scr_debug_print("Invalid selection!");
+            scr_debug_print("Sélection invalide !");
     }
 }
