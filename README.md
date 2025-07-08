@@ -15,7 +15,7 @@ Fonctionnent uniquement avec la démo LTS et la version payante du jeu.
 - Allez dans le menu `Scripts` puis `Deltarune FR` et choisissez l'option adaptée.
 - Laissez-vous guider par les fenêtres et les options de l'interface.
 
-## Fonctionnalités et contrôles associés (Chapitre 1 et 2)
+## Fonctionnalités et contrôles associés (Chapitres 1 à 4)
 
 | Touches        | Descriptions                     |
 | -------------- | -------------------------------- |
@@ -38,9 +38,9 @@ Fonctionnent uniquement avec la démo LTS et la version payante du jeu.
 
 ## Autres fonctions
 
-Certaines fonctions de debug déjà implémentées du Chapitre 2 ont été conservées dans la dernière LTS du jeu.
+Certaines fonctions de debug déjà implémentées ont été conservées au travers des différents chapitres du jeu.
 
-Pour celles-ci, les [contrôles](https://tcrf.net/Proto_talk:Deltarune/Chapter_1_%26_2_Demo_(2021)#The_Debug_Mode:~:text=September%202021%20(UTC)-,Debug%20Mode%20controls,-Credits%20to%20SgvSth) y sont donc les originaux.
+Pour celles-ci, les contrôles y sont donc les originaux et sont restés intouchés.
 
 ## Crédits
 
