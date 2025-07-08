@@ -671,7 +671,7 @@ enum e__VW
 }
 ");
 
-importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Draw, (uint)65, Data), @"
+importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)1, Data), @"
 if (global.ditemcount == 0)
 {
     global.ditemcount = 33;

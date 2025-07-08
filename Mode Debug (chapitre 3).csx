@@ -4,31 +4,20 @@ EnsureDataLoaded();
 
 if (!Data.IsVersionAtLeast(2023, 6))
 {
-    ScriptError("Erreur 0 : Ce script fonctionne uniquement pour la version LTS de la démo et la version payante de Deltarune.");
+    ScriptError("Erreur 0 : Ce script fonctionne uniquement pour la version payante de Deltarune.");
     return;
 }
 
-if (Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapter 1" &&
-    Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapitre 1")
+if (Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapter 3" &&
+    Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapitre 3")
 {
-    ScriptError("Erreur 1 : Ce script s'applique seulement au Chapitre 1.");
+    ScriptError("Erreur 1 : Ce script s'applique seulement au Chapitre 3.");
     return;
 }
 
-bool isDemo = false;
-foreach (var str in Data.Strings)
-{
-    if (str.Content == "1.19")
-    {
-        isDemo = true;
-        break;
-    }
-}
-
-string versionInfo = isDemo ? "\r\n[Version détectée : Démo Itch]" : "\r\n[Version détectée : Payante]";
 
 bool enable = ScriptQuestion(
-"Ajouter le Mode Debug pour le Chapitre 1 ?" + versionInfo
+"Ajouter le Mode Debug pour le Chapitre 3 ?"
 );
 
 if (!enable)
@@ -47,20 +36,7 @@ UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, globalDecompile
 
 // Script debug print
 
-if (isDemo)
-{
-    // Seulement pour la démo
-    UndertaleScript CREATE_scr_debug_print = new UndertaleScript();
-    CREATE_scr_debug_print.Name = Data.Strings.MakeString("scr_debug_print");
-    CREATE_scr_debug_print.Code = new UndertaleCode();
-    CREATE_scr_debug_print.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_print");
-    CREATE_scr_debug_print.Code.LocalsCount = 1;
-
-    Data.Scripts.Add(CREATE_scr_debug_print);
-    Data.Code.Add(CREATE_scr_debug_print.Code);
-}
-
-var scr_debug_print = Data.Scripts.ByName("scr_debug_print");
+UndertaleScript scr_debug_print = Data.Scripts.ByName("scr_debug_print");
 
 importGroup.QueueReplace(scr_debug_print.Code, @"
 function scr_debug_print(arg0)
@@ -108,25 +84,26 @@ enum e__VW
     Camera,
     SurfaceID
 }
+
+function print_message(arg0)
+{
+}
+
+function debug_print(arg0)
+{
+}
+
+function scr_debug_clear_all()
+{
+}
+
 ");
 
 ChangeSelection(scr_debug_print);
 
 // GameObject debug gui
 
-if (isDemo)
-{
-    // Seulement pour la démo
-    UndertaleGameObject CREATE_obj_debug_gui = new UndertaleGameObject(); // Ajoute le GameObject
-    CREATE_obj_debug_gui.Name = Data.Strings.MakeString("obj_debug_gui");
-    CREATE_obj_debug_gui.Visible = (true);
-    CREATE_obj_debug_gui.CollisionShape = (CollisionShapeFlags)1;
-    CREATE_obj_debug_gui.Awake = (true);
-
-    Data.GameObjects.Add(CREATE_obj_debug_gui); // Répertorie le GameObject
-}
-
-var obj_debug_gui = Data.GameObjects.ByName("obj_debug_gui");
+UndertaleGameObject  obj_debug_gui = Data.GameObjects.ByName("obj_debug_gui");
 
 importGroup.QueueReplace(obj_debug_gui.EventHandlerFor(EventType.Create, (uint)0, Data), @"
 message[0] = """";
@@ -185,7 +162,7 @@ draw_set_color(col);
 draw_set_font(fnt);
 ");
 
-importGroup.QueueReplace(obj_debug_gui.EventHandlerFor(EventType.PreCreate, (uint)0, Data), @"
+importGroup.QueueReplace(obj_debug_gui.EventHandlerFor(EventType.CleanUp, (uint)0, Data), @"
 event_inherited();
 ");
 ChangeSelection(scr_debug_print.Code);
@@ -699,14 +676,14 @@ enum e__VW
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)1, Data), @"
 if (global.ditemcount == 0)
 {
-    global.ditemcount = 15;
-    global.darmorcount = 7;
-    global.dweaponcount = 10;
-    global.dkeyitemcount = 7;
-    global.drecent_item = 1;
-    global.drecent_armor = 1;
-    global.drecent_weapon = 1;
-    global.drecent_keyitem = 1;
+    global.ditemcount = 39;
+    global.darmorcount = 27;
+    global.dweaponcount = 26;
+    global.dkeyitemcount = 19;
+    global.drecent_item = 34;
+    global.drecent_armor = 23;
+    global.drecent_weapon = 23;
+    global.drecent_keyitem = 16;
 }
 
 function dmenu_state_update()
@@ -721,10 +698,7 @@ function dmenu_state_update()
             break;
         
         case ""warp"":
-            global.dmenu_title = ""Menu de sauts"";
-            global.dbutton_options = [""Lightworld"", ""Darkworld"", ""Combats""];
-            global.dmenu_box = 0;
-            global.dbutton_layout = 0;
+            scr_debug_print(""Pas encore disponible !"");
             break;
         
         case ""lightworld"":
@@ -743,7 +717,7 @@ function dmenu_state_update()
         
         case ""school_hallway"":
             global.dmenu_title = ""Options de saut"";
-            global.dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
+            global.dbutton_options = [""Téléporter""];
             global.dmenu_box = 0;
             global.dbutton_layout = 1;
             break;
@@ -764,75 +738,103 @@ function dmenu_state_update()
         
         case ""darkworld"":
             global.dmenu_title = ""Menu de sauts - Darkworld"";
-            global.dbutton_options = [""Entrée du Darkworld"", ""Entrée de la Citadelle"", ""Entrée des Plaines"", ""Bazar de Seam"", ""Entrée du Grand Plateau"", ""Entrée de la Forêt"", ""Vente de Pâtisseries"", ""Entrée Château"", ""Dernier étage Château"", ""Sortie Darkworld""];
+            global.dbutton_options = [""Citadelle"", ""Entrée Cyber-Monde"", ""Entrée Cyber-Plaine"", ""Boutique de musique"", ""Zone Poubelle"", ""Entrée de la Ville"", ""Pause de la Ville"", ""Salle de mousse"", ""Salle des souris pénibles 3"", ""Cellule de Kris"", ""Entrée Manoir"", ""3e étage du Manoir"", ""Après le Tunnel d'acide"", ""Sous-sol du Manoir""];
             global.dmenu_box = 1;
             global.dbutton_layout = 1;
             break;
         
-        case ""dw_entrance"":
+        case ""castletown"":
+            global.dmenu_title = ""Options de saut"";
+            global.dbutton_options = [""Téléporter"", ""Saut : Avant chercher les autres"", ""Saut : Après chercher les autres"", ""Saut : Après le Cyber-Monde""];
+            global.dmenu_box = 1;
+            global.dbutton_layout = 1;
+            break;
+        
+        case ""cw_entrance"":
             global.dmenu_title = ""Options de saut"";
             global.dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
             global.dmenu_box = 0;
             global.dbutton_layout = 1;
             break;
         
-        case ""castletown_entrance"":
+        case ""cyberfield_entrance"":
             global.dmenu_title = ""Options de saut"";
             global.dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
             global.dmenu_box = 0;
             global.dbutton_layout = 1;
             break;
         
-        case ""field_entrance"":
+        case ""music_shop"":
             global.dmenu_title = ""Options de saut"";
             global.dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
             global.dmenu_box = 0;
             global.dbutton_layout = 1;
             break;
         
-        case ""seam_shop"":
+        case ""trash_zone"":
             global.dmenu_title = ""Options de saut"";
             global.dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
             global.dmenu_box = 0;
             global.dbutton_layout = 1;
             break;
         
-        case ""greatboard_entrance"":
+        case ""city_entrance"":
             global.dmenu_title = ""Options de saut"";
             global.dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
             global.dmenu_box = 0;
             global.dbutton_layout = 1;
             break;
         
-        case ""forest_entrance"":
+        case ""city_break"":
             global.dmenu_title = ""Options de saut"";
             global.dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
             global.dmenu_box = 0;
             global.dbutton_layout = 1;
             break;
         
-        case ""bakesale"":
+        case ""moss_room"":
             global.dmenu_title = ""Options de saut"";
             global.dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
             global.dmenu_box = 0;
             global.dbutton_layout = 1;
             break;
         
-        case ""castle_entrance"":
+        case ""mouse_game3"":
+            global.dmenu_title = ""Options de saut"";
+            global.dbutton_options = [""Téléporter"", ""Saut : Après le 3e jeu""];
+            global.dmenu_box = 0;
+            global.dbutton_layout = 1;
+            break;
+        
+        case ""prison_cell"":
             global.dmenu_title = ""Options de saut"";
             global.dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
             global.dmenu_box = 0;
             global.dbutton_layout = 1;
             break;
         
-        case ""castle_top_floor"":
+        case ""mansion_entrance"":
             global.dmenu_title = ""Options de saut"";
             global.dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
             global.dmenu_box = 0;
             global.dbutton_layout = 1;
             break;
         
-        case ""darkworld_exit"":
+        case ""mansion_3rd_floor"":
+            global.dmenu_title = ""Options de saut"";
+            global.dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
+            global.dmenu_box = 0;
+            global.dbutton_layout = 1;
+            break;
+        
+        case ""after_acid_tunnel"":
+            global.dmenu_title = ""Options de saut"";
+            global.dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
+            global.dmenu_box = 0;
+            global.dbutton_layout = 1;
+            break;
+        
+        case ""mansion_basement"":
             global.dmenu_title = ""Options de saut"";
             global.dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
             global.dmenu_box = 0;
@@ -841,54 +843,68 @@ function dmenu_state_update()
         
         case ""battles"":
             global.dmenu_title = ""Menu de sauts - Combats"";
-            global.dbutton_options = [""Combat contre Lancer"", ""Combat contre Kouronné"", ""Combat contre Tréflette"", ""Combat contre Susie"", ""2e Combat contre Kouronné"", ""Combat contre Jevil"", ""Combat contre  le Roi""];
+            global.dbutton_options = [""Combat contre les DJ"", ""Combat contre Berdly"", ""2e Combat contre Berdly"", ""Combat contre Spamton"", ""Combat contre Gest. De Tachs"", ""Combat contre Surimolette"", ""Combat contre la Reine"", ""Combat contre Spamton Neo"", ""Combat contre Giga Queen""];
             global.dmenu_box = 1;
             global.dbutton_layout = 1;
             break;
         
-        case ""lancer_battle"":
+        case ""dj_battle"":
             global.dmenu_title = ""Options de saut"";
             global.dbutton_options = [""Téléporter"", ""Saut : Combat""];
             global.dmenu_box = 0;
             global.dbutton_layout = 1;
             break;
         
-        case ""kround_battle"":
+        case ""berdly_battle"":
             global.dmenu_title = ""Options de saut"";
             global.dbutton_options = [""Téléporter"", ""Saut : Combat""];
             global.dmenu_box = 0;
             global.dbutton_layout = 1;
             break;
         
-        case ""clover_battle"":
+        case ""berdly2_battle"":
             global.dmenu_title = ""Options de saut"";
             global.dbutton_options = [""Téléporter"", ""Saut : Combat""];
             global.dmenu_box = 0;
             global.dbutton_layout = 1;
             break;
         
-        case ""susie_battle"":
+        case ""spamton_battle"":
             global.dmenu_title = ""Options de saut"";
             global.dbutton_options = [""Téléporter"", ""Saut : Combat""];
             global.dmenu_box = 0;
             global.dbutton_layout = 1;
             break;
         
-        case ""kround2_battle"":
+        case ""tasque_manager_battle"":
             global.dmenu_title = ""Options de saut"";
             global.dbutton_options = [""Téléporter"", ""Saut : Combat""];
             global.dmenu_box = 0;
             global.dbutton_layout = 1;
             break;
         
-        case ""jevil_battle"":
+        case ""mauswheel_battle"":
             global.dmenu_title = ""Options de saut"";
-            global.dbutton_options = [""Téléporter"", ""Saut : Combat avec Clé""];
+            global.dbutton_options = [""Téléporter"", ""Saut : Combat""];
             global.dmenu_box = 0;
             global.dbutton_layout = 1;
             break;
         
-        case ""king_battle"":
+        case ""queen_battle"":
+            global.dmenu_title = ""Options de saut"";
+            global.dbutton_options = [""Téléporter"", ""Saut : Combat""];
+            global.dmenu_box = 0;
+            global.dbutton_layout = 1;
+            break;
+        
+        case ""spamton_neo_battle"":
+            global.dmenu_title = ""Options de saut"";
+            global.dbutton_options = [""Téléporter"", ""Saut : Combat avec DisqueGravé""];
+            global.dmenu_box = 0;
+            global.dbutton_layout = 1;
+            break;
+        
+        case ""giga_queen_battle"":
             global.dmenu_title = ""Options de saut"";
             global.dbutton_options = [""Téléporter"", ""Saut : Combat""];
             global.dmenu_box = 0;
@@ -1142,10 +1158,6 @@ function dmenu_state_interact()
             global.darkzone = 0;
             snd_free_all();
             room_goto(room_schoollobby);
-
-            if (global.dbutton_selected == 2)
-                global.plot = 1;
-
             break;
         
         case ""school_closet"":
@@ -1166,355 +1178,519 @@ function dmenu_state_interact()
         
         case ""darkworld"":
             if (global.dbutton_selected == 1)
-                global.dmenu_state = ""dw_entrance"";
+                global.dmenu_state = ""castletown"";
             
             if (global.dbutton_selected == 2)
-                global.dmenu_state = ""castletown_entrance"";
+                global.dmenu_state = ""cw_entrance"";
             
             if (global.dbutton_selected == 3)
-                global.dmenu_state = ""field_entrance"";
+                global.dmenu_state = ""cyberfield_entrance"";
             
             if (global.dbutton_selected == 4)
-                global.dmenu_state = ""seam_shop"";
+                global.dmenu_state = ""music_shop"";
             
             if (global.dbutton_selected == 5)
-                global.dmenu_state = ""greatboard_entrance"";
+                global.dmenu_state = ""trash_zone"";
             
             if (global.dbutton_selected == 6)
-                global.dmenu_state = ""forest_entrance"";
+                global.dmenu_state = ""city_entrance"";
             
             if (global.dbutton_selected == 7)
-                global.dmenu_state = ""bakesale"";
+                global.dmenu_state = ""city_break"";
             
             if (global.dbutton_selected == 8)
-                global.dmenu_state = ""castle_entrance"";
+                global.dmenu_state = ""moss_room"";
             
             if (global.dbutton_selected == 9)
-                global.dmenu_state = ""castle_top_floor"";
+                global.dmenu_state = ""mouse_game3"";
             
             if (global.dbutton_selected == 10)
-                global.dmenu_state = ""darkworld_exit"";
+                global.dmenu_state = ""prison_cell"";
+            
+            if (global.dbutton_selected == 11)
+                global.dmenu_state = ""mansion_entrance"";
+            
+            if (global.dbutton_selected == 12)
+                global.dmenu_state = ""mansion_3rd_floor"";
+            
+            if (global.dbutton_selected == 13)
+                global.dmenu_state = ""after_acid_tunnel"";
+            
+            if (global.dbutton_selected == 14)
+                global.dmenu_state = ""mansion_basement"";
             
             break;
         
-        case ""dw_entrance"":
+        case ""castletown"":
             global.dmenu_active = false;
             global.interact = 0;
             global.darkzone = 1;
             snd_free_all();
-            room_goto(room_dark1);
+            room_goto(room_dw_castle_area_1);
             
             if (global.dbutton_selected == 2)
             {
                 global.char[0] = 1;
-                global.char[1] = 0;
+                global.char[1] = 2;
                 global.char[2] = 0;
-                global.plot = 11;
+                global.plot = 7;
+                global.flag[34] = 1;
+            }
+            
+            if (global.dbutton_selected == 3)
+            {
+                global.char[0] = 1;
+                global.char[1] = 2;
+                global.char[2] = 3;
+                global.plot = 12;
+                global.flag[34] = 1;
+            }
+            
+            if (global.dbutton_selected == 4)
+            {
+                global.char[0] = 1;
+                global.char[1] = 2;
+                global.char[2] = 3;
+                global.plot = 205;
+                global.flag[34] = 0;
             }
             
             break;
         
-        case ""castletown_entrance"":
+        case ""cw_entrance"":
             global.dmenu_active = false;
             global.interact = 0;
             global.darkzone = 1;
             snd_free_all();
-            room_goto(room_castle_outskirts);
+            room_goto(room_dw_cyber_intro_1);
             
             if (global.dbutton_selected == 2)
             {
                 global.char[0] = 1;
-                global.char[1] = 0;
+                global.char[1] = 2;
                 global.char[2] = 0;
-                global.plot = 16;
-            }
-            
-            break;
-        
-        case ""field_entrance"":
-            global.dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_field1);
-            
-            if (global.dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 3;
-                global.char[2] = 0;
-                global.plot = 33;
-            }
-            
-            break;
-        
-        case ""seam_shop"":
-            global.dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_field_shop1);
-            
-            if (global.dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 3;
-                global.char[2] = 2;
-                global.plot = 40;
-            }
-            
-            break;
-        
-        case ""greatboard_entrance"":
-            global.dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_field_checkers4);
-            
-            if (global.dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 3;
-                global.char[2] = 2;
                 global.plot = 50;
+                global.flag[34] = 1;
             }
             
             break;
         
-        case ""forest_entrance"":
+        case ""cyberfield_entrance"":
             global.dmenu_active = false;
             global.interact = 0;
             global.darkzone = 1;
             snd_free_all();
-            room_goto(room_forest_savepoint1);
+            room_goto(room_dw_cyber_savepoint);
             
             if (global.dbutton_selected == 2)
             {
                 global.char[0] = 1;
-                global.char[1] = 3;
-                global.char[2] = 0;
+                global.char[1] = 2;
+                global.char[2] = 3;
+                global.plot = 51;
+                global.flag[34] = 1;
+            }
+            
+            break;
+        
+        case ""music_shop"":
+            global.dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_dw_cyber_musical_shop);
+            
+            if (global.dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 2;
+                global.char[2] = 3;
                 global.plot = 60;
+                global.flag[34] = 0;
             }
             
             break;
         
-        case ""bakesale"":
+        case ""trash_zone"":
             global.dmenu_active = false;
             global.interact = 0;
             global.darkzone = 1;
             snd_free_all();
-            room_goto(room_forest_savepoint2);
+            room_goto(room_dw_city_intro);
             
             if (global.dbutton_selected == 2)
             {
                 global.char[0] = 1;
-                global.char[1] = 3;
+                global.char[1] = 2;
+                global.char[2] = 3;
+                global.plot = 64;
+                global.flag[34] = 0;
+            }
+            
+            break;
+        
+        case ""city_entrance"":
+            global.dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_dw_city_entrance);
+            
+            if (global.dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 0;
+                global.char[2] = 0;
+                global.plot = 67;
+                global.flag[34] = 0;
+            }
+            
+            break;
+        
+        case ""city_break"":
+            global.dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_dw_city_savepoint);
+            
+            if (global.dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 4;
                 global.char[2] = 0;
                 global.plot = 75;
+                global.flag[34] = 0;
             }
             
             break;
         
-        case ""castle_entrance"":
+        case ""moss_room"":
             global.dmenu_active = false;
             global.interact = 0;
             global.darkzone = 1;
             snd_free_all();
-            room_goto(room_cc_1f);
+            room_goto(room_dw_city_moss);
             
             if (global.dbutton_selected == 2)
             {
                 global.char[0] = 1;
-                global.char[1] = 2;
-                global.char[2] = 3;
-                global.plot = 165;
-            }
-            
-            break;
-        
-        case ""castle_top_floor"":
-            global.dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_cc_5f);
-            
-            if (global.dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 2;
-                global.char[2] = 3;
-                global.plot = 165;
-            }
-            
-            break;
-        
-        case ""darkworld_exit"":
-            global.dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_cc_prefountain);
-            
-            if (global.dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 2;
+                global.char[1] = 4;
                 global.char[2] = 0;
-                global.plot = 240;
+                global.plot = 75;
+                global.flag[34] = 0;
+            }
+            
+            break;
+        
+        case ""mouse_game3"":
+            global.dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_dw_city_mice3);
+            
+            if (global.dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 4;
+                global.char[2] = 0;
+                global.plot = 78;
+                global.flag[34] = 0;
+            }
+            
+            break;
+        
+        case ""prison_cell"":
+            global.dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_dw_mansion_krisroom);
+            
+            if (global.dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 0;
+                global.char[2] = 0;
+                global.plot = 100;
+                global.flag[34] = 0;
+            }
+            
+            break;
+        
+        case ""mansion_entrance"":
+            global.dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_dw_mansion_entrance);
+            
+            if (global.dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 2;
+                global.char[2] = 3;
+                global.plot = 120;
+                global.flag[34] = 0;
+            }
+            
+            break;
+        
+        case ""mansion_3rd_floor"":
+            global.dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_dw_mansion_east_3f);
+            
+            if (global.dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 3;
+                global.char[2] = 0;
+                global.plot = 125;
+                global.flag[34] = 0;
+            }
+            
+            break;
+        
+        case ""after_acid_tunnel"":
+            global.dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_dw_mansion_acid_tunnel_exit);
+            
+            if (global.dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 2;
+                global.char[2] = 3;
+                global.plot = 160;
+                global.flag[34] = 0;
+            }
+            
+            break;
+        
+        case ""mansion_basement"":
+            global.dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            global.char[0] = 1;
+            global.char[1] = 0;
+            global.char[2] = 0;
+            snd_free_all();
+            room_goto(room_dw_mansion_b_central);
+            
+            if (global.dbutton_selected == 2)
+            {
+                global.flag[358] = 1;
+                global.flag[309] = 4;
+                global.flag[34] = 0;
+                
+                if (global.plot < 120)
+                    global.plot = 120;
             }
             
             break;
         
         case ""battles"":
             if (global.dbutton_selected == 1)
-                global.dmenu_state = ""lancer_battle"";
+                global.dmenu_state = ""dj_battle"";
             
             if (global.dbutton_selected == 2)
-                global.dmenu_state = ""kround_battle"";
+                global.dmenu_state = ""berdly_battle"";
             
             if (global.dbutton_selected == 3)
-                global.dmenu_state = ""clover_battle"";
+                global.dmenu_state = ""berdly2_battle"";
             
             if (global.dbutton_selected == 4)
-                global.dmenu_state = ""susie_battle"";
+                global.dmenu_state = ""spamton_battle"";
             
             if (global.dbutton_selected == 5)
-                global.dmenu_state = ""kround2_battle"";
+                global.dmenu_state = ""tasque_manager_battle"";
             
             if (global.dbutton_selected == 6)
-                global.dmenu_state = ""jevil_battle"";
+                global.dmenu_state = ""mauswheel_battle"";
             
             if (global.dbutton_selected == 7)
-                global.dmenu_state = ""king_battle"";
+                global.dmenu_state = ""queen_battle"";
+            
+            if (global.dbutton_selected == 8)
+                global.dmenu_state = ""spamton_neo_battle"";
+            
+            if (global.dbutton_selected == 9)
+                global.dmenu_state = ""giga_queen_battle"";
             
             break;
         
-        case ""lancer_battle"":
+        case ""dj_battle"":
             global.dmenu_active = false;
             global.interact = 0;
             global.darkzone = 1;
             snd_free_all();
-            room_goto(room_castle_town);
+            room_goto(room_dw_cyber_music_final);
             
             if (global.dbutton_selected == 2)
             {
                 global.char[0] = 1;
                 global.char[1] = 2;
-                global.char[2] = 0;
-                global.plot = 16;
+                global.char[2] = 3;
+                global.plot = 52;
+                global.flag[34] = 1;
             }
             
             break;
         
-        case ""kround_battle"":
+        case ""berdly_battle"":
             global.dmenu_active = false;
             global.interact = 0;
             global.darkzone = 1;
             snd_free_all();
-            room_goto(room_field_checkers7);
+            room_goto(room_dw_cyber_rollercoaster);
             
             if (global.dbutton_selected == 2)
             {
                 global.char[0] = 1;
                 global.char[1] = 3;
                 global.char[2] = 2;
-                global.plot = 55;
+                global.plot = 60;
+                global.flag[34] = 0;
             }
             
             break;
         
-        case ""clover_battle"":
+        case ""berdly2_battle"":
             global.dmenu_active = false;
             global.interact = 0;
             global.darkzone = 1;
             snd_free_all();
-            room_goto(room_forest_area3);
+            room_goto(room_dw_city_berdly);
             
             if (global.dbutton_selected == 2)
             {
                 global.char[0] = 1;
-                global.char[1] = 3;
+                global.char[1] = 4;
                 global.char[2] = 0;
-                global.plot = 72;
+                global.plot = 78;
+                global.flag[34] = 0;
             }
             
             break;
         
-        case ""susie_battle"":
+        case ""spamton_battle"":
             global.dmenu_active = false;
             global.interact = 0;
             global.darkzone = 1;
             snd_free_all();
-            room_goto(room_forest_savepoint3);
+            room_goto(room_dw_city_spamton_alley);
             
             if (global.dbutton_selected == 2)
             {
                 global.char[0] = 1;
-                global.char[1] = 3;
+                global.char[1] = 0;
                 global.char[2] = 0;
+                global.plot = 80;
+                global.flag[34] = 0;
+            }
+            
+            break;
+        
+        case ""tasque_manager_battle"":
+            global.dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_dw_mansion_tasquePaintings);
+            
+            if (global.dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 2;
+                global.char[2] = 3;
                 global.plot = 120;
+                global.flag[34] = 0;
             }
             
             break;
         
-        case ""kround2_battle"":
+        case ""mauswheel_battle"":
             global.dmenu_active = false;
             global.interact = 0;
             global.darkzone = 1;
             snd_free_all();
-            room_goto(room_cc_6f);
+            room_goto(room_dw_mansion_kitchen);
             
             if (global.dbutton_selected == 2)
             {
                 global.char[0] = 1;
                 global.char[1] = 2;
                 global.char[2] = 3;
-                global.charauto[2] = 0;
-                global.plot = 165;
+                global.plot = 120;
+                global.flag[34] = 0;
             }
             
             break;
         
-        case ""jevil_battle"":
+        case ""queen_battle"":
             global.dmenu_active = false;
             global.interact = 0;
             global.darkzone = 1;
             snd_free_all();
-            room_goto(room_cc_prison_prejoker);
+            room_goto(room_dw_mansion_east_4f_d);
             
             if (global.dbutton_selected == 2)
             {
                 global.char[0] = 1;
                 global.char[1] = 2;
                 global.char[2] = 3;
-                global.plot = 165;
-                global.charauto[2] = 0;
-                scr_keyitemget(5);
-                global.tempflag[4] = 1;
+                global.plot = 160;
+                global.flag[34] = 0;
+            }
+            
+            break;
+        
+        case ""spamton_neo_battle"":
+            global.dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_dw_mansion_b_east_b);
+            
+            if (global.dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 0;
+                global.char[2] = 0;
+                global.flag[358] = 2;
+                global.flag[373] = 1;
+                global.flag[309] = 7;
+                scr_keyitemget(11);
+                global.flag[34] = 0;
                 
-                repeat (13)
-                    scr_weaponget(5);
+                if (global.plot < 120)
+                    global.plot = 120;
             }
             
             break;
         
-        case ""king_battle"":
+        case ""giga_queen_battle"":
             global.dmenu_active = false;
             global.interact = 0;
             global.darkzone = 1;
             snd_free_all();
-            room_goto(room_cc_throneroom);
+            room_goto(room_dw_mansion_east_4f_d);
             
             if (global.dbutton_selected == 2)
             {
                 global.char[0] = 1;
                 global.char[1] = 2;
                 global.char[2] = 3;
-                global.charauto[2] = 0;
+                global.plot = 165;
+                global.flag[34] = 0;
             }
-
+            
             break;
         
         case ""give"":
@@ -1694,11 +1870,10 @@ importGroup.Import();
 
 // Variable au gamestart
 UndertaleScript scr_gamestart = Data.Scripts.ByName("scr_gamestart");
-
-importGroup.QueueAppend(scr_gamestart.Code, @"
-global.debug = 0;
-");
-ChangeSelection(scr_gamestart);
+    importGroup.QueueAppend(scr_gamestart.Code, @"
+    global.debug = 0;
+    ");
+    ChangeSelection(scr_gamestart);
 
 // Toggler
 UndertaleScript scr_debug = Data.Scripts.ByName("scr_debug");
@@ -1711,7 +1886,7 @@ function scr_debug()
 ChangeSelection(scr_debug);
 
 UndertaleGameObject obj_time_TOGGLER = Data.GameObjects.ByName("obj_time");
-importGroup.QueueReplace(obj_time_TOGGLER.EventHandlerFor(EventType.Step, (uint)0, Data), @"
+importGroup.QueueAppend(obj_time_TOGGLER.EventHandlerFor(EventType.Step, (uint)0, Data), @"
 if (keyboard_check_pressed(vk_f10))
 {
     global.debug = !global.debug;
@@ -1726,15 +1901,6 @@ ChangeSelection(obj_time_TOGGLER);
 // Fonctions du Lightworld
 UndertaleGameObject obj_overworldc = Data.GameObjects.ByName("obj_overworldc");
 importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, Data), @"
-if (global.debug == 1)
-{
-    if (keyboard_check_pressed(ord(""S"")))
-        instance_create(0, 0, obj_savemenu);
-    if (keyboard_check_pressed(ord(""L"")))
-        scr_load();
-    if (keyboard_check_pressed(ord(""R"")))
-        game_restart_true();
-}
 if (!instance_exists(obj_dmenu_system))
     instance_create(0, 0, obj_dmenu_system)
 ");
@@ -1743,14 +1909,8 @@ ChangeSelection(obj_overworldc);
 // Fonctions du Darkworld
 UndertaleGameObject obj_darkcontroller = Data.GameObjects.ByName("obj_darkcontroller");
 importGroup.QueueAppend(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint)0, Data), @"
-if (global.debug == 1)
+if (scr_debug())
 {
-    if (keyboard_check_pressed(ord(""S"")))
-        instance_create(0, 0, obj_savemenu);
-    if (keyboard_check_pressed(ord(""L"")))
-        scr_load();
-    if (keyboard_check_pressed(ord(""R"")))
-        game_restart_true();
     if (keyboard_check_pressed(ord(""2"")) && keyboard_check(ord(""M"")))
     {
         if (global.gold >= 100)
@@ -1775,23 +1935,10 @@ if (!instance_exists(obj_dmenu_system))
 ");
 ChangeSelection(obj_darkcontroller);
 
-// Fonctions du joueur (téléportation)
-UndertaleGameObject obj_mainchara = Data.GameObjects.ByName("obj_mainchara");
-importGroup.QueueAppend(obj_mainchara.EventHandlerFor(EventType.Step, (uint)0, Data), @"
-if (global.debug == 1)
-{
-    if (keyboard_check_pressed(vk_insert))
-        room_goto_next();
-    if (keyboard_check_pressed(vk_delete))
-        room_goto_previous();
-}
-");
-ChangeSelection(obj_mainchara);
-
 // Fonctions du jeu (compteur FPS / fonction de pause / fonction de changement de FPS)
 UndertaleGameObject obj_time = Data.GameObjects.ByName("obj_time");
 importGroup.QueueReplace(obj_time.EventHandlerFor(EventType.Draw, (uint)0, Data), @"
-if (global.debug == 1)
+if (scr_debug())
 {
     draw_set_font(fnt_main)
     draw_set_color(c_red)
@@ -1805,7 +1952,7 @@ if (global.debug == 1)
 ");
 
 importGroup.QueueAppend(obj_time.EventHandlerFor(EventType.Step, (uint)0, Data), @"
-if (global.debug == 1)
+if (scr_debug())
 {
     if (keyboard_check_pressed(ord(""P"")))
     {
@@ -1843,24 +1990,51 @@ if (global.debug == 1)
 ChangeSelection(obj_time);
 
 // Fonctions de combat
-UndertaleGameObject obj_battlecontroller = Data.GameObjects.ByName("obj_battlecontroller");
-importGroup.QueueAppend(obj_battlecontroller.EventHandlerFor(EventType.Step, (uint)0, Data), @"
-if (global.debug == 1)
+UndertaleCode obj_battlecontroller_step = Data.Code.ByName("gml_Object_obj_battlecontroller_Step_0");
+
+// Fullheal function
+importGroup.QueueFindReplace(obj_battlecontroller_step,
+"scr_debug_fullheal();", "");
+importGroup.QueueFindReplace(obj_battlecontroller_step,
+"if (scr_debug_keycheck(vk_f2))",
+@"if (keyboard_check_pressed(ord(""H"")))
 {
-    if (keyboard_check_pressed(ord(""W"")))
-    {
-        scr_wincombat();
-        scr_debug_print(""Combat passé"");
-    }
-    if (keyboard_check_pressed(ord(""H"")))
-    {
-        scr_debug_fullheal();
-        scr_debug_print(""HP du party restaurés"");
-    }
-    if (keyboard_check_pressed(ord(""V"")))
-    {
-        scr_turn_skip();
-    }
+    scr_debug_fullheal();
+    scr_debug_print(""HP du party restaurés"");
+}
+");
+// Wincombat function
+importGroup.QueueFindReplace(obj_battlecontroller_step,
+"if (scr_debug_keycheck(vk_f5))", "if (keyboard_check_pressed(ord(\"W\")))");
+importGroup.QueueFindReplace(obj_battlecontroller_step,
+"scr_wincombat();", @"
+scr_wincombat();
+scr_debug_print(""Combat passé"");
+");
+// Turn skip function
+importGroup.QueueFindReplace(obj_battlecontroller_step, "scr_turn_skip();", @"
+if (keyboard_check_pressed(ord(""V"")))
+{
+    scr_turn_skip();
+}
+");
+// Tension functions
+importGroup.QueueFindReplace(obj_battlecontroller_step,
+"if (scr_debug_keycheck(vk_f9))", "");
+importGroup.QueueFindReplace(obj_battlecontroller_step,
+"if (scr_debug_keycheck(vk_f10))", "");
+importGroup.QueueFindReplace(obj_battlecontroller_step,
+"global.tension = 0;", "");
+importGroup.QueueFindReplace(obj_battlecontroller_step,
+"global.tension = 250;", "");
+importGroup.QueueFindReplace(obj_battlecontroller_step,
+"scr_debug_print(\"TP set to 0%\");", "");
+importGroup.QueueFindReplace(obj_battlecontroller_step,
+"scr_debug_print(\"TP maxed out!!\");", "");
+
+importGroup.QueueAppend(obj_battlecontroller_step, @"
+if (scr_debug())
+{
     if (keyboard_check_pressed(ord(""T"")))
     {
         if (global.tension < 250)
@@ -1876,32 +2050,10 @@ if (global.debug == 1)
     }
 }
 ");
-ChangeSelection(obj_battlecontroller);
-
-// Fonctions intro (skip Gaster)
-UndertaleGameObject DEVICE_CONTACT = Data.GameObjects.ByName("DEVICE_CONTACT");
-importGroup.QueueAppend(DEVICE_CONTACT.EventHandlerFor(EventType.Step, (uint)0, Data), @"
-if (global.debug == 1)
-{
-    if (keyboard_check_pressed(vk_backspace))
-    {
-        global.flag[6] = 0;
-        snd_free_all();
-        room_goto(room_krisroom);
-    }
-}
-");
-ChangeSelection(DEVICE_CONTACT);
+ChangeSelection(obj_battlecontroller_step);
 
 // Script fullheal
-UndertaleScript scr_debug_fullheal = new UndertaleScript(); // Ajoute le Script
-scr_debug_fullheal.Name = Data.Strings.MakeString("scr_debug_fullheal");
-scr_debug_fullheal.Code = new UndertaleCode(); // Ajoute le Code
-scr_debug_fullheal.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_fullheal");
-scr_debug_fullheal.Code.LocalsCount = 1;
-
-Data.Scripts.Add(scr_debug_fullheal); // Répertorie le Script
-Data.Code.Add(scr_debug_fullheal.Code); // Répertorie le Code
+UndertaleScript scr_debug_fullheal = Data.Scripts.ByName("scr_debug_fullheal");
 
 importGroup.QueueReplace(scr_debug_fullheal.Code, @"
 function scr_debug_fullheal()
@@ -1924,21 +2076,12 @@ function scr_debug_fullheal()
 ChangeSelection(scr_debug_fullheal);
 
 // Script turn skip
-UndertaleScript scr_turn_skip = new UndertaleScript(); // Ajoute le Script
-scr_turn_skip.Name = Data.Strings.MakeString("scr_turn_skip");
-scr_turn_skip.Code = new UndertaleCode(); // Ajoute le Code
-scr_turn_skip.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_turn_skip");
-scr_turn_skip.Code.LocalsCount = 1;
+UndertaleScript scr_turn_skip = Data.Scripts.ByName("scr_turn_skip");
 
-Data.Scripts.Add(scr_turn_skip); // Répertorie le Script
-Data.Code.Add(scr_turn_skip.Code); // Répertorie le Code
-
-importGroup.QueueAppend(scr_turn_skip.Code, @"
+importGroup.QueueReplace(scr_turn_skip.Code, @"
 function scr_turn_skip()
 {
-    if (global.mnfight == 2
-    && global.turntimer > 0
-    && instance_exists(obj_growtangle))
+    if (global.turntimer > 0 && instance_exists(obj_growtangle) && scr_isphase(""bullets""))
     {
         global.turntimer = 0;
         scr_debug_print(""Tour de l'ennemi passé"");
@@ -1949,4 +2092,4 @@ ChangeSelection(scr_turn_skip);
 
 importGroup.Import();
 
-ScriptMessage("Mode Debug du Chapitre 1 " + (enable ? "ajouté" : "désactivé") + ".\r\n" + "Pour activer le Mode Debug en jeu, appuyer sur F10.");
+ScriptMessage("Mode Debug du Chapitre 3 " + (enable ? "ajouté" : "désactivé") + ".\r\n" + "Pour activer le Mode Debug en jeu, appuyer sur F10.");
