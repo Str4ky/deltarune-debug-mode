@@ -1872,6 +1872,7 @@ importGroup.Import();
 UndertaleScript scr_gamestart = Data.Scripts.ByName("scr_gamestart");
     importGroup.QueueAppend(scr_gamestart.Code, @"
     global.debug = 0;
+    global.chemg_show_room = 1;
     ");
     ChangeSelection(scr_gamestart);
 
