@@ -89,6 +89,14 @@ if (global.dmenu_active)
     draw_set_color(c_white);
     draw_text(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, string(global.dmenu_title));
     
+    if (global.dmenu_state == "debug" && global.darkzone == 1)
+    {
+        draw_set_font(fnt_main);
+        draw_set_color(c_white);
+        draw_text(((x_start + 335) * (d / 2)) + xx, (((ycenter - (menu_length / 2)) + 82) * d) + yy, "Touches - M");
+        draw_set_font(fnt_mainbig);
+    }
+    
     if (global.dbutton_layout == 0)
     {
         for (var i = 0; i < button_count; i++)
@@ -185,6 +193,34 @@ if (global.dmenu_active)
         var darrow_scale = d / 2;
         draw_sprite_ext(spr_morearrow, 0, ((xcenter - 15) * d) + xx, ((ycenter + 6) * d) + yy, darrow_scale, darrow_scale, 270, c_white, 1);
         draw_sprite_ext(spr_morearrow, 0, ((xcenter + 15) * d) + xx, ((ycenter + 12) * d) + yy, darrow_scale, darrow_scale, 90, c_white, 1);
+    }
+}
+
+if (global.dkeys_helper == 1)
+{
+    global.dkeys_data = ["F10 - Activer/désactiver le debug mode", "D - Ouvrir le menu Debug", "S - Sauvegarder la partie", "L - Charger la dernière sauvegarde", "R - Redémarrer le jeu", "P - Mettre en pause/reprendre le jeu", "M+1/M+2 - Ajouter/retirer 100 D$", "Suppr - Se rendre à la salle précédente", "Insert - Se rendre à la salle suivante", "Entrer - Voir les collisions du joueur", "W - Gagner instantanément un combat", "V - Passer le tour de l'ennemi", "H - Restaurer les HP du party", "T - Remplir/vider la barre de TP", "O - Basculer entre 30, 60 et 120 FPS", "Retour arrière - Passer le segment d'intro (Ch1)"];
+    var x_padding = 7;
+    y_start = 50 * d;
+    x_spacing = 10 * d;
+    y_spacing = 10.5 * d;
+    x_start = (((xcenter - (menu_width / 2)) + x_padding) * d) - 35;
+    menu_width = 264;
+    menu_length = 204;
+    xcenter = 160;
+    ycenter = 120;
+    draw_set_color(c_white);
+    draw_rectangle(((xcenter - (menu_width / 2) - 3) * d) + xx, ((ycenter - (menu_length / 2) - 3) * d) + yy, ((xcenter + (menu_width / 2) + 3) * d) + xx, ((ycenter + (menu_length / 2) + 3) * d) + yy, false);
+    draw_set_color(c_black);
+    draw_rectangle(((xcenter - (menu_width / 2)) * d) + xx, ((ycenter - (menu_length / 2)) * d) + yy, ((xcenter + (menu_width / 2)) * d) + xx, ((ycenter + (menu_length / 2)) * d) + yy, false);
+    draw_set_font(fnt_mainbig);
+    draw_set_color(c_white);
+    draw_text(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, "Touches du debug mode");
+    
+    for (var i = 0; i < array_length(global.dkeys_data); i++)
+    {
+        draw_set_font(fnt_main);
+        draw_set_color(c_white);
+        draw_text(x_start + xx, y_start + yy + (i * y_spacing), global.dkeys_data[i]);
     }
 }
 

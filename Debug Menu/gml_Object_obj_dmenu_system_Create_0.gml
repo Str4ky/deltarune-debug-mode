@@ -72,3 +72,5 @@ draw_monospace = function(arg0, arg1, arg2)
     }
 };
 
+global.dkeys_helper = 0;
+global.dkeys_data = [];
