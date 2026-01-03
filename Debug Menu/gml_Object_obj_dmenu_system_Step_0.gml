@@ -1,6 +1,57 @@
 global.dmenu_arrow_timer += 1;
 
-if (global.dmenu_active)
+if (global.dmenu_active && global.dreading_custom_flag)
+{
+    update_visu = 1;
+    
+    if (keyboard_check_pressed(vk_escape) || keyboard_check_pressed(vk_enter) || keyboard_check_pressed(global.input_k[4]) || keyboard_check_pressed(global.input_k[7]))
+    {
+        proper_exit = !keyboard_check_pressed(vk_escape);
+        
+        if (proper_exit)
+        {
+            global.flag[real(global.dcustom_flag_text[0])] = real(global.dcustom_flag_text[1]);
+            scr_debug_print("Updated global.flag[" + string(real(global.dcustom_flag_text[0])) + "] to |" + global.dcustom_flag_text[1] + "|");
+        }
+        
+        global.dreading_custom_flag = 0;
+        global.dcustom_flag_text = ["", ""];
+        
+        if (proper_exit)
+        {
+            global.dmenu_active = 0;
+            global.interact = 0;
+        }
+    }
+    else if (keyboard_check_pressed(vk_left) && global.dhorizontal_index != 0)
+    {
+        snd_play(snd_menumove);
+        global.dhorizontal_index--;
+    }
+    else if (keyboard_check_pressed(vk_right) && global.dhorizontal_index != 1)
+    {
+        snd_play(snd_menumove);
+        global.dhorizontal_index++;
+    }
+    else if (keyboard_check_pressed(vk_backspace))
+    {
+        global.dcustom_flag_text[global.dhorizontal_index] = string_delete(global.dcustom_flag_text[global.dhorizontal_index], string_length(global.dcustom_flag_text[global.dhorizontal_index]), 1);
+        keyboard_string = "";
+    }
+    else if (keyboard_check_pressed(vk_anykey))
+    {
+        global.dcustom_flag_text[global.dhorizontal_index] += string(keyboard_string);
+        keyboard_string = "";
+    }
+    else
+    {
+        update_visu = 0;
+    }
+    
+    if (update_visu)
+        dmenu_state_update();
+}
+else if (global.dmenu_active)
 {
     if (global.dbutton_layout == 0)
     {
@@ -23,6 +74,25 @@ if (global.dmenu_active)
     
     if (global.dbutton_layout == 1)
     {
+        og_horizontal_index = global.dhorizontal_index;
+        
+        if (global.dmenu_state == "flag_misc")
+        {
+            cur_options = global.dother_options[global.dbutton_selected - 1];
+            cur_options_len = array_length(cur_options[2]);
+            playsound = 1;
+            
+            if (keyboard_check_pressed(vk_right) && global.dhorizontal_index < (cur_options_len - 1))
+                global.dhorizontal_index++;
+            else if (keyboard_check_pressed(vk_left) && global.dhorizontal_index != 0)
+                global.dhorizontal_index--;
+            else
+                playsound = 0;
+            
+            if (playsound)
+                snd_play(snd_menumove);
+        }
+        
         if (keyboard_check_pressed(vk_down))
         {
             snd_play(snd_menumove);
@@ -33,6 +103,12 @@ if (global.dmenu_active)
                 
                 if (global.dbutton_selected > (global.dmenu_start_index + global.dbutton_max_visible))
                     global.dmenu_start_index += 1;
+            }
+            
+            if (global.dmenu_state == "flag_misc")
+            {
+                new_options = global.dother_options[global.dbutton_selected - 1];
+                global.dhorizontal_index = find_subarray_index(new_options[1], new_options[2]);
             }
         }
         
@@ -46,6 +122,12 @@ if (global.dmenu_active)
                 
                 if (global.dbutton_selected < (global.dmenu_start_index + 1))
                     global.dmenu_start_index -= 1;
+            }
+            
+            if (global.dmenu_state == "flag_misc")
+            {
+                new_options = global.dother_options[global.dbutton_selected - 1];
+                global.dhorizontal_index = find_subarray_index(new_options[1], new_options[2]);
             }
         }
         
@@ -62,6 +144,12 @@ if (global.dmenu_active)
                         
                         if (global.dbutton_selected > (global.dmenu_start_index + global.dbutton_max_visible))
                             global.dmenu_start_index += 1;
+                        
+                        if (global.dmenu_state == "flag_misc")
+                        {
+                            new_options = global.dother_options[global.dbutton_selected - 1];
+                            global.dhorizontal_index = find_subarray_index(new_options[1], new_options[2]);
+                        }
                     }
                 }
             }
@@ -86,6 +174,12 @@ if (global.dmenu_active)
                         
                         if (global.dbutton_selected < (global.dmenu_start_index + 1))
                             global.dmenu_start_index -= 1;
+                        
+                        if (global.dmenu_state == "flag_misc")
+                        {
+                            new_options = global.dother_options[global.dbutton_selected - 1];
+                            global.dhorizontal_index = find_subarray_index(new_options[1], new_options[2]);
+                        }
                     }
                 }
             }
@@ -98,6 +192,9 @@ if (global.dmenu_active)
         }
         
         global.dmenu_start_index = clamp(global.dmenu_start_index, 0, max(0, array_length(global.dbutton_options) - global.dbutton_max_visible));
+        
+        if (global.dhorizontal_index != og_horizontal_index)
+            dmenu_state_update();
     }
     
     if (global.dbutton_layout == 2)
@@ -195,6 +292,13 @@ if (global.dmenu_active)
             array_push(global.dbutton_selected_history, global.dbutton_selected);
         }
         
+        if (global.dmenu_state == "flag_misc" && global.dbutton_selected == 1)
+        {
+            global.dreading_custom_flag = 1;
+            global.dhorizontal_index = 0;
+            keyboard_string = "";
+        }
+        
         if (global.dmenu_state == "objects" || global.dmenu_state == "armors" || global.dmenu_state == "weapons" || global.dmenu_state == "keyitems")
         {
             switch (global.dmenu_state)
@@ -228,7 +332,7 @@ if (global.dmenu_active)
                     break;
             }
         }
-        else if (global.dmenu_state != "givertab")
+        else if (global.dmenu_state != "givertab" && global.dmenu_state != "flag_misc")
         {
             scr_debug_print(string(global.dbutton_options[global.dbutton_selected - 1]) + " sélectionné !");
         }
@@ -266,3 +370,4 @@ if (global.dmenu_active)
         global.dmenu_start_index = clamp(global.dbutton_selected - 1, 0, max(0, array_length(global.dbutton_options) - global.dbutton_max_visible));
     }
 }
+

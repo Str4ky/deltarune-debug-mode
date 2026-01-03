@@ -2,7 +2,7 @@ xx = __view_get(e__VW.XView, 0);
 yy = __view_get(e__VW.YView, 0);
 d = global.darkzone + 1;
 
-if (keyboard_check_pressed(ord("D")))
+if (!global.dreading_custom_flag && keyboard_check_pressed(ord("D")))
 {
     global.dmenu_active = !global.dmenu_active;
     
@@ -102,22 +102,41 @@ if (global.dmenu_active)
     
     if (global.dbutton_layout == 1)
     {
+        var dcan_scroll_up = global.dmenu_start_index > 0;
+        var dcan_scroll_down = (global.dmenu_start_index + global.dbutton_max_visible) < array_length(global.dbutton_options);
+        var dmenu_arrow_yoffset = 2 * sin(global.dmenu_arrow_timer / 10);
+        var darrow_scale = d / 2;
+        
         for (var i = 0; i < global.dbutton_max_visible; i++)
         {
             var button_index = global.dmenu_start_index + i;
             
             if (button_index < array_length(global.dbutton_options))
             {
-                var text_color = (global.dbutton_selected == (button_index + 1)) ? c_yellow : c_white;
+                is_cur_line = global.dbutton_selected == (button_index + 1);
+                var text_color = is_cur_line ? c_yellow : c_white;
                 draw_set_color(text_color);
-                draw_text(x_start + xx, y_start + yy + (i * y_spacing), global.dbutton_options[button_index]);
+                draw_monospace(x_start + xx, y_start + yy + (i * y_spacing), global.dbutton_options[button_index]);
+                
+                if (is_cur_line && global.dmenu_state == "flag_misc" && button_index != 0)
+                {
+                    if (global.dhorizontal_index != 0)
+                    {
+                        for (dash_pos = 0; 1; dash_pos++)
+                        {
+                            if (string_char_at(global.dbutton_options[button_index], dash_pos) == "-")
+                                break;
+                        }
+                        
+                        dash_pos++;
+                        draw_sprite_ext(spr_morearrow, 0, x_start + xx + ((dash_pos * 15) + 7) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + 23, darrow_scale, -darrow_scale, 90, c_white, 1);
+                    }
+                    
+                    if (global.dhorizontal_index < (array_length(global.dother_options[global.dbutton_selected - 1][2]) - 1))
+                        draw_sprite_ext(spr_morearrow, 0, ((x_start + xx + ((string_length(global.dbutton_options[button_index]) + 1) * 15)) - 7) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + 10, darrow_scale, -darrow_scale, 270, c_white, 1);
+                }
             }
         }
-        
-        var dcan_scroll_up = global.dmenu_start_index > 0;
-        var dcan_scroll_down = (global.dmenu_start_index + global.dbutton_max_visible) < array_length(global.dbutton_options);
-        var dmenu_arrow_yoffset = 2 * sin(global.dmenu_arrow_timer / 10);
-        var darrow_scale = d / 2;
         
         if (dcan_scroll_up)
             draw_sprite_ext(spr_morearrow, 0, x_start + xx, y_start + yy + (global.dbutton_max_visible * (y_spacing * -0.03)) + dmenu_arrow_yoffset, darrow_scale, -darrow_scale, 0, c_white, 1);
@@ -189,3 +208,4 @@ enum e__VW
     Camera,
     SurfaceID
 }
+
