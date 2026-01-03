@@ -118,34 +118,6 @@ function dmenu_state_update()
             dbutton_layout = 1;
             break;
 
-        case "recruits":
-            dmenu_title = "Liste des recrues";
-            dbutton_options = [];
-            dbutton_indices = [];
-            var max_len = 40;
-
-            for (var c = 1; c <= global.chapter; c++)
-            {
-                var test_lst = scr_get_chapter_recruit_data(c);
-
-                for (var i = 0; i < array_length(test_lst); i++)
-                {
-                    var enemy_id = test_lst[i];
-                    scr_recruit_info(enemy_id);
-                    var combined = _name + " - " + string(max(floor(global.flag[enemy_id + 600] * _recruitcount), -1)) + "/" + string(_recruitcount);
-
-                    if (string_length(combined) > max_len)
-                        combined = string_copy(combined, 1, max_len - 3) + "...";
-
-                    array_push(dbutton_options, combined);
-                    array_push(dbutton_indices, enemy_id);
-                }
-            }
-
-            dmenu_box = 2;
-            dbutton_layout = 1;
-            break;
-
         case "armors":
             dmenu_title = "Liste d'armures";
             dbutton_options = [];

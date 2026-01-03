@@ -1,3 +1,5 @@
+import os
+
 def read_file(filename):
     f = open(filename, encoding="utf-8")
     dest = f.read()
@@ -22,6 +24,10 @@ for i in range(1, 5):
 
     chap_step_1 = read_file(f"./Debug Menu/Chapitre {i}/gml_Object_obj_dmenu_system_Step_1.gml")
     output = output.replace("STEP1_CODE", chap_step_1.replace('"', '""'))
+    extra = "";
+    if (os.path.isfile(f"./Extra (chapitre {i}).csx")):
+        extra = read_file(f"./Extra (chapitre {i}).csx")
+    output = output.replace("EXTRA_IMPORTS", extra);
 
     with open(f"Mode Debug (chapitre {i}).csx", "w", encoding="utf-8") as f:
         f.write(output)

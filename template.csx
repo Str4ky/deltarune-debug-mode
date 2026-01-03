@@ -198,10 +198,10 @@ importGroup.Import();
 
 // Variable au gamestart
 UndertaleScript scr_gamestart = Data.Scripts.ByName("scr_gamestart");
-    importGroup.QueueAppend(scr_gamestart.Code, @"
-    global.debug = 0;
-    ");
-    ChangeSelection(scr_gamestart);
+importGroup.QueueAppend(scr_gamestart.Code, @"
+global.debug = 0;
+");
+ChangeSelection(scr_gamestart);
 
 // Toggler
 UndertaleScript scr_debug = Data.Scripts.ByName("scr_debug");
@@ -435,6 +435,8 @@ function scr_turn_skip()
 }
 ");
 ChangeSelection(scr_turn_skip);
+
+EXTRA_IMPORTS
 
 importGroup.Import();
 
