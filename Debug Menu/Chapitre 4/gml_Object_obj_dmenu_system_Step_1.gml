@@ -97,7 +97,7 @@ function dmenu_state_update()
                 if (i == (dbutton_selected - 1))
                 {
                     option_index = dhorizontal_index;
-                    global.flag[cur_option[1]] = cur_option[2][global.dhorizontal_index][1];
+                    global.flag[cur_option[1]] = cur_option[2][dhorizontal_index][1];
                 }
                 else
                 {

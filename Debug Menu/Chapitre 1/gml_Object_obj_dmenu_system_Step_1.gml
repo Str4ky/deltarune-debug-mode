@@ -1,44 +1,215 @@
-if (global.ditemcount == 0)
+if (ditemcount == 0)
 {
-    global.ditemcount = 63;
-    global.darmorcount = 54;
-    global.dweaponcount = 54;
-    global.dkeyitemcount = 31;
-    global.drecent_item = 60;
-    global.drecent_armor = 50;
-    global.drecent_weapon = 50;
-    global.drecent_keyitem = 30;
+    ditemcount = 63;
+    darmorcount = 54;
+    dweaponcount = 54;
+    dkeyitemcount = 31;
+    drecent_item = 60;
+    drecent_armor = 50;
+    drecent_weapon = 50;
+    drecent_keyitem = 30;
 }
 
 function dmenu_state_update()
 {
-    switch (global.dmenu_state)
+    switch (dmenu_state)
     {
         case "debug":
-            global.dmenu_title = "Menu Debug";
-            global.dbutton_options = global.dbutton_options_original;
-            global.dmenu_box = 0;
-            global.dbutton_layout = 0;
+            dmenu_title = "Menu Debug";
+            dbutton_options = dbutton_options_original;
+            dmenu_box = 0;
+            dbutton_layout = 0;
             break;
 
         case "warp":
-            scr_debug_print("Pas encore disponible !");
+            dmenu_title = "Menu de sauts";
+            dbutton_options = ["Lightworld", "Darkworld", "Combats"];
+            dmenu_box = 0;
+            dbutton_layout = 0;
+            break;
+        
+        case "lightworld":
+            dmenu_title = "Menu de sauts - Lightworld";
+            dbutton_options = ["Couloir de Kris", "Hall de l'école", "Placard de l'école", "Après Darkworld"];
+            dmenu_box = 1;
+            dbutton_layout = 1;
+            break;
+        
+        case "kris_hallway":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter", "Saut : 1ère apparition"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "school_hallway":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter", "Saut : 1ère apparition"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "school_closet":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "after_darkworld":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Saut : 1ère apparition"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "darkworld":
+            dmenu_title = "Menu de sauts - Darkworld";
+            dbutton_options = ["Entrée du Darkworld", "Entrée de la Citadelle", "Entrée des Plaines", "Bazar de Seam", "Entrée du Grand Plateau", "Entrée de la Forêt", "Vente de Pâtisseries", "Entrée Château", "Dernier étage Château", "Sortie Darkworld"];
+            dmenu_box = 1;
+            dbutton_layout = 1;
+            break;
+        
+        case "dw_entrance":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter", "Saut : 1ère apparition"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "castletown_entrance":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter", "Saut : 1ère apparition"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "field_entrance":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter", "Saut : 1ère apparition"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "seam_shop":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter", "Saut : 1ère apparition"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "greatboard_entrance":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter", "Saut : 1ère apparition"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "forest_entrance":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter", "Saut : 1ère apparition"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "bakesale":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter", "Saut : 1ère apparition"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "castle_entrance":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter", "Saut : 1ère apparition"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "castle_top_floor":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter", "Saut : 1ère apparition"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "darkworld_exit":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter", "Saut : 1ère apparition"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "battles":
+            dmenu_title = "Menu de sauts - Combats";
+            dbutton_options = ["Combat contre Lancer", "Combat contre Kouronné", "Combat contre Tréflette", "Combat contre Susie", "2e Combat contre Kouronné", "Combat contre Jevil", "Combat contre  le Roi"];
+            dmenu_box = 1;
+            dbutton_layout = 1;
+            break;
+        
+        case "lancer_battle":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter", "Saut : Combat"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "kround_battle":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter", "Saut : Combat"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "clover_battle":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter", "Saut : Combat"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "susie_battle":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter", "Saut : Combat"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "kround2_battle":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter", "Saut : Combat"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "jevil_battle":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter", "Saut : Combat avec Clé"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
+        case "king_battle":
+            dmenu_title = "Options de saut";
+            dbutton_options = ["Téléporter", "Saut : Combat"];
+            dmenu_box = 0;
+            dbutton_layout = 1;
             break;
 
         case "give":
-            global.dmenu_title = "Type d'items";
-            global.dbutton_options = ["Objets", "Armures", "Armes", "Obj Clés"];
-            global.dmenu_box = 0;
-            global.dbutton_layout = 0;
+            dmenu_title = "Type d'items";
+            dbutton_options = ["Objets", "Armures", "Armes", "Obj Clés"];
+            dmenu_box = 0;
+            dbutton_layout = 0;
             break;
 
         case "objects":
-            global.dmenu_title = "Liste d'objets";
-            global.dbutton_options = [];
-            global.dbutton_indices = [];
+            dmenu_title = "Liste d'objets";
+            dbutton_options = [];
+            dbutton_indices = [];
             var max_len = 40;
 
-            for (var i = global.drecent_item; i <= global.ditemcount; i++)
+            for (var i = drecent_item; i <= ditemcount; i++)
             {
                 scr_iteminfo(i);
                 var cleaned_desc = string_replace_all(itemdescb, "#", " ");
@@ -47,11 +218,11 @@ function dmenu_state_update()
                 if (string_length(combined) > max_len)
                     combined = string_copy(combined, 1, max_len - 3) + "...";
 
-                array_push(global.dbutton_options, combined);
-                array_push(global.dbutton_indices, i);
+                array_push(dbutton_options, combined);
+                array_push(dbutton_indices, i);
             }
 
-            var cutoff = min(global.drecent_item - 1, global.ditemcount);
+            var cutoff = min(drecent_item - 1, ditemcount);
 
             for (var i = 1; i <= cutoff; i++)
             {
@@ -62,42 +233,42 @@ function dmenu_state_update()
                 if (string_length(combined) > max_len)
                     combined = string_copy(combined, 1, max_len - 3) + "...";
 
-                array_push(global.dbutton_options, combined);
-                array_push(global.dbutton_indices, i);
+                array_push(dbutton_options, combined);
+                array_push(dbutton_indices, i);
             }
 
-            global.dmenu_box = 2;
-            global.dbutton_layout = 1;
+            dmenu_box = 2;
+            dbutton_layout = 1;
             break;
 
         case "flag_misc":
-            global.dmenu_title = "Divers";
-            global.dbutton_options = [];
-            global.dbutton_indices = [];
-            other_len = array_length(global.dother_options);
+            dmenu_title = "Divers";
+            dbutton_options = [];
+            dbutton_indices = [];
+            other_len = array_length(dother_options);
             var max_len = 40;
 
             if (!global.dreading_custom_flag)
             {
-                array_push(global.dbutton_options, "Custom");
-                array_push(global.dbutton_indices, 0);
+                array_push(dbutton_options, "Custom");
+                array_push(dbutton_indices, 0);
             }
             else
             {
-                array_push(global.dbutton_options, "global.flag[" + global.dcustom_flag_text[0] + "] = |" + global.dcustom_flag_text[1] + "|");
-                array_push(global.dbutton_indices, 0);
+                array_push(dbutton_options, "global.flag[" + dcustom_flag_text[0] + "] = |" + dcustom_flag_text[1] + "|");
+                array_push(dbutton_indices, 0);
             }
 
             for (var i = 1; i < other_len; i++)
             {
-                cur_option = global.dother_options[i];
+                cur_option = dother_options[i];
                 flag_number = global.flag[cur_option[1]];
                 var combined = cur_option[0] + " - problem lol";
 
-                if (i == (global.dbutton_selected - 1))
+                if (i == (dbutton_selected - 1))
                 {
-                    option_index = global.dhorizontal_index;
-                    global.flag[cur_option[1]] = cur_option[2][global.dhorizontal_index][1];
+                    option_index = dhorizontal_index;
+                    global.flag[cur_option[1]] = cur_option[2][dhorizontal_index][1];
                 }
                 else
                 {
@@ -110,49 +281,21 @@ function dmenu_state_update()
                 if (string_length(combined) > max_len)
                     combined = string_copy(combined, 1, max_len - 3) + "...";
 
-                array_push(global.dbutton_options, combined);
-                array_push(global.dbutton_indices, i);
+                array_push(dbutton_options, combined);
+                array_push(dbutton_indices, i);
             }
 
-            global.dmenu_box = 2;
-            global.dbutton_layout = 1;
-            break;
-
-        case "recruits":
-            global.dmenu_title = "Liste des recrues";
-            global.dbutton_options = [];
-            global.dbutton_indices = [];
-            var max_len = 40;
-
-            for (var c = 1; c <= global.chapter; c++)
-            {
-                var test_lst = scr_get_chapter_recruit_data(c);
-
-                for (var i = 0; i < array_length(test_lst); i++)
-                {
-                    var enemy_id = test_lst[i];
-                    scr_recruit_info(enemy_id);
-                    var combined = _name + " - " + string(max(floor(global.flag[enemy_id + 600] * _recruitcount), -1)) + "/" + string(_recruitcount);
-
-                    if (string_length(combined) > max_len)
-                        combined = string_copy(combined, 1, max_len - 3) + "...";
-
-                    array_push(global.dbutton_options, combined);
-                    array_push(global.dbutton_indices, enemy_id);
-                }
-            }
-
-            global.dmenu_box = 2;
-            global.dbutton_layout = 1;
+            dmenu_box = 2;
+            dbutton_layout = 1;
             break;
 
         case "armors":
-            global.dmenu_title = "Liste d'armures";
-            global.dbutton_options = [];
-            global.dbutton_indices = [];
+            dmenu_title = "Liste d'armures";
+            dbutton_options = [];
+            dbutton_indices = [];
             var max_len = 40;
 
-            for (var i = global.drecent_armor; i <= global.darmorcount; i++)
+            for (var i = drecent_armor; i <= darmorcount; i++)
             {
                 scr_armorinfo(i);
                 var cleaned_desc = string_replace_all(armordesctemp, "#", " ");
@@ -161,11 +304,11 @@ function dmenu_state_update()
                 if (string_length(combined) > max_len)
                     combined = string_copy(combined, 1, max_len - 3) + "...";
 
-                array_push(global.dbutton_options, combined);
-                array_push(global.dbutton_indices, i);
+                array_push(dbutton_options, combined);
+                array_push(dbutton_indices, i);
             }
 
-            var cutoff = min(global.drecent_armor - 1, global.darmorcount);
+            var cutoff = min(drecent_armor - 1, darmorcount);
 
             for (var i = 1; i <= cutoff; i++)
             {
@@ -176,21 +319,21 @@ function dmenu_state_update()
                 if (string_length(combined) > max_len)
                     combined = string_copy(combined, 1, max_len - 3) + "...";
 
-                array_push(global.dbutton_options, combined);
-                array_push(global.dbutton_indices, i);
+                array_push(dbutton_options, combined);
+                array_push(dbutton_indices, i);
             }
 
-            global.dmenu_box = 2;
-            global.dbutton_layout = 1;
+            dmenu_box = 2;
+            dbutton_layout = 1;
             break;
 
         case "weapons":
-            global.dmenu_title = "Liste d'armes";
-            global.dbutton_options = [];
-            global.dbutton_indices = [];
+            dmenu_title = "Liste d'armes";
+            dbutton_options = [];
+            dbutton_indices = [];
             var max_len = 40;
 
-            for (var i = global.drecent_weapon; i <= global.dweaponcount; i++)
+            for (var i = drecent_weapon; i <= dweaponcount; i++)
             {
                 scr_weaponinfo(i);
                 var cleaned_desc = string_replace_all(weapondesctemp, "#", " ");
@@ -199,11 +342,11 @@ function dmenu_state_update()
                 if (string_length(combined) > max_len)
                     combined = string_copy(combined, 1, max_len - 3) + "...";
 
-                array_push(global.dbutton_options, combined);
-                array_push(global.dbutton_indices, i);
+                array_push(dbutton_options, combined);
+                array_push(dbutton_indices, i);
             }
 
-            var cutoff = min(global.drecent_weapon - 1, global.dweaponcount);
+            var cutoff = min(drecent_weapon - 1, dweaponcount);
 
             for (var i = 1; i <= cutoff; i++)
             {
@@ -214,21 +357,21 @@ function dmenu_state_update()
                 if (string_length(combined) > max_len)
                     combined = string_copy(combined, 1, max_len - 3) + "...";
 
-                array_push(global.dbutton_options, combined);
-                array_push(global.dbutton_indices, i);
+                array_push(dbutton_options, combined);
+                array_push(dbutton_indices, i);
             }
 
-            global.dmenu_box = 2;
-            global.dbutton_layout = 1;
+            dmenu_box = 2;
+            dbutton_layout = 1;
             break;
 
         case "keyitems":
-            global.dmenu_title = "Liste d'objets clés (Peut briser le jeu)";
-            global.dbutton_options = [];
-            global.dbutton_indices = [];
+            dmenu_title = "Liste d'objets clés (Peut briser le jeu)";
+            dbutton_options = [];
+            dbutton_indices = [];
             var max_len = 40;
 
-            for (var i = global.drecent_keyitem; i <= global.dkeyitemcount; i++)
+            for (var i = drecent_keyitem; i <= dkeyitemcount; i++)
             {
                 scr_keyiteminfo(i);
                 var cleaned_desc = string_replace_all(tempkeyitemdesc, "#", " ");
@@ -237,11 +380,11 @@ function dmenu_state_update()
                 if (string_length(combined) > max_len)
                     combined = string_copy(combined, 1, max_len - 3) + "...";
 
-                array_push(global.dbutton_options, combined);
-                array_push(global.dbutton_indices, i);
+                array_push(dbutton_options, combined);
+                array_push(dbutton_indices, i);
             }
 
-            var cutoff = min(global.drecent_keyitem - 1, global.dkeyitemcount);
+            var cutoff = min(drecent_keyitem - 1, dkeyitemcount);
 
             for (var i = 1; i <= cutoff; i++)
             {
@@ -252,192 +395,559 @@ function dmenu_state_update()
                 if (string_length(combined) > max_len)
                     combined = string_copy(combined, 1, max_len - 3) + "...";
 
-                array_push(global.dbutton_options, combined);
-                array_push(global.dbutton_indices, i);
+                array_push(dbutton_options, combined);
+                array_push(dbutton_indices, i);
             }
 
-            global.dmenu_box = 2;
-            global.dbutton_layout = 1;
+            dmenu_box = 2;
+            dbutton_layout = 1;
             break;
 
         case "givertab":
-            global.dmenu_title = "Ajouter combien à l'inventaire ?";
-            global.dgiver_amount = 1;
-            global.dmenu_box = 0;
-            global.dbutton_layout = 2;
-            break;
-
-        case "recruits":
-            global.dmenu_title = "Liste des recrues";
-            global.dbutton_options = ["Préréglages"];
-            global.dbutton_indices = ["Préréglages"];
-            var max_len = 40;
-
-            for (var c = 1; c <= global.chapter; c++)
-            {
-                var test_lst = scr_get_chapter_recruit_data(c);
-
-                for (var i = 0; i < array_length(test_lst); i++)
-                {
-                    var enemy_id = test_lst[i];
-                    scr_recruit_info(enemy_id);
-                    var combined = _name + " - [" + string(max(floor(global.flag[enemy_id + 600] * _recruitcount), -1)) + "/" + string(_recruitcount) + "]";
-
-                    if (string_length(combined) > max_len)
-                        combined = string_copy(combined, 1, max_len - 3) + "...";
-
-                    array_push(global.dbutton_options, combined);
-                    array_push(global.dbutton_indices, enemy_id);
-                }
-            }
-
-            global.dmenu_box = 1;
-            global.dbutton_layout = 1;
-            break;
-
-        case "recruit_presets":
-            global.dmenu_title = "Préréglages des recrues";
-            global.dbutton_options = ["Recruter tous", "Perdre tous"];
-            global.dmenu_box = 0;
-            global.dbutton_layout = 1;
+            dmenu_title = "Ajouter combien à l'inventaire ?";
+            dgiver_amount = 1;
+            dmenu_box = 0;
+            dbutton_layout = 2;
             break;
 
         default:
-            global.dmenu_title = "Inconnu";
-            global.dbutton_options = [];
-            global.dmenu_box = 0;
-            global.dbutton_layout = 0;
+            dmenu_title = "Inconnu";
+            dbutton_options = [];
+            dmenu_box = 0;
+            dbutton_layout = 0;
     }
 }
 
 function dmenu_state_interact()
 {
-    switch (global.dmenu_state)
+    switch (dmenu_state)
     {
         case "debug":
-            if (global.dbutton_selected == 1)
+            if (dbutton_selected == 1)
             {
-                global.dmenu_state = "warp";
-                global.dbutton_selected = 1;
+                dmenu_state = "warp";
+                dbutton_selected = 1;
             }
 
-            if (global.dbutton_selected == 2)
+            if (dbutton_selected == 2)
             {
-                global.dmenu_state = "give";
-                global.dbutton_selected = 1;
+                dmenu_state = "give";
+                dbutton_selected = 1;
             }
 
-            if (global.dbutton_selected == 3)
+            if (dbutton_selected == 3)
             {
-                global.dmenu_state = "recruits";
-                global.dbutton_selected = 1;
-            }
-
-            if (global.dbutton_selected == 4)
-            {
-                global.dmenu_state = "flag_misc";
-                global.dbutton_selected = 1;
+                dmenu_state = "flag_misc";
+                dbutton_selected = 1;
             }
 
             break;
 
         case "warp":
-            if (global.dbutton_selected == 1)
+            if (dbutton_selected == 1)
             {
-                global.dmenu_state = "lightworld";
-                global.dbutton_selected = 1;
+                dmenu_state = "lightworld";
+                dbutton_selected = 1;
             }
-
-            if (global.dbutton_selected == 2)
+            
+            if (dbutton_selected == 2)
             {
-                global.dmenu_state = "darkworld";
-                global.dbutton_selected = 1;
+                dmenu_state = "darkworld";
+                dbutton_selected = 1;
             }
-
-            if (global.dbutton_selected == 3)
+            
+            if (dbutton_selected == 3)
             {
-                global.dmenu_state = "battles";
-                global.dbutton_selected = 1;
+                dmenu_state = "battles";
+                dbutton_selected = 1;
             }
-
+            
+            break;
+        
+        case "lightworld":
+            if (dbutton_selected == 1)
+                dmenu_state = "kris_hallway";
+            
+            if (dbutton_selected == 2)
+                dmenu_state = "school_hallway";
+            
+            if (dbutton_selected == 3)
+                dmenu_state = "school_closet";
+            
+            if (dbutton_selected == 4)
+                dmenu_state = "after_darkworld";
+            
+            break;
+        
+        case "kris_hallway":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 0;
+            snd_free_all();
+            room_goto(room_krishallway);
+            
+            if (dbutton_selected == 2)
+                global.plot = 1;
+            
+            break;
+        
+        case "school_hallway":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 0;
+            snd_free_all();
+            room_goto(room_schoollobby);
+            
+            if (dbutton_selected == 2)
+                global.plot = 1;
+            
+            break;
+        
+        case "school_closet":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 0;
+            snd_free_all();
+            room_goto(room_schooldoor);
+            break;
+        
+        case "after_darkworld":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 0;
+            snd_free_all();
+            room_goto(room_lw_computer_lab);
+            break;
+        
+        case "darkworld":
+            if (dbutton_selected == 1)
+                dmenu_state = "dw_entrance";
+            
+            if (dbutton_selected == 2)
+                dmenu_state = "castletown_entrance";
+            
+            if (dbutton_selected == 3)
+                dmenu_state = "field_entrance";
+            
+            if (dbutton_selected == 4)
+                dmenu_state = "seam_shop";
+            
+            if (dbutton_selected == 5)
+                dmenu_state = "greatboard_entrance";
+            
+            if (dbutton_selected == 6)
+                dmenu_state = "forest_entrance";
+            
+            if (dbutton_selected == 7)
+                dmenu_state = "bakesale";
+            
+            if (dbutton_selected == 8)
+                dmenu_state = "castle_entrance";
+            
+            if (dbutton_selected == 9)
+                dmenu_state = "castle_top_floor";
+            
+            if (dbutton_selected == 10)
+                dmenu_state = "darkworld_exit";
+            
+            break;
+        
+        case "dw_entrance":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_dark1);
+            
+            if (dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 0;
+                global.char[2] = 0;
+                global.plot = 11;
+            }
+            
+            break;
+        
+        case "castletown_entrance":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_castle_outskirts);
+            
+            if (dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 0;
+                global.char[2] = 0;
+                global.plot = 16;
+            }
+            
+            break;
+        
+        case "field_entrance":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_field1);
+            
+            if (dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 3;
+                global.char[2] = 0;
+                global.plot = 33;
+            }
+            
+            break;
+        
+        case "seam_shop":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_field_shop1);
+            
+            if (dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 3;
+                global.char[2] = 2;
+                global.plot = 40;
+            }
+            
+            break;
+        
+        case "greatboard_entrance":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_field_checkers4);
+            
+            if (dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 3;
+                global.char[2] = 2;
+                global.plot = 50;
+            }
+            
+            break;
+        
+        case "forest_entrance":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_forest_savepoint1);
+            
+            if (dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 3;
+                global.char[2] = 0;
+                global.plot = 60;
+            }
+            
+            break;
+        
+        case "bakesale":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_forest_savepoint2);
+            
+            if (dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 3;
+                global.char[2] = 0;
+                global.plot = 75;
+            }
+            
+            break;
+        
+        case "castle_entrance":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_cc_1f);
+            
+            if (dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 2;
+                global.char[2] = 3;
+                global.plot = 165;
+            }
+            
+            break;
+        
+        case "castle_top_floor":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_cc_5f);
+            
+            if (dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 2;
+                global.char[2] = 3;
+                global.plot = 165;
+            }
+            
+            break;
+        
+        case "darkworld_exit":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_cc_prefountain);
+            
+            if (dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 2;
+                global.char[2] = 0;
+                global.plot = 240;
+            }
+            
+            break;
+        
+        case "battles":
+            if (dbutton_selected == 1)
+                dmenu_state = "lancer_battle";
+            
+            if (dbutton_selected == 2)
+                dmenu_state = "kround_battle";
+            
+            if (dbutton_selected == 3)
+                dmenu_state = "clover_battle";
+            
+            if (dbutton_selected == 4)
+                dmenu_state = "susie_battle";
+            
+            if (dbutton_selected == 5)
+                dmenu_state = "kround2_battle";
+            
+            if (dbutton_selected == 6)
+                dmenu_state = "jevil_battle";
+            
+            if (dbutton_selected == 7)
+                dmenu_state = "king_battle";
+            
+            break;
+        
+        case "lancer_battle":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_castle_town);
+            
+            if (dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 2;
+                global.char[2] = 0;
+                global.plot = 16;
+            }
+            
+            break;
+        
+        case "kround_battle":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_field_checkers7);
+            
+            if (dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 3;
+                global.char[2] = 2;
+                global.plot = 55;
+            }
+            
+            break;
+        
+        case "clover_battle":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_forest_area3);
+            
+            if (dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 3;
+                global.char[2] = 0;
+                global.plot = 72;
+            }
+            
+            break;
+        
+        case "susie_battle":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_forest_savepoint3);
+            
+            if (dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 3;
+                global.char[2] = 0;
+                global.plot = 120;
+            }
+            
+            break;
+        
+        case "kround2_battle":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_cc_6f);
+            
+            if (dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 2;
+                global.char[2] = 3;
+                global.charauto[2] = 0;
+                global.plot = 165;
+            }
+            
+            break;
+        
+        case "jevil_battle":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_cc_prison_prejoker);
+            
+            if (dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 2;
+                global.char[2] = 3;
+                global.plot = 165;
+                global.charauto[2] = 0;
+                scr_keyitemget(5);
+                global.tempflag[4] = 1;
+                
+                repeat (13)
+                    scr_weaponget(5);
+            }
+            
+            break;
+        
+        case "king_battle":
+            dmenu_active = false;
+            global.interact = 0;
+            global.darkzone = 1;
+            snd_free_all();
+            room_goto(room_cc_throneroom);
+            
+            if (dbutton_selected == 2)
+            {
+                global.char[0] = 1;
+                global.char[1] = 2;
+                global.char[2] = 3;
+                global.charauto[2] = 0;
+            }
+            
             break;
 
         case "give":
-            if (global.dbutton_selected == 1)
+            if (dbutton_selected == 1)
             {
-                global.dmenu_state = "objects";
-                global.dbutton_selected = 1;
+                dmenu_state = "objects";
+                dbutton_selected = 1;
             }
 
-            if (global.dbutton_selected == 2)
+            if (dbutton_selected == 2)
             {
-                global.dmenu_state = "armors";
-                global.dbutton_selected = 1;
+                dmenu_state = "armors";
+                dbutton_selected = 1;
             }
 
-            if (global.dbutton_selected == 3)
+            if (dbutton_selected == 3)
             {
-                global.dmenu_state = "weapons";
-                global.dbutton_selected = 1;
+                dmenu_state = "weapons";
+                dbutton_selected = 1;
             }
 
-            if (global.dbutton_selected == 4)
+            if (dbutton_selected == 4)
             {
-                global.dmenu_state = "keyitems";
-                global.dbutton_selected = 1;
+                dmenu_state = "keyitems";
+                dbutton_selected = 1;
             }
 
             break;
 
         case "objects":
-            global.dgiver_menu_state = global.dmenu_state;
-            global.dbutton_selected = clamp(global.dbutton_selected, 0, array_length(global.dbutton_options) - 1);
-            global.dgiver_button_selected = global.dbutton_selected;
-            global.dmenu_state = "givertab";
-            global.dbutton_selected = 1;
+            dgiver_menu_state = dmenu_state;
+            dbutton_selected = clamp(dbutton_selected, 0, array_length(dbutton_options) - 1);
+            dgiver_button_selected = dbutton_selected;
+            dmenu_state = "givertab";
+            dbutton_selected = 1;
             break;
 
         case "armors":
-            global.dgiver_menu_state = global.dmenu_state;
-            global.dgiver_button_selected = global.dbutton_selected;
-            global.dmenu_state = "givertab";
-            global.dbutton_selected = 1;
+            dgiver_menu_state = dmenu_state;
+            dgiver_button_selected = dbutton_selected;
+            dmenu_state = "givertab";
+            dbutton_selected = 1;
             break;
 
         case "weapons":
-            global.dgiver_menu_state = global.dmenu_state;
-            global.dgiver_button_selected = global.dbutton_selected;
-            global.dmenu_state = "givertab";
-            global.dbutton_selected = 1;
+            dgiver_menu_state = dmenu_state;
+            dgiver_button_selected = dbutton_selected;
+            dmenu_state = "givertab";
+            dbutton_selected = 1;
             break;
 
         case "keyitems":
-            global.dgiver_menu_state = global.dmenu_state;
-            global.dgiver_button_selected = global.dbutton_selected;
-            global.dmenu_state = "givertab";
-            global.dbutton_selected = 1;
+            dgiver_menu_state = dmenu_state;
+            dgiver_button_selected = dbutton_selected;
+            dmenu_state = "givertab";
+            dbutton_selected = 1;
             break;
 
         case "givertab":
-            if (global.dgiver_menu_state == "objects")
+            if (dgiver_menu_state == "objects")
             {
-                if (global.dgiver_amount > 0)
+                if (dgiver_amount > 0)
                 {
-                    real_index = global.dbutton_indices[global.dgiver_button_selected - 1];
+                    real_index = dbutton_indices[dgiver_button_selected - 1];
 
-                    for (var i = 0; i < global.dgiver_amount; i++)
+                    for (var i = 0; i < dgiver_amount; i++)
                         scr_itemget(real_index);
 
-                    scr_debug_print(string(global.dgiver_amount) + " " + global.dgiver_bname + " ajouté à l'inventaire");
+                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + " ajouté à l'inventaire");
                 }
-                else if (global.dgiver_amount < 0)
+                else if (dgiver_amount < 0)
                 {
-                    real_index = global.dbutton_indices[global.dgiver_button_selected - 1];
+                    real_index = dbutton_indices[dgiver_button_selected - 1];
 
-                    for (var i = 0; i < abs(global.dgiver_amount); i++)
+                    for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_itemremove(real_index);
 
-                    scr_debug_print(string(abs(global.dgiver_amount)) + " " + global.dgiver_bname + " retiré de l'inventaire");
+                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + " retiré de l'inventaire");
                 }
                 else
                 {
@@ -445,25 +955,25 @@ function dmenu_state_interact()
                 }
             }
 
-            if (global.dgiver_menu_state == "armors")
+            if (dgiver_menu_state == "armors")
             {
-                if (global.dgiver_amount > 0)
+                if (dgiver_amount > 0)
                 {
-                    real_index = global.dbutton_indices[global.dgiver_button_selected - 1];
+                    real_index = dbutton_indices[dgiver_button_selected - 1];
 
-                    for (var i = 0; i < global.dgiver_amount; i++)
+                    for (var i = 0; i < dgiver_amount; i++)
                         scr_armorget(real_index);
 
-                    scr_debug_print(string(global.dgiver_amount) + " " + global.dgiver_bname + " ajouté à l'inventaire");
+                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + " ajouté à l'inventaire");
                 }
-                else if (global.dgiver_amount < 0)
+                else if (dgiver_amount < 0)
                 {
-                    real_index = global.dbutton_indices[global.dgiver_button_selected - 1];
+                    real_index = dbutton_indices[dgiver_button_selected - 1];
 
-                    for (var i = 0; i < abs(global.dgiver_amount); i++)
+                    for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_armorremove(real_index);
 
-                    scr_debug_print(string(abs(global.dgiver_amount)) + " " + global.dgiver_bname + " retiré de l'inventaire");
+                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + " retiré de l'inventaire");
                 }
                 else
                 {
@@ -471,25 +981,25 @@ function dmenu_state_interact()
                 }
             }
 
-            if (global.dgiver_menu_state == "weapons")
+            if (dgiver_menu_state == "weapons")
             {
-                if (global.dgiver_amount > 0)
+                if (dgiver_amount > 0)
                 {
-                    real_index = global.dbutton_indices[global.dgiver_button_selected - 1];
+                    real_index = dbutton_indices[dgiver_button_selected - 1];
 
-                    for (var i = 0; i < global.dgiver_amount; i++)
+                    for (var i = 0; i < dgiver_amount; i++)
                         scr_weaponget(real_index);
 
-                    scr_debug_print(string(global.dgiver_amount) + " " + global.dgiver_bname + " ajouté à l'inventaire");
+                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + " ajouté à l'inventaire");
                 }
-                else if (global.dgiver_amount < 0)
+                else if (dgiver_amount < 0)
                 {
-                    real_index = global.dbutton_indices[global.dgiver_button_selected - 1];
+                    real_index = dbutton_indices[dgiver_button_selected - 1];
 
-                    for (var i = 0; i < abs(global.dgiver_amount); i++)
+                    for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_weaponremove(real_index);
 
-                    scr_debug_print(string(abs(global.dgiver_amount)) + " " + global.dgiver_bname + " retiré de l'inventaire");
+                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + " retiré de l'inventaire");
                 }
                 else
                 {
@@ -497,25 +1007,25 @@ function dmenu_state_interact()
                 }
             }
 
-            if (global.dgiver_menu_state == "keyitems")
+            if (dgiver_menu_state == "keyitems")
             {
-                if (global.dgiver_amount > 0)
+                if (dgiver_amount > 0)
                 {
-                    real_index = global.dbutton_indices[global.dgiver_button_selected - 1];
+                    real_index = dbutton_indices[dgiver_button_selected - 1];
 
-                    for (var i = 0; i < global.dgiver_amount; i++)
+                    for (var i = 0; i < dgiver_amount; i++)
                         scr_keyitemget(real_index);
 
-                    scr_debug_print(string(global.dgiver_amount) + " " + global.dgiver_bname + " ajouté à l'inventaire");
+                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + " ajouté à l'inventaire");
                 }
-                else if (global.dgiver_amount < 0)
+                else if (dgiver_amount < 0)
                 {
-                    real_index = global.dbutton_indices[global.dgiver_button_selected - 1];
+                    real_index = dbutton_indices[dgiver_button_selected - 1];
 
-                    for (var i = 0; i < abs(global.dgiver_amount); i++)
+                    for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_keyitemremove(real_index);
 
-                    scr_debug_print(string(abs(global.dgiver_amount)) + " " + global.dgiver_bname + " retiré de l'inventaire");
+                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + " retiré de l'inventaire");
                 }
                 else
                 {
@@ -523,58 +1033,12 @@ function dmenu_state_interact()
                 }
             }
 
-            global.dmenu_active = false;
+            dmenu_active = false;
             global.interact = 0;
             break;
 
         case "flag_misc":
 			break;
-
-        case "recruits":
-            if (global.dbutton_selected == 1)
-            {
-                global.dmenu_state = "recruit_presets";
-                global.dbutton_selected = 1;
-            }
-
-            break;
-
-        case "recruit_presets":
-            if (global.dbutton_selected == 1)
-            {
-                for (var c = 1; c <= global.chapter; c++)
-                {
-                    var test_lst = scr_get_chapter_recruit_data(c);
-
-                    for (var i = 0; i < array_length(test_lst); i++)
-                    {
-                        var enemy_id = test_lst[i];
-                        scr_recruit_info(enemy_id);
-                        global.flag[enemy_id + 600] = 1;
-                    }
-                }
-
-                snd_play(snd_pirouette);
-            }
-
-            if (global.dbutton_selected == 2)
-            {
-                for (var c = 1; c <= global.chapter; c++)
-                {
-                    var test_lst = scr_get_chapter_recruit_data(c);
-
-                    for (var i = 0; i < array_length(test_lst); i++)
-                    {
-                        var enemy_id = test_lst[i];
-                        scr_recruit_info(enemy_id);
-                        global.flag[enemy_id + 600] = -1 / _recruitcount;
-                    }
-                }
-
-                snd_play(snd_weirdeffect);
-            }
-
-            break;
 
         default:
             snd_play(snd_error);

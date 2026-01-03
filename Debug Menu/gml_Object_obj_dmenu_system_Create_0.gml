@@ -10,6 +10,8 @@ dscroll_delay = 15;
 dscroll_speed = 5;
 dmenu_title = "Menu Debug";
 dbutton_options_original = ["Sauts", "Items", "Recrues", "Autre"];
+if (global.chapter == 1)
+	dbutton_options_original = ["Sauts", "Items", "Autre"];
 dbutton_options = dbutton_options_original;
 dmenu_state = "debug";
 dbutton_selected = 1;
