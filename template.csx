@@ -237,7 +237,7 @@ ChangeSelection(obj_overworldc);
 // Fonctions du Darkworld
 UndertaleGameObject obj_darkcontroller = Data.GameObjects.ByName("obj_darkcontroller");
 
-importGroup.QueueFindReplace(obj_battlecontroller_step,
+importGroup.QueueFindReplace(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint)0, Data),
 "if (scr_debug())", "if (0)");
 
 importGroup.QueueAppend(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint)0, Data), @"
