@@ -4,9 +4,9 @@ d = global.darkzone + 1;
 
 if (!global.dreading_custom_flag && keyboard_check_pressed(ord("D")))
 {
-    global.dmenu_active = !global.dmenu_active;
+    dmenu_active = !dmenu_active;
     
-    if (global.dmenu_active)
+    if (dmenu_active)
     {
         snd_play(snd_egg);
         global.interact = 1;
@@ -20,7 +20,7 @@ if (!global.dreading_custom_flag && keyboard_check_pressed(ord("D")))
 
 var xcenter, menu_width, ycenter, menu_length;
 
-if (global.dmenu_box == 0)
+if (dmenu_box == 0)
 {
     menu_width = 214;
     menu_length = 94;
@@ -28,7 +28,7 @@ if (global.dmenu_box == 0)
     ycenter = 105;
 }
 
-if (global.dmenu_box == 1)
+if (dmenu_box == 1)
 {
     menu_width = 214;
     menu_length = 154;
@@ -36,7 +36,7 @@ if (global.dmenu_box == 1)
     ycenter = 135;
 }
 
-if (global.dmenu_box == 2)
+if (dmenu_box == 2)
 {
     menu_width = 256;
     menu_length = 154;
@@ -47,7 +47,7 @@ if (global.dmenu_box == 2)
 var x_start = 0;
 var x_spacing, y_start, y_spacing;
 
-if (global.dbutton_layout == 0)
+if (dbutton_layout == 0)
 {
     var x_padding = 7;
     y_start = 60 * d;
@@ -56,7 +56,7 @@ if (global.dbutton_layout == 0)
     x_start = ((xcenter - (menu_width / 2)) + x_padding) * d;
 }
 
-if (global.dbutton_layout == 1)
+if (dbutton_layout == 1)
 {
     var x_padding = 7;
     y_start = 95 * d;
@@ -65,16 +65,16 @@ if (global.dbutton_layout == 1)
     x_start = ((xcenter - (menu_width / 2)) + x_padding) * d;
 }
 
-if (global.dbutton_layout == 2)
+if (dbutton_layout == 2)
 {
     var x_padding = 7;
     y_start = 95 * d;
     x_start = ((xcenter - (menu_width / 2)) + x_padding) * d;
 }
 
-var button_count = array_length(global.dbutton_options);
+var button_count = array_length(dbutton_options);
 
-if (global.dmenu_active)
+if (dmenu_active)
 {
     draw_set_color(c_white);
     draw_rectangle(((xcenter - (menu_width / 2) - 3) * d) + xx, ((ycenter - (menu_length / 2) - 3) * d) + yy, ((xcenter + (menu_width / 2) + 3) * d) + xx, ((ycenter + (menu_length / 2) + 3) * d) + yy, false);
@@ -87,9 +87,9 @@ if (global.dmenu_active)
         draw_set_font(fnt_main);
     
     draw_set_color(c_white);
-    draw_text(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, string(global.dmenu_title));
+    draw_text(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, string(dmenu_title));
     
-    if (global.dmenu_state == "debug" && global.darkzone == 1)
+    if (dmenu_state == "debug" && global.darkzone == 1)
     {
         draw_set_font(fnt_main);
         draw_set_color(c_white);
@@ -97,42 +97,42 @@ if (global.dmenu_active)
         draw_set_font(fnt_mainbig);
     }
     
-    if (global.dbutton_layout == 0)
+    if (dbutton_layout == 0)
     {
         for (var i = 0; i < button_count; i++)
         {
-            var text_width = string_width(global.dbutton_options[i]);
-            draw_set_color((global.dbutton_selected == (i + 1)) ? c_yellow : c_white);
-            draw_text(x_start + xx, (100 * d) + yy, global.dbutton_options[i]);
+            var text_width = string_width(dbutton_options[i]);
+            draw_set_color((dbutton_selected == (i + 1)) ? c_yellow : c_white);
+            draw_text(x_start + xx, (100 * d) + yy, dbutton_options[i]);
             x_start += (text_width + x_spacing);
         }
     }
     
-    if (global.dbutton_layout == 1)
+    if (dbutton_layout == 1)
     {
-        var dcan_scroll_up = global.dmenu_start_index > 0;
-        var dcan_scroll_down = (global.dmenu_start_index + global.dbutton_max_visible) < array_length(global.dbutton_options);
-        var dmenu_arrow_yoffset = 2 * sin(global.dmenu_arrow_timer / 10);
+        var dcan_scroll_up = dmenu_start_index > 0;
+        var dcan_scroll_down = (dmenu_start_index + dbutton_max_visible) < array_length(dbutton_options);
+        var dmenu_arrow_yoffset = 2 * sin(dmenu_arrow_timer / 10);
         var darrow_scale = d / 2;
         
-        for (var i = 0; i < global.dbutton_max_visible; i++)
+        for (var i = 0; i < dbutton_max_visible; i++)
         {
-            var button_index = global.dmenu_start_index + i;
+            var button_index = dmenu_start_index + i;
             
-            if (button_index < array_length(global.dbutton_options))
+            if (button_index < array_length(dbutton_options))
             {
-                is_cur_line = global.dbutton_selected == (button_index + 1);
+                is_cur_line = dbutton_selected == (button_index + 1);
                 var text_color = is_cur_line ? c_yellow : c_white;
                 draw_set_color(text_color);
-                draw_monospace(x_start + xx, y_start + yy + (i * y_spacing), global.dbutton_options[button_index]);
+                draw_monospace(x_start + xx, y_start + yy + (i * y_spacing), dbutton_options[button_index]);
                 
-                if (is_cur_line && global.dmenu_state == "flag_misc" && button_index != 0)
+                if (is_cur_line && dmenu_state == "flag_misc" && button_index != 0)
                 {
-                    if (global.dhorizontal_index != 0)
+                    if (dhorizontal_index != 0)
                     {
                         for (dash_pos = 0; 1; dash_pos++)
                         {
-                            if (string_char_at(global.dbutton_options[button_index], dash_pos) == "-")
+                            if (string_char_at(dbutton_options[button_index], dash_pos) == "-")
                                 break;
                         }
                         
@@ -140,50 +140,50 @@ if (global.dmenu_active)
                         draw_sprite_ext(spr_morearrow, 0, x_start + xx + ((dash_pos * 15) + 7) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + 23, darrow_scale, -darrow_scale, 90, c_white, 1);
                     }
                     
-                    if (global.dhorizontal_index < (array_length(global.dother_options[global.dbutton_selected - 1][2]) - 1))
-                        draw_sprite_ext(spr_morearrow, 0, ((x_start + xx + ((string_length(global.dbutton_options[button_index]) + 1) * 15)) - 7) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + 10, darrow_scale, -darrow_scale, 270, c_white, 1);
+                    if (dhorizontal_index < (array_length(dother_options[dbutton_selected - 1][2]) - 1))
+                        draw_sprite_ext(spr_morearrow, 0, ((x_start + xx + ((string_length(dbutton_options[button_index]) + 1) * 15)) - 7) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + 10, darrow_scale, -darrow_scale, 270, c_white, 1);
                 }
             }
         }
         
         if (dcan_scroll_up)
-            draw_sprite_ext(spr_morearrow, 0, x_start + xx, y_start + yy + (global.dbutton_max_visible * (y_spacing * -0.03)) + dmenu_arrow_yoffset, darrow_scale, -darrow_scale, 0, c_white, 1);
+            draw_sprite_ext(spr_morearrow, 0, x_start + xx, y_start + yy + (dbutton_max_visible * (y_spacing * -0.03)) + dmenu_arrow_yoffset, darrow_scale, -darrow_scale, 0, c_white, 1);
         
         if (dcan_scroll_down)
-            draw_sprite_ext(spr_morearrow, 0, x_start + xx, (y_start + yy + (global.dbutton_max_visible * y_spacing)) - dmenu_arrow_yoffset, darrow_scale, darrow_scale, 0, c_white, 1);
+            draw_sprite_ext(spr_morearrow, 0, x_start + xx, (y_start + yy + (dbutton_max_visible * y_spacing)) - dmenu_arrow_yoffset, darrow_scale, darrow_scale, 0, c_white, 1);
     }
     
-    if (global.dbutton_layout == 2)
+    if (dbutton_layout == 2)
     {
         draw_set_color(c_yellow);
-        draw_text(((xcenter - (string_length(global.dgiver_amount) * 4)) * d) + xx, (ycenter * d) + yy, string(global.dgiver_amount));
+        draw_text(((xcenter - (string_length(dgiver_amount) * 4)) * d) + xx, (ycenter * d) + yy, string(dgiver_amount));
         draw_set_color(c_white);
         var itemreminder;
         
-        if (global.dgiver_menu_state == "objects")
+        if (dgiver_menu_state == "objects")
         {
-            itemreminder = "[" + string(global.dgiver_bname) + "]";
+            itemreminder = "[" + string(dgiver_bname) + "]";
             scr_itemcheck(0);
             draw_text(x_start + xx, ((ycenter + 25) * d) + yy, "OBJETs : " + string(12 - itemcount) + "/12");
         }
         
-        if (global.dgiver_menu_state == "armors")
+        if (dgiver_menu_state == "armors")
         {
-            itemreminder = "[" + string(global.dgiver_bname) + "]";
+            itemreminder = "[" + string(dgiver_bname) + "]";
             scr_armorcheck_inventory(0);
             draw_text(x_start + xx, ((ycenter + 25) * d) + yy, "ARMUREs : " + string(48 - itemcount) + "/48");
         }
         
-        if (global.dgiver_menu_state == "weapons")
+        if (dgiver_menu_state == "weapons")
         {
-            itemreminder = "[" + string(global.dgiver_bname) + "]";
+            itemreminder = "[" + string(dgiver_bname) + "]";
             scr_weaponcheck_inventory(0);
             draw_text(x_start + xx, ((ycenter + 25) * d) + yy, "ARMEs : " + string(48 - itemcount) + "/48");
         }
         
-        if (global.dgiver_menu_state == "keyitems")
+        if (dgiver_menu_state == "keyitems")
         {
-            itemreminder = "[" + string(global.dgiver_bname) + "]";
+            itemreminder = "[" + string(dgiver_bname) + "]";
             scr_keyitemcheck(0);
             draw_text(x_start + xx, ((ycenter + 25) * d) + yy, "OBJETs CLÉs : " + string(12 - itemcount) + "/12");
         }
@@ -196,9 +196,9 @@ if (global.dmenu_active)
     }
 }
 
-if (global.dkeys_helper == 1)
+if (dkeys_helper == 1)
 {
-    global.dkeys_data = ["F10 - Activer/désactiver le debug mode", "D - Ouvrir le menu Debug", "S - Sauvegarder la partie", "L - Charger la dernière sauvegarde", "R - Redémarrer le jeu", "P - Mettre en pause/reprendre le jeu", "M+1/M+2 - Ajouter/retirer 100 D$", "Suppr - Se rendre à la salle précédente", "Insert - Se rendre à la salle suivante", "Entrer - Voir les collisions du joueur", "W - Gagner instantanément un combat", "V - Passer le tour de l'ennemi", "H - Restaurer les HP du party", "T - Remplir/vider la barre de TP", "O - Basculer entre 30, 60 et 120 FPS", "Retour arrière - Passer le segment d'intro (Ch1)"];
+    dkeys_data = ["F10 - Activer/désactiver le debug mode", "D - Ouvrir le menu Debug", "S - Sauvegarder la partie", "L - Charger la dernière sauvegarde", "R - Redémarrer le jeu", "P - Mettre en pause/reprendre le jeu", "M+1/M+2 - Ajouter/retirer 100 D$", "Suppr - Se rendre à la salle précédente", "Insert - Se rendre à la salle suivante", "Entrer - Voir les collisions du joueur", "W - Gagner instantanément un combat", "V - Passer le tour de l'ennemi", "H - Restaurer les HP du party", "T - Remplir/vider la barre de TP", "O - Basculer entre 30, 60 et 120 FPS", "Retour arrière - Passer le segment d'intro (Ch1)"];
     var x_padding = 7;
     y_start = 50 * d;
     x_spacing = 10 * d;
@@ -216,11 +216,11 @@ if (global.dkeys_helper == 1)
     draw_set_color(c_white);
     draw_text(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, "Touches du debug mode");
     
-    for (var i = 0; i < array_length(global.dkeys_data); i++)
+    for (var i = 0; i < array_length(dkeys_data); i++)
     {
         draw_set_font(fnt_main);
         draw_set_color(c_white);
-        draw_text(x_start + xx, y_start + yy + (i * y_spacing), global.dkeys_data[i]);
+        draw_text(x_start + xx, y_start + yy + (i * y_spacing), dkeys_data[i]);
     }
 }
 
