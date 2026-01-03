@@ -188,7 +188,7 @@ global.dscroll_down_timer = 0;
 global.dscroll_delay = 15;
 global.dscroll_speed = 5;
 global.dmenu_title = ""Menu Debug"";
-global.dbutton_options = [""Sauts"", ""Items""];
+global.dbutton_options = [""Sauts"", ""Items"", ""Recrues""];
 global.dmenu_state = ""debug"";
 global.dbutton_selected = 1;
 global.dmenu_state_history = [];
@@ -206,6 +206,8 @@ global.drecent_item = 0;
 global.drecent_armor = 0;
 global.drecent_weapon = 0;
 global.drecent_keyitem = 0;
+global.dkeys_helper = 0;
+global.dkeys_data = [];
 ");
 
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)0, Data), @"
@@ -213,7 +215,7 @@ global.dmenu_arrow_timer += 1;
 
 if (global.dmenu_active)
 {
-    if (global.dbutton_layout == 0)
+    if (global.dbutton_layout == 0 && global.dkeys_helper == 0)
     {
         if (keyboard_check_pressed(vk_left))
         {
@@ -257,6 +259,54 @@ if (global.dmenu_active)
                 
                 if (global.dbutton_selected < (global.dmenu_start_index + 1))
                     global.dmenu_start_index -= 1;
+            }
+        }
+        
+        if (keyboard_check_pressed(vk_right))
+        {
+            if (global.dmenu_state == ""recruits"")
+            {
+                if (global.dbutton_selected != 1)
+                {
+                    real_index = global.dbutton_indices[global.dbutton_selected - 1];
+                    scr_recruit_info(real_index);
+                    recruit_count = global.flag[real_index + 600];
+                    
+                    if ((global.flag[real_index + 600] * _recruitcount) < _recruitcount)
+                    {
+                        global.flag[600 + real_index] = recruit_count + (1 / _recruitcount);
+                        dmenu_state_update();
+                        snd_play(snd_sparkle_gem);
+                    }
+                    else
+                    {
+                        snd_play(snd_error);
+                    }
+                }
+            }
+        }
+        
+        if (keyboard_check_pressed(vk_left))
+        {
+            if (global.dmenu_state == ""recruits"")
+            {
+                if (global.dbutton_selected != 1)
+                {
+                    real_index = global.dbutton_indices[global.dbutton_selected - 1];
+                    scr_recruit_info(real_index);
+                    recruit_count = global.flag[real_index + 600];
+                    
+                    if ((global.flag[real_index + 600] * _recruitcount) > -1)
+                    {
+                        global.flag[600 + real_index] = recruit_count - (1 / _recruitcount);
+                        dmenu_state_update();
+                        snd_play(snd_wing);
+                    }
+                    else
+                    {
+                        snd_play(snd_error);
+                    }
+                }
             }
         }
         
@@ -380,6 +430,12 @@ if (global.dmenu_active)
                     owned_count = itemcount;
                     break;
                 
+                case ""recruits"":
+                    real_indice = global.dbutton_indices[global.dbutton_selected - 1];
+                    recruited_nbr = global.flag[real_indice + 600];
+                    global.flag[real_indice + 600] = recruited_nbr + 1;
+                    break;
+                
                 default:
                     owned_count = 0;
             }
@@ -400,7 +456,7 @@ if (global.dmenu_active)
     {
         snd_play(snd_select);
         
-        if (global.dmenu_state != ""givertab"")
+        if (global.dmenu_state != ""givertab"" && global.dmenu_state != ""recruit_presets"" && (global.dmenu_state != ""recruits"" || global.dbutton_selected == 1))
         {
             array_push(global.dmenu_state_history, global.dmenu_state);
             array_push(global.dbutton_selected_history, global.dbutton_selected);
@@ -439,15 +495,23 @@ if (global.dmenu_active)
                     break;
             }
         }
-        else if (global.dmenu_state != ""givertab"")
+        else if (global.dmenu_state != ""givertab"" && (global.dmenu_state != ""recruits"" || global.dbutton_selected == 1))
         {
             scr_debug_print(string(global.dbutton_options[global.dbutton_selected - 1]) + "" sélectionné !"");
         }
         
-        dmenu_state_interact();
-        global.dmenu_start_index = 0;
-        global.dbutton_selected = 1;
-        dmenu_state_update();
+        if ((global.dmenu_state == ""recruits"" && global.dbutton_selected != 1) || global.dmenu_state == ""recruit_presets"")
+        {
+            dmenu_state_interact();
+            dmenu_state_update();
+        }
+        else
+        {
+            dmenu_state_interact();
+            global.dmenu_start_index = 0;
+            global.dbutton_selected = 1;
+            dmenu_state_update();
+        }
     }
     
     if (keyboard_check_pressed(global.input_k[5]) || keyboard_check_pressed(global.input_k[8]))
@@ -476,6 +540,17 @@ if (global.dmenu_active)
         dmenu_state_update();
         global.dmenu_start_index = clamp(global.dbutton_selected - 1, 0, max(0, array_length(global.dbutton_options) - global.dbutton_max_visible));
     }
+}
+
+if (global.dmenu_active == 1 && global.dmenu_state == ""debug"" && global.darkzone == 1)
+{
+    if (keyboard_check_pressed(ord(""M"")))
+        global.dkeys_helper = !global.dkeys_helper;
+}
+else if (global.dkeys_helper == 1)
+{
+    if (keyboard_check_pressed(ord(""M"")))
+        global.dkeys_helper = !global.dkeys_helper;
 }
 ");
 
@@ -571,6 +646,14 @@ if (global.dmenu_active)
     draw_set_color(c_white);
     draw_text(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, string(global.dmenu_title));
     
+    if (global.dmenu_state == ""debug"" && global.darkzone == 1)
+    {
+        draw_set_font(fnt_main);
+        draw_set_color(c_white);
+        draw_text(((x_start + 335) * (d / 2)) + xx, (((ycenter - (menu_length / 2)) + 82) * d) + yy, ""Touches - M"");
+        draw_set_font(fnt_mainbig);
+    }
+    
     if (global.dbutton_layout == 0)
     {
         for (var i = 0; i < button_count; i++)
@@ -651,6 +734,34 @@ if (global.dmenu_active)
     }
 }
 
+if (global.dkeys_helper == 1)
+{
+    global.dkeys_data = [""F10 - Activer/désactiver le debug mode"", ""D - Ouvrir le menu Debug"", ""S - Sauvegarder la partie"", ""L - Charger la dernière sauvegarde"", ""R - Redémarrer le jeu"", ""P - Mettre en pause/reprendre le jeu"", ""M+1/M+2 - Ajouter/retirer 100 D$"", ""Suppr - Se rendre à la salle précédente"", ""Insert - Se rendre à la salle suivante"", ""Entrer - Voir les collisions du joueur"", ""W - Gagner instantanément un combat"", ""V - Passer le tour de l'ennemi"", ""H - Restaurer les HP du party"", ""T - Remplir/vider la barre de TP"", ""O - Basculer entre 30, 60 et 120 FPS"", ""Retour arrière - Passer le segment d'intro (Ch1)""];
+    var x_padding = 7;
+    y_start = 50 * d;
+    x_spacing = 10 * d;
+    y_spacing = 10.5 * d;
+    x_start = (((xcenter - (menu_width / 2)) + x_padding) * d) - 35;
+    menu_width = 264;
+    menu_length = 204;
+    xcenter = 160;
+    ycenter = 120;
+    draw_set_color(c_white);
+    draw_rectangle(((xcenter - (menu_width / 2) - 3) * d) + xx, ((ycenter - (menu_length / 2) - 3) * d) + yy, ((xcenter + (menu_width / 2) + 3) * d) + xx, ((ycenter + (menu_length / 2) + 3) * d) + yy, false);
+    draw_set_color(c_black);
+    draw_rectangle(((xcenter - (menu_width / 2)) * d) + xx, ((ycenter - (menu_length / 2)) * d) + yy, ((xcenter + (menu_width / 2)) * d) + xx, ((ycenter + (menu_length / 2)) * d) + yy, false);
+    draw_set_font(fnt_mainbig);
+    draw_set_color(c_white);
+    draw_text(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, ""Touches du debug mode"");
+    
+    for (var i = 0; i < array_length(global.dkeys_data); i++)
+    {
+        draw_set_font(fnt_main);
+        draw_set_color(c_white);
+        draw_text(x_start + xx, y_start + yy + (i * y_spacing), global.dkeys_data[i]);
+    }
+}
+
 enum e__VW
 {
     XView,
@@ -692,7 +803,7 @@ function dmenu_state_update()
     {
         case ""debug"":
             global.dmenu_title = ""Menu Debug"";
-            global.dbutton_options = [""Sauts"", ""Items""];
+            global.dbutton_options = [""Sauts"", ""Items"", ""Recrues""];
             global.dmenu_box = 0;
             global.dbutton_layout = 0;
             break;
@@ -1077,6 +1188,41 @@ function dmenu_state_update()
             global.dbutton_layout = 2;
             break;
         
+        case ""recruits"":
+            global.dmenu_title = ""Liste des recrues"";
+            global.dbutton_options = [""Préréglages""];
+            global.dbutton_indices = [""Préréglages""];
+            var max_len = 40;
+            
+            for (var c = 1; c <= global.chapter; c++)
+            {
+                var test_lst = scr_get_chapter_recruit_data(c);
+                
+                for (var i = 0; i < array_length(test_lst); i++)
+                {
+                    var enemy_id = test_lst[i];
+                    scr_recruit_info(enemy_id);
+                    var combined = _name + "" - ["" + string(max(floor(global.flag[enemy_id + 600] * _recruitcount), -1)) + ""/"" + string(_recruitcount) + ""]"";
+                    
+                    if (string_length(combined) > max_len)
+                        combined = string_copy(combined, 1, max_len - 3) + ""..."";
+                    
+                    array_push(global.dbutton_options, combined);
+                    array_push(global.dbutton_indices, enemy_id);
+                }
+            }
+            
+            global.dmenu_box = 1;
+            global.dbutton_layout = 1;
+            break;
+        
+        case ""recruit_presets"":
+            global.dmenu_title = ""Préréglages des recrues"";
+            global.dbutton_options = [""Recruter tous"", ""Perdre tous""];
+            global.dmenu_box = 0;
+            global.dbutton_layout = 1;
+            break;
+        
         default:
             global.dmenu_title = ""Inconnu"";
             global.dbutton_options = [];
@@ -1099,6 +1245,12 @@ function dmenu_state_interact()
             if (global.dbutton_selected == 2)
             {
                 global.dmenu_state = ""give"";
+                global.dbutton_selected = 1;
+            }
+            
+            if (global.dbutton_selected == 3)
+            {
+                global.dmenu_state = ""recruits"";
                 global.dbutton_selected = 1;
             }
             
@@ -1856,6 +2008,52 @@ function dmenu_state_interact()
             
             global.dmenu_active = false;
             global.interact = 0;
+            break;
+        
+        case ""recruits"":
+            if (global.dbutton_selected == 1)
+            {
+                global.dmenu_state = ""recruit_presets"";
+                global.dbutton_selected = 1;
+            }
+            
+            break;
+        
+        case ""recruit_presets"":
+            if (global.dbutton_selected == 1)
+            {
+                for (var c = 1; c <= global.chapter; c++)
+                {
+                    var test_lst = scr_get_chapter_recruit_data(c);
+                    
+                    for (var i = 0; i < array_length(test_lst); i++)
+                    {
+                        var enemy_id = test_lst[i];
+                        scr_recruit_info(enemy_id);
+                        global.flag[enemy_id + 600] = 1;
+                    }
+                }
+                
+                snd_play(snd_pirouette);
+            }
+            
+            if (global.dbutton_selected == 2)
+            {
+                for (var c = 1; c <= global.chapter; c++)
+                {
+                    var test_lst = scr_get_chapter_recruit_data(c);
+                    
+                    for (var i = 0; i < array_length(test_lst); i++)
+                    {
+                        var enemy_id = test_lst[i];
+                        scr_recruit_info(enemy_id);
+                        global.flag[enemy_id + 600] = -1 / _recruitcount;
+                    }
+                }
+                
+                snd_play(snd_weirdeffect);
+            }
+            
             break;
         
         default:

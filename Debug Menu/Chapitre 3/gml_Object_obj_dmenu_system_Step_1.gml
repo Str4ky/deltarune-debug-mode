@@ -1,13 +1,13 @@
 if (global.ditemcount == 0)
 {
-    global.ditemcount = 33;
-    global.darmorcount = 22;
-    global.dweaponcount = 22;
-    global.dkeyitemcount = 15;
-    global.drecent_item = 16;
-    global.drecent_armor = 8;
-    global.drecent_weapon = 11;
-    global.drecent_keyitem = 8;
+    global.ditemcount = 39;
+    global.darmorcount = 27;
+    global.dweaponcount = 26;
+    global.dkeyitemcount = 19;
+    global.drecent_item = 34;
+    global.drecent_armor = 23;
+    global.drecent_weapon = 23;
+    global.drecent_keyitem = 16;
 }
 
 function dmenu_state_update()
@@ -22,10 +22,7 @@ function dmenu_state_update()
             break;
         
         case "warp":
-            global.dmenu_title = "Menu de sauts";
-            global.dbutton_options = ["Lightworld", "Darkworld", "Combats"];
-            global.dmenu_box = 0;
-            global.dbutton_layout = 0;
+            scr_debug_print("Pas encore disponible !");
             break;
         
         case "lightworld":

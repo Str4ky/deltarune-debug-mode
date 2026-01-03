@@ -16,7 +16,7 @@ function dmenu_state_update()
     {
         case "debug":
             global.dmenu_title = "Menu Debug";
-            global.dbutton_options = ["Sauts", "Items"];
+            global.dbutton_options = ["Sauts", "Items", "Recrues"];
             global.dmenu_box = 0;
             global.dbutton_layout = 0;
             break;
@@ -362,6 +362,41 @@ function dmenu_state_update()
             global.dbutton_layout = 2;
             break;
         
+        case "recruits":
+            global.dmenu_title = "Liste des recrues";
+            global.dbutton_options = ["Préréglages"];
+            global.dbutton_indices = ["Préréglages"];
+            var max_len = 40;
+            
+            for (var c = 1; c <= global.chapter; c++)
+            {
+                var test_lst = scr_get_chapter_recruit_data(c);
+                
+                for (var i = 0; i < array_length(test_lst); i++)
+                {
+                    var enemy_id = test_lst[i];
+                    scr_recruit_info(enemy_id);
+                    var combined = _name + " - [" + string(max(floor(global.flag[enemy_id + 600] * _recruitcount), -1)) + "/" + string(_recruitcount) + "]";
+                    
+                    if (string_length(combined) > max_len)
+                        combined = string_copy(combined, 1, max_len - 3) + "...";
+                    
+                    array_push(global.dbutton_options, combined);
+                    array_push(global.dbutton_indices, enemy_id);
+                }
+            }
+            
+            global.dmenu_box = 1;
+            global.dbutton_layout = 1;
+            break;
+        
+        case "recruit_presets":
+            global.dmenu_title = "Préréglages des recrues";
+            global.dbutton_options = ["Recruter tous", "Perdre tous"];
+            global.dmenu_box = 0;
+            global.dbutton_layout = 1;
+            break;
+        
         default:
             global.dmenu_title = "Inconnu";
             global.dbutton_options = [];
@@ -384,6 +419,12 @@ function dmenu_state_interact()
             if (global.dbutton_selected == 2)
             {
                 global.dmenu_state = "give";
+                global.dbutton_selected = 1;
+            }
+            
+            if (global.dbutton_selected == 3)
+            {
+                global.dmenu_state = "recruits";
                 global.dbutton_selected = 1;
             }
             
@@ -981,6 +1022,52 @@ function dmenu_state_interact()
             
             global.dmenu_active = false;
             global.interact = 0;
+            break;
+        
+        case "recruits":
+            if (global.dbutton_selected == 1)
+            {
+                global.dmenu_state = "recruit_presets";
+                global.dbutton_selected = 1;
+            }
+            
+            break;
+        
+        case "recruit_presets":
+            if (global.dbutton_selected == 1)
+            {
+                for (var c = 1; c <= global.chapter; c++)
+                {
+                    var test_lst = scr_get_chapter_recruit_data(c);
+                    
+                    for (var i = 0; i < array_length(test_lst); i++)
+                    {
+                        var enemy_id = test_lst[i];
+                        scr_recruit_info(enemy_id);
+                        global.flag[enemy_id + 600] = 1;
+                    }
+                }
+                
+                snd_play(snd_pirouette);
+            }
+            
+            if (global.dbutton_selected == 2)
+            {
+                for (var c = 1; c <= global.chapter; c++)
+                {
+                    var test_lst = scr_get_chapter_recruit_data(c);
+                    
+                    for (var i = 0; i < array_length(test_lst); i++)
+                    {
+                        var enemy_id = test_lst[i];
+                        scr_recruit_info(enemy_id);
+                        global.flag[enemy_id + 600] = -1 / _recruitcount;
+                    }
+                }
+                
+                snd_play(snd_weirdeffect);
+            }
+            
             break;
         
         default:

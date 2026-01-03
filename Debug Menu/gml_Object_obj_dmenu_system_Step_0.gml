@@ -2,7 +2,7 @@ global.dmenu_arrow_timer += 1;
 
 if (global.dmenu_active)
 {
-    if (global.dbutton_layout == 0)
+    if (global.dbutton_layout == 0 && global.dkeys_helper == 0)
     {
         if (keyboard_check_pressed(vk_left))
         {
@@ -46,6 +46,54 @@ if (global.dmenu_active)
                 
                 if (global.dbutton_selected < (global.dmenu_start_index + 1))
                     global.dmenu_start_index -= 1;
+            }
+        }
+        
+        if (keyboard_check_pressed(vk_right))
+        {
+            if (global.dmenu_state == "recruits")
+            {
+                if (global.dbutton_selected != 1)
+                {
+                    real_index = global.dbutton_indices[global.dbutton_selected - 1];
+                    scr_recruit_info(real_index);
+                    recruit_count = global.flag[real_index + 600];
+                    
+                    if ((global.flag[real_index + 600] * _recruitcount) < _recruitcount)
+                    {
+                        global.flag[600 + real_index] = recruit_count + (1 / _recruitcount);
+                        dmenu_state_update();
+                        snd_play(snd_sparkle_gem);
+                    }
+                    else
+                    {
+                        snd_play(snd_error);
+                    }
+                }
+            }
+        }
+        
+        if (keyboard_check_pressed(vk_left))
+        {
+            if (global.dmenu_state == "recruits")
+            {
+                if (global.dbutton_selected != 1)
+                {
+                    real_index = global.dbutton_indices[global.dbutton_selected - 1];
+                    scr_recruit_info(real_index);
+                    recruit_count = global.flag[real_index + 600];
+                    
+                    if ((global.flag[real_index + 600] * _recruitcount) > -1)
+                    {
+                        global.flag[600 + real_index] = recruit_count - (1 / _recruitcount);
+                        dmenu_state_update();
+                        snd_play(snd_wing);
+                    }
+                    else
+                    {
+                        snd_play(snd_error);
+                    }
+                }
             }
         }
         
@@ -169,6 +217,12 @@ if (global.dmenu_active)
                     owned_count = itemcount;
                     break;
                 
+                case "recruits":
+                    real_indice = global.dbutton_indices[global.dbutton_selected - 1];
+                    recruited_nbr = global.flag[real_indice + 600];
+                    global.flag[real_indice + 600] = recruited_nbr + 1;
+                    break;
+                
                 default:
                     owned_count = 0;
             }
@@ -189,7 +243,7 @@ if (global.dmenu_active)
     {
         snd_play(snd_select);
         
-        if (global.dmenu_state != "givertab")
+        if (global.dmenu_state != "givertab" && global.dmenu_state != "recruit_presets" && (global.dmenu_state != "recruits" || global.dbutton_selected == 1))
         {
             array_push(global.dmenu_state_history, global.dmenu_state);
             array_push(global.dbutton_selected_history, global.dbutton_selected);
@@ -228,15 +282,23 @@ if (global.dmenu_active)
                     break;
             }
         }
-        else if (global.dmenu_state != "givertab")
+        else if (global.dmenu_state != "givertab" && (global.dmenu_state != "recruits" || global.dbutton_selected == 1))
         {
             scr_debug_print(string(global.dbutton_options[global.dbutton_selected - 1]) + " sélectionné !");
         }
         
-        dmenu_state_interact();
-        global.dmenu_start_index = 0;
-        global.dbutton_selected = 1;
-        dmenu_state_update();
+        if ((global.dmenu_state == "recruits" && global.dbutton_selected != 1) || global.dmenu_state == "recruit_presets")
+        {
+            dmenu_state_interact();
+            dmenu_state_update();
+        }
+        else
+        {
+            dmenu_state_interact();
+            global.dmenu_start_index = 0;
+            global.dbutton_selected = 1;
+            dmenu_state_update();
+        }
     }
     
     if (keyboard_check_pressed(global.input_k[5]) || keyboard_check_pressed(global.input_k[8]))
@@ -265,4 +327,15 @@ if (global.dmenu_active)
         dmenu_state_update();
         global.dmenu_start_index = clamp(global.dbutton_selected - 1, 0, max(0, array_length(global.dbutton_options) - global.dbutton_max_visible));
     }
+}
+
+if (global.dmenu_active == 1 && global.dmenu_state == "debug" && global.darkzone == 1)
+{
+    if (keyboard_check_pressed(ord("M")))
+        global.dkeys_helper = !global.dkeys_helper;
+}
+else if (global.dkeys_helper == 1)
+{
+    if (keyboard_check_pressed(ord("M")))
+        global.dkeys_helper = !global.dkeys_helper;
 }
