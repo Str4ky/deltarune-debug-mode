@@ -89,6 +89,18 @@ if (dmenu_active)
     draw_set_color(c_white);
     draw_text(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, string(dmenu_title));
     
+    if (dmenu_state == "recruits")
+    {
+        draw_set_halign(fa_right);
+        
+        if (dhorizontal_page != 0)
+            draw_text(x_start + xx + 400, (((ycenter - (menu_length / 2)) + 8) * d) + yy, "(chap " + string(dhorizontal_page) + ")");
+        else
+            draw_text(x_start + xx + 400, (((ycenter - (menu_length / 2)) + 8) * d) + yy, "(tout chap)");
+        
+        draw_set_halign(fa_left);
+    }
+    
     if (dmenu_state == "debug" && global.darkzone == 1)
     {
         draw_set_font(fnt_main);
@@ -125,23 +137,33 @@ if (dmenu_active)
                 var text_color = is_cur_line ? c_yellow : c_white;
                 draw_set_color(text_color);
                 draw_monospace(x_start + xx, y_start + yy + (i * y_spacing), dbutton_options[button_index]);
+                mono_spacing = (global.darkzone == 1) ? 15 : 8;
+                side_arrows_mult = (global.darkzone == 1) ? [23, 10] : [12, 5];
                 
-                if (is_cur_line && dmenu_state == "flag_misc" && button_index != 0)
+                if (is_cur_line && dmenu_state == "flag_misc")
                 {
                     if (dhorizontal_index != 0)
                     {
                         for (dash_pos = 0; 1; dash_pos++)
                         {
-                            if (string_char_at(dbutton_options[button_index], dash_pos) == "-")
+                            if (dash_pos > 4 && string_char_at(dbutton_options[button_index], dash_pos) == "-")
                                 break;
                         }
                         
                         dash_pos++;
-                        draw_sprite_ext(spr_morearrow, 0, x_start + xx + ((dash_pos * 15) + 7) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + 23, darrow_scale, -darrow_scale, 90, c_white, 1);
+                        draw_sprite_ext(spr_morearrow, 0, x_start + xx + ((dash_pos * mono_spacing) + floor(mono_spacing / 2)) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[0], darrow_scale, -darrow_scale, 90, c_white, 1);
                     }
                     
-                    if (dhorizontal_index < (array_length(dother_options[dbutton_selected - 1][2]) - 1))
-                        draw_sprite_ext(spr_morearrow, 0, ((x_start + xx + ((string_length(dbutton_options[button_index]) + 1) * 15)) - 7) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + 10, darrow_scale, -darrow_scale, 270, c_white, 1);
+                    if (dhorizontal_index < (array_length(dother_options[dbutton_selected - 1][3]) - 1))
+                        draw_sprite_ext(spr_morearrow, 0, ((x_start + xx + ((string_length(dbutton_options[button_index]) + 1) * mono_spacing)) - floor(mono_spacing / 2)) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[1], darrow_scale, -darrow_scale, 270, c_white, 1);
+                }
+                else if (dmenu_state == "recruits" && button_index == 0)
+                {
+                    if (dhorizontal_page != 0)
+                        draw_sprite_ext(spr_morearrow, 0, x_start + xx + floor(mono_spacing / 2) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[0], darrow_scale, -darrow_scale, 90, c_white, 1);
+                    
+                    if (dhorizontal_page != global.chapter)
+                        draw_sprite_ext(spr_morearrow, 0, ((x_start + xx + ((string_length(dbutton_options[button_index]) + 1) * mono_spacing)) - floor(mono_spacing / 2)) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[1], darrow_scale, -darrow_scale, 270, c_white, 1);
                 }
             }
         }
@@ -244,3 +266,4 @@ enum e__VW
     Camera,
     SurfaceID
 }
+

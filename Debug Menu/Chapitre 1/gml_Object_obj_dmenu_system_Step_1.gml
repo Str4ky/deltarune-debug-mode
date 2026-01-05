@@ -241,54 +241,6 @@ function dmenu_state_update()
             dbutton_layout = 1;
             break;
 
-        case "flag_misc":
-            dmenu_title = "Divers";
-            dbutton_options = [];
-            dbutton_indices = [];
-            other_len = array_length(dother_options);
-            var max_len = 40;
-
-            if (!global.dreading_custom_flag)
-            {
-                array_push(dbutton_options, "Custom");
-                array_push(dbutton_indices, 0);
-            }
-            else
-            {
-                array_push(dbutton_options, "global.flag[" + dcustom_flag_text[0] + "] = |" + dcustom_flag_text[1] + "|");
-                array_push(dbutton_indices, 0);
-            }
-
-            for (var i = 1; i < other_len; i++)
-            {
-                cur_option = dother_options[i];
-                flag_number = global.flag[cur_option[1]];
-                var combined = cur_option[0] + " - problem lol";
-
-                if (i == (dbutton_selected - 1))
-                {
-                    option_index = dhorizontal_index;
-                    global.flag[cur_option[1]] = cur_option[2][dhorizontal_index][1];
-                }
-                else
-                {
-                    option_index = find_subarray_index(cur_option[1], cur_option[2]);
-                }
-
-                if (option_index != -1)
-                    combined = cur_option[0] + " -  " + cur_option[2][option_index][0];
-
-                if (string_length(combined) > max_len)
-                    combined = string_copy(combined, 1, max_len - 3) + "...";
-
-                array_push(dbutton_options, combined);
-                array_push(dbutton_indices, i);
-            }
-
-            dmenu_box = 2;
-            dbutton_layout = 1;
-            break;
-
         case "armors":
             dmenu_title = "Liste d'armures";
             dbutton_options = [];
@@ -410,6 +362,65 @@ function dmenu_state_update()
             dbutton_layout = 2;
             break;
 
+        case "flag_categories":
+            dmenu_title = "Divers";
+            dbutton_options = [];
+            dbutton_indices = [];
+            categories_len = array_length(dother_categories);
+            var max_len = 40;
+            
+            if (!global.dreading_custom_flag)
+            {
+                array_push(dbutton_options, "Custom");
+                array_push(dbutton_indices, 0);
+            }
+            else
+            {
+                array_push(dbutton_options, "global.flag[" + dcustom_flag_text[0] + "] = |" + dcustom_flag_text[1] + "|");
+                array_push(dbutton_indices, 0);
+            }
+            
+            for (var i = 0; i < categories_len; i++)
+            {
+                array_push(dbutton_options, dother_categories[i]);
+                array_push(dbutton_indices, i);
+            }
+            
+            dmenu_box = 2;
+            dbutton_layout = 1;
+            break;
+        
+        case "flag_misc":
+            dmenu_title = "Divers";
+            dbutton_options = [];
+            dbutton_indices = [];
+            other_len = array_length(dother_options);
+            var max_len = 40;
+            
+            for (var i = 0; i < other_len; i++)
+            {
+                cur_option = dother_options[i];
+                flag_number = global.flag[cur_option[2]];
+                var combined = cur_option[1] + " - problem lol";
+                
+                if (i == (dbutton_selected - 1))
+                    option_index = dhorizontal_index;
+                else
+                    option_index = find_subarray_index(cur_option[2], cur_option[3]);
+                
+                combined = cur_option[1] + " -  " + cur_option[3][option_index][0];
+                
+                if (string_length(combined) > max_len)
+                    combined = string_copy(combined, 1, max_len - 3) + "...";
+                
+                array_push(dbutton_options, combined);
+                array_push(dbutton_indices, i);
+            }
+            
+            dmenu_box = 2;
+            dbutton_layout = 1;
+            break;
+        
         default:
             dmenu_title = "Inconnu";
             dbutton_options = [];
@@ -1037,12 +1048,31 @@ function dmenu_state_interact()
             global.interact = 0;
             break;
 
+        case "flag_categories":
+            if (dbutton_selected > 1)
+            {
+                dother_options = [];
+                
+                for (var i = 0; i < array_length(dother_all_options); i++)
+                {
+                    options = dother_all_options[i];
+                    
+                    if (options[0] == (dbutton_selected - 2))
+                        array_push(dother_options, options);
+                }
+                
+                dhorizontal_index = find_subarray_index(dother_options[0][2], dother_options[0][3]);
+                dmenu_state = "flag_misc";
+                dbutton_selected = 1;
+            }
+            
+            break;
+        
         case "flag_misc":
-			break;
-
+            break;
+        
         default:
             snd_play(snd_error);
             scr_debug_print("Sélection invalide !");
     }
 }
-
