@@ -26,16 +26,16 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
         scr_debug_print(""+ 100 D$"");
     }
 
-    if (sunkus_kb_check_pressed(83))
+    if (keyboard_check_pressed(ord(""S"")))
         instance_create(0, 0, obj_savemenu);
 
-    if (sunkus_kb_check_pressed(76))
+    if (keyboard_check_pressed(ord(""L"")))
         scr_load();
 
-    if (sunkus_kb_check_pressed(82) && sunkus_kb_check(8))
+    if (keyboard_check_pressed(ord(""R"")) && keyboard_check_pressed(vk_backspace))
         game_restart_true();
 
-    if (sunkus_kb_check_pressed(82) && !sunkus_kb_check(8))
+    if (keyboard_check_pressed(ord(""R"")) && keyboard_check_pressed(vk_backspace))
     {
         snd_free_all();
         room_restart();
@@ -46,18 +46,4 @@ if (!instance_exists(obj_dmenu_system))
     instance_create(0, 0, obj_dmenu_system)
 ");
 ChangeSelection(obj_darkcontroller);
-
-UndertaleScript scr_flag_set = Data.Scripts.ByName("scr_flag_set");
-importGroup.QueueReplace(scr_flag_set.Code, @"
-function scr_flag_set(arg0, arg1)
-{
-    global.flag[arg0] = arg1;
-}
-
-function scr_setflag(arg0, arg1)
-{
-    scr_flag_set(arg0, arg1);
-}
-");
-ChangeSelection(scr_flag_set);
 

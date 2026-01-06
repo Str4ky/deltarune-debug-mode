@@ -18,7 +18,10 @@ changes = [
 ]
 
 for i in range(1, 5):
-    output = src.replace("CHAPTER_NUMBER", str(i))
+    if (i == 1):
+        output = read_file("./template_chapter1.csx")
+    else:
+        output = src.replace("CHAPTER_NUMBER", str(i))
     for change in changes:
         output = output.replace(change[0], change[1])
 

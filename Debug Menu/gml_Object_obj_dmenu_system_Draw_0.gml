@@ -89,18 +89,6 @@ if (dmenu_active)
     draw_set_color(c_white);
     draw_text(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, string(dmenu_title));
     
-    if (dmenu_state == "recruits")
-    {
-        draw_set_halign(fa_right);
-        
-        if (dhorizontal_page != 0)
-            draw_text(x_start + xx + 400, (((ycenter - (menu_length / 2)) + 8) * d) + yy, "(chap " + string(dhorizontal_page) + ")");
-        else
-            draw_text(x_start + xx + 400, (((ycenter - (menu_length / 2)) + 8) * d) + yy, "(tout chap)");
-        
-        draw_set_halign(fa_left);
-    }
-    
     if (dmenu_state == "debug" && global.darkzone == 1)
     {
         draw_set_font(fnt_main);
@@ -120,12 +108,15 @@ if (dmenu_active)
         }
     }
     
+    side_arrows_mult = (global.darkzone == 1) ? [23, 10] : [12, 5];
+    var dmenu_arrow_yoffset, darrow_scale;
+    
     if (dbutton_layout == 1)
     {
         var dcan_scroll_up = dmenu_start_index > 0;
         var dcan_scroll_down = (dmenu_start_index + dbutton_max_visible) < array_length(dbutton_options);
-        var dmenu_arrow_yoffset = 2 * sin(dmenu_arrow_timer / 10);
-        var darrow_scale = d / 2;
+        dmenu_arrow_yoffset = 2 * sin(dmenu_arrow_timer / 10);
+        darrow_scale = d / 2;
         
         for (var i = 0; i < dbutton_max_visible; i++)
         {
@@ -138,7 +129,6 @@ if (dmenu_active)
                 draw_set_color(text_color);
                 draw_monospace(x_start + xx, y_start + yy + (i * y_spacing), dbutton_options[button_index]);
                 mono_spacing = (global.darkzone == 1) ? 15 : 8;
-                side_arrows_mult = (global.darkzone == 1) ? [23, 10] : [12, 5];
                 
                 if (is_cur_line && dmenu_state == "flag_misc")
                 {
@@ -168,11 +158,43 @@ if (dmenu_active)
             }
         }
         
+        draw_set_color(c_white);
+        
         if (dcan_scroll_up)
             draw_sprite_ext(spr_morearrow, 0, x_start + xx, y_start + yy + (dbutton_max_visible * (y_spacing * -0.03)) + dmenu_arrow_yoffset, darrow_scale, -darrow_scale, 0, c_white, 1);
         
         if (dcan_scroll_down)
             draw_sprite_ext(spr_morearrow, 0, x_start + xx, (y_start + yy + (dbutton_max_visible * y_spacing)) - dmenu_arrow_yoffset, darrow_scale, darrow_scale, 0, c_white, 1);
+    }
+    
+    if (dmenu_state == "recruits" || dmenu_state == "weapons" || dmenu_state == "armors" || dmenu_state == "objects")
+    {
+        draw_set_halign(fa_right);
+        draw_y = (((ycenter - (menu_length / 2)) + 8) * d) + yy;
+        draw_x = x_start + xx + 200;
+        
+        if (global.darkzone)
+            draw_x += 200;
+        
+        if (dmenu_state == "recruits")
+        {
+            if (dhorizontal_page != 0)
+                draw_text(draw_x, draw_y, "(chap " + string(dhorizontal_page) + ")");
+            else
+                draw_text(draw_x, draw_y, "(tout chap)");
+        }
+        else if (dhorizontal_page == 0)
+        {
+            draw_text(draw_x + 30 + (global.darkzone * 30), draw_y, "(Darkworld)");
+            draw_sprite_ext(spr_morearrow, 0, draw_x + 35 + (global.darkzone * 35) + dmenu_arrow_yoffset, draw_y + side_arrows_mult[1], darrow_scale, -darrow_scale, 270, c_white, 1);
+        }
+        else
+        {
+            draw_text(draw_x + 30 + (global.darkzone * 30), draw_y, "(Lightworld)");
+            draw_sprite_ext(spr_morearrow, 0, draw_x + -55 + (global.darkzone * -55) + dmenu_arrow_yoffset, draw_y + side_arrows_mult[0], darrow_scale, -darrow_scale, 90, c_white, 1);
+        }
+        
+        draw_set_halign(fa_left);
     }
     
     if (dbutton_layout == 2)
@@ -185,34 +207,40 @@ if (dmenu_active)
         if (dgiver_menu_state == "objects")
         {
             itemreminder = "[" + string(dgiver_bname) + "]";
-            scr_itemcheck(0);
-            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, "OBJETs : " + string(12 - itemcount) + "/12");
+            
+            if (dhorizontal_page == 0)
+                scr_itemcheck(0);
+            else
+                scr_litemcheck(0);
+            
+            max_items = (dhorizontal_page == 0) ? 12 : 8;
+            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, "OBJETs : " + string(max_items - itemcount) + " / " + string(max_items));
         }
         
         if (dgiver_menu_state == "armors")
         {
             itemreminder = "[" + string(dgiver_bname) + "]";
             scr_armorcheck_inventory(0);
-            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, "ARMUREs : " + string(48 - itemcount) + "/48");
+            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, "ARMUREs : " + string(48 - itemcount) + " / 48");
         }
         
         if (dgiver_menu_state == "weapons")
         {
             itemreminder = "[" + string(dgiver_bname) + "]";
             scr_weaponcheck_inventory(0);
-            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, "ARMEs : " + string(48 - itemcount) + "/48");
+            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, "ARMEs : " + string(48 - itemcount) + " / 48");
         }
         
         if (dgiver_menu_state == "keyitems")
         {
             itemreminder = "[" + string(dgiver_bname) + "]";
             scr_keyitemcheck(0);
-            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, "OBJETs CLÉs : " + string(12 - itemcount) + "/12");
+            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, "OBJETs CLÉs : " + string(12 - itemcount) + " / 12");
         }
         
         var text_width = string_width(itemreminder);
         draw_text(((xcenter * d) - (text_width / 2)) + xx, ((ycenter - 22) * d) + yy, itemreminder);
-        var darrow_scale = d / 2;
+        darrow_scale = d / 2;
         draw_sprite_ext(spr_morearrow, 0, ((xcenter - 15) * d) + xx, ((ycenter + 6) * d) + yy, darrow_scale, darrow_scale, 270, c_white, 1);
         draw_sprite_ext(spr_morearrow, 0, ((xcenter + 15) * d) + xx, ((ycenter + 12) * d) + yy, darrow_scale, darrow_scale, 90, c_white, 1);
     }

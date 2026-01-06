@@ -4,20 +4,31 @@ EnsureDataLoaded();
 
 if (!Data.IsVersionAtLeast(2023, 6))
 {
-    ScriptError("Erreur 0 : Ce script fonctionne uniquement pour la version payante de Deltarune.");
+    ScriptError("Erreur 0 : Ce script fonctionne uniquement pour la version LTS de la démo et la version payante de Deltarune.");
     return;
 }
 
-if (Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapter CHAPTER_NUMBER" &&
-    Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapitre CHAPTER_NUMBER")
+if (Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapter 1" &&
+    Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapitre 1")
 {
-    ScriptError("Erreur 1 : Ce script s'applique seulement au Chapitre CHAPTER_NUMBER.");
+    ScriptError("Erreur 1 : Ce script s'applique seulement au Chapitre 1.");
     return;
 }
 
+bool isDemo = false;
+foreach (var str in Data.Strings)
+{
+    if (str.Content == "1.19")
+    {
+        isDemo = true;
+        break;
+    }
+}
+
+string versionInfo = isDemo ? "\r\n[Version détectée : Démo Itch]" : "\r\n[Version détectée : Payante]";
 
 bool enable = ScriptQuestion(
-"Ajouter le Mode Debug pour le Chapitre CHAPTER_NUMBER ?"
+"Ajouter le Mode Debug pour le Chapitre 1 ?" + versionInfo
 );
 
 if (!enable)
@@ -29,14 +40,27 @@ GlobalDecompileContext globalDecompileContext = new(Data);
 Underanalyzer.Decompiler.IDecompileSettings decompilerSettings = new Underanalyzer.Decompiler.DecompileSettings();
 UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, globalDecompileContext, decompilerSettings)
 {
-    ThrowOnNoOpFindReplace = false
+    ThrowOnNoOpFindReplace = true
 };
 
 // Fonction de Log debug
 
 // Script debug print
 
-UndertaleScript scr_debug_print = Data.Scripts.ByName("scr_debug_print");
+if (isDemo)
+{
+    // Seulement pour la démo
+    UndertaleScript CREATE_scr_debug_print = new UndertaleScript();
+    CREATE_scr_debug_print.Name = Data.Strings.MakeString("scr_debug_print");
+    CREATE_scr_debug_print.Code = new UndertaleCode();
+    CREATE_scr_debug_print.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_print");
+    CREATE_scr_debug_print.Code.LocalsCount = 1;
+
+    Data.Scripts.Add(CREATE_scr_debug_print);
+    Data.Code.Add(CREATE_scr_debug_print.Code);
+}
+
+var scr_debug_print = Data.Scripts.ByName("scr_debug_print");
 
 importGroup.QueueReplace(scr_debug_print.Code, @"
 function scr_debug_print(arg0)
@@ -84,27 +108,25 @@ enum e__VW
     Camera,
     SurfaceID
 }
-
-function print_message(arg0)
-{
-}
-
-function debug_print(arg0)
-{
-}
-
-function scr_debug_clear_all()
-{
-    scr_debug_clear_persistent();
-}
-
 ");
 
 ChangeSelection(scr_debug_print);
 
 // GameObject debug gui
 
-UndertaleGameObject  obj_debug_gui = Data.GameObjects.ByName("obj_debug_gui");
+if (isDemo)
+{
+    // Seulement pour la démo
+    UndertaleGameObject CREATE_obj_debug_gui = new UndertaleGameObject(); // Ajoute le GameObject
+    CREATE_obj_debug_gui.Name = Data.Strings.MakeString("obj_debug_gui");
+    CREATE_obj_debug_gui.Visible = (true);
+    CREATE_obj_debug_gui.CollisionShape = (CollisionShapeFlags)1;
+    CREATE_obj_debug_gui.Awake = (true);
+
+    Data.GameObjects.Add(CREATE_obj_debug_gui); // Répertorie le GameObject
+}
+
+var obj_debug_gui = Data.GameObjects.ByName("obj_debug_gui");
 
 importGroup.QueueReplace(obj_debug_gui.EventHandlerFor(EventType.Create, (uint)0, Data), @"
 message[0] = """";
@@ -163,7 +185,7 @@ draw_set_color(col);
 draw_set_font(fnt);
 ");
 
-importGroup.QueueReplace(obj_debug_gui.EventHandlerFor(EventType.CleanUp, (uint)0, Data), @"
+importGroup.QueueReplace(obj_debug_gui.EventHandlerFor(EventType.PreCreate, (uint)0, Data), @"
 event_inherited();
 ");
 ChangeSelection(scr_debug_print.Code);
@@ -196,8 +218,12 @@ STEP1_CODE
 ChangeSelection(obj_dmenu_system);
 importGroup.Import();
 
+ChangeSelection(obj_dmenu_system);
+importGroup.Import();
+
 // Variable au gamestart
 UndertaleScript scr_gamestart = Data.Scripts.ByName("scr_gamestart");
+
 importGroup.QueueAppend(scr_gamestart.Code, @"
 global.debug = 0;
 ");
@@ -214,7 +240,7 @@ function scr_debug()
 ChangeSelection(scr_debug);
 
 UndertaleGameObject obj_time_TOGGLER = Data.GameObjects.ByName("obj_time");
-importGroup.QueueAppend(obj_time_TOGGLER.EventHandlerFor(EventType.Step, (uint)0, Data), @"
+importGroup.QueueReplace(obj_time_TOGGLER.EventHandlerFor(EventType.Step, (uint)0, Data), @"
 if (keyboard_check_pressed(vk_f10))
 {
     global.debug = !global.debug;
@@ -229,15 +255,72 @@ ChangeSelection(obj_time_TOGGLER);
 // Fonctions du Lightworld
 UndertaleGameObject obj_overworldc = Data.GameObjects.ByName("obj_overworldc");
 importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, Data), @"
+if (global.debug == 1)
+{
+    if (keyboard_check_pressed(ord(""S"")))
+        instance_create(0, 0, obj_saveu);
+    if (keyboard_check_pressed(ord(""L"")))
+        scr_load();
+    if (keyboard_check_pressed(ord(""R"")))
+        game_restart_true();
+}
 if (!instance_exists(obj_dmenu_system))
     instance_create(0, 0, obj_dmenu_system)
 ");
 ChangeSelection(obj_overworldc);
 
+// Fonctions du Darkworld
+UndertaleGameObject obj_darkcontroller = Data.GameObjects.ByName("obj_darkcontroller");
+importGroup.QueueAppend(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint)0, Data), @"
+if (global.debug == 1)
+{
+    if (keyboard_check_pressed(ord(""S"")))
+        instance_create(0, 0, obj_savemenu);
+    if (keyboard_check_pressed(ord(""L"")))
+        scr_load();
+    if (keyboard_check_pressed(ord(""R"")))
+        game_restart_true();
+    if (keyboard_check_pressed(ord(""2"")) && keyboard_check(ord(""M"")))
+    {
+        if (global.gold >= 100)
+        {
+            global.gold -= 100;
+            scr_debug_print(""- 100 D$"");
+        }
+        else
+        {
+            scr_debug_print(""- "" + string(global.gold) + "" D$"");
+            global.gold = 0;
+        }
+    }
+    if (keyboard_check_pressed(ord(""1"")) && keyboard_check(ord(""M"")))
+    {
+        global.gold += 100;
+        scr_debug_print(""+ 100 D$"");
+    }
+}
+if (!instance_exists(obj_dmenu_system))
+    instance_create(0, 0, obj_dmenu_system)
+");
+ChangeSelection(obj_darkcontroller);
+
+// Fonctions du joueur (téléportation)
+UndertaleGameObject obj_mainchara = Data.GameObjects.ByName("obj_mainchara");
+importGroup.QueueAppend(obj_mainchara.EventHandlerFor(EventType.Step, (uint)0, Data), @"
+if (global.debug == 1)
+{
+    if (keyboard_check_pressed(vk_insert))
+        room_goto_next();
+    if (keyboard_check_pressed(vk_delete))
+        room_goto_previous();
+}
+");
+ChangeSelection(obj_mainchara);
+
 // Fonctions du jeu (compteur FPS / fonction de pause / fonction de changement de FPS)
 UndertaleGameObject obj_time = Data.GameObjects.ByName("obj_time");
 importGroup.QueueReplace(obj_time.EventHandlerFor(EventType.Draw, (uint)0, Data), @"
-if (scr_debug())
+if (global.debug == 1)
 {
     draw_set_font(fnt_main)
     draw_set_color(c_red)
@@ -251,7 +334,7 @@ if (scr_debug())
 ");
 
 importGroup.QueueAppend(obj_time.EventHandlerFor(EventType.Step, (uint)0, Data), @"
-if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
+if (global.debug == 1)
 {
     if (keyboard_check_pressed(ord(""P"")))
     {
@@ -273,8 +356,7 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
         {
             room_speed = 30;
             scr_debug_print(""FPS à 30"");
-        }
-        else if (room_speed == 60)
+        }      else if (room_speed == 60)
         {
             room_speed = 120;
             scr_debug_print(""FPS à 120"");
@@ -289,15 +371,24 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
 ChangeSelection(obj_time);
 
 // Fonctions de combat
-UndertaleCode obj_battlecontroller_step = Data.Code.ByName("gml_Object_obj_battlecontroller_Step_0");
-
-// Replace debug commands
-importGroup.QueueFindReplace(obj_battlecontroller_step,
-"if (scr_debug())", "if (0)");
-
-importGroup.QueueAppend(obj_battlecontroller_step, @"
-if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
+UndertaleGameObject obj_battlecontroller = Data.GameObjects.ByName("obj_battlecontroller");
+importGroup.QueueAppend(obj_battlecontroller.EventHandlerFor(EventType.Step, (uint)0, Data), @"
+if (global.debug == 1)
 {
+    if (keyboard_check_pressed(ord(""W"")))
+    {
+        scr_wincombat();
+        scr_debug_print(""Combat passé"");
+    }
+    if (keyboard_check_pressed(ord(""H"")))
+    {
+        scr_debug_fullheal();
+        scr_debug_print(""HP du party restaurés"");
+    }
+    if (keyboard_check_pressed(ord(""V"")))
+    {
+        scr_turn_skip();
+    }
     if (keyboard_check_pressed(ord(""T"")))
     {
         if (global.tension < 250)
@@ -311,26 +402,34 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
             scr_debug_print(""TP à 0 %"");
         }
     }
-    if (keyboard_check_pressed(ord(""V"")))
-        scr_turn_skip();
-    
-    if (keyboard_check_pressed(ord(""H"")))
+}
+");
+ChangeSelection(obj_battlecontroller);
+
+// Fonctions intro (skip Gaster)
+UndertaleGameObject DEVICE_CONTACT = Data.GameObjects.ByName("DEVICE_CONTACT");
+importGroup.QueueAppend(DEVICE_CONTACT.EventHandlerFor(EventType.Step, (uint)0, Data), @"
+if (global.debug == 1)
+{
+    if (keyboard_check_pressed(vk_backspace))
     {
-        scr_debug_fullheal();
-        scr_debug_print(""HP du party restaurés"");
-    }
-    
-    if (keyboard_check_pressed(ord(""W"")))
-    {
-        scr_wincombat();
-        scr_debug_print(""Combat passé"");
+        global.flag[6] = 0;
+        snd_free_l();
+        room_goto(room_krisroom);
     }
 }
 ");
-ChangeSelection(obj_battlecontroller_step);
+ChangeSelection(DEVICE_CONTACT);
 
 // Script fullheal
-UndertaleScript scr_debug_fullheal = Data.Scripts.ByName("scr_debug_fullheal");
+UndertaleScript scr_debug_fullheal = new UndertaleScript(); // Ajoute le Script
+scr_debug_fullheal.Name = Data.Strings.MakeString("scr_debug_fullheal");
+scr_debug_fullheal.Code = new UndertaleCode(); // Ajoute le Code
+scr_debug_fullheal.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_fullheal");
+scr_debug_fullheal.Code.LocalsCount = 1;
+
+Data.Scripts.Add(scr_debug_fullheal); // Répertorie e Script
+Data.Code.Add(scr_debug_fullheal.Code); // Répertorie le Code
 
 importGroup.QueueReplace(scr_debug_fullheal.Code, @"
 function scr_debug_fullheal()
@@ -353,12 +452,21 @@ function scr_debug_fullheal()
 ChangeSelection(scr_debug_fullheal);
 
 // Script turn skip
-UndertaleScript scr_turn_skip = Data.Scripts.ByName("scr_turn_skip");
+UndertaleScript scr_turn_skip = new UndertaleScript(); // Aoute le Script
+scr_turn_skip.Name = Data.Strings.MakeString("scr_turn_skip");
+scr_turn_skip.Code = new UndertaleCode(); // Ajoute le Code
+scr_turn_skip.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_turn_skip");
+scr_turn_skip.Code.LocalsCount = 1;
 
-importGroup.QueueReplace(scr_turn_skip.Code, @"
+Data.Scripts.Add(scr_turn_skip); // Répertorie le Script
+Data.Code.Add(scr_turn_skip.Code); // Répertorie le Code
+
+importGroup.QueueAppend(scr_turn_skip.Code, @"
 function scr_turn_skip()
 {
-    if (global.turntimer > 0 && instance_exists(obj_growtangle) && scr_isphase(""bullets""))
+    if (global.mnfight == 2
+    && global.turntimer > 0
+    &instance_exists(obj_growtangle))
     {
         global.turntimer = 0;
         scr_debug_print(""Tour de l'ennemi passé"");
@@ -367,8 +475,6 @@ function scr_turn_skip()
 ");
 ChangeSelection(scr_turn_skip);
 
-EXTRA_IMPORTS
-
 importGroup.Import();
 
-ScriptMessage("Mode Debug du Chapitre CHAPTER_NUMBER " + (enable ? "ajouté" : "désactivé") + ".\r\n" + "Pour activer le Mode Debug en jeu, appuyer sur F10.");
+ScriptMessage("Mode Debug du Chapitre 1 " + (enable ? "ajouté" : "désactivé") + ".\r\n" + "Pour activer le Mode Debug en jeu, appuyer sur F10.");
