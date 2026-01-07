@@ -34,6 +34,7 @@ Fonctionnent uniquement avec la démo LTS et la version payante du jeu.
 | H              | Restaurer les HP du party        |
 | T              | Remplir/vider la barre de TP     |
 | O              | Basculer entre 30, 60 et 120 FPS |
+| Clic milieu    | Ouvrir l'éditeur de salle        |
 | Retour arrière | Passer le segment d'intro (Ch1)  |
 
 ## Autres fonctions
