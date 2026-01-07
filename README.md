@@ -45,4 +45,4 @@ Pour celles-ci, les contrôles y sont donc les originaux et sont restés intouch
 
 ## Crédits
 
-Ces scripts vous sont proposés par [Straky](https://github.com/Str4ky) et [Jazzky](https://github.com/Jazzky).
+Ces scripts vous sont proposés par [Straky](https://github.com/Str4ky), [Jazzky](https://github.com/Jazzky) et [Galbio](https://github.com/Galbio).
