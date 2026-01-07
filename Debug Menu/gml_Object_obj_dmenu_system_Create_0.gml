@@ -9,7 +9,7 @@ dscroll_cur_key = 0;
 dscroll_delay = 15;
 dscroll_speed = 5;
 dmenu_title = "Menu Debug";
-dbutton_options_original = ["Sauts", "Items", "Recrues", "Autre"];
+dbutton_options_original = ["Sauts", "Items", "Recrues", "Divers"];
 dnumber_litems = [0, 11, 14, 14, 18];
 dlight_weapons = [];
 dlight_armors = [[3, "Pansement"], [14, "Montre"]];
@@ -36,7 +36,7 @@ if (global.chapter == 1)
     array_delete(dlight_objects, 8, 1);
 }
 
-if (global.chapter < 4)
+if (global.chapter < 3)
     array_delete(dbutton_options_original, 2, 1);
 
 dbutton_options = dbutton_options_original;
@@ -50,15 +50,78 @@ dgiver_menu_state = 0;
 dgiver_button_selected = 0;
 dgiver_amount = 1;
 dgiver_bname = 0;
-ditemcount = array_get([15, 33, 39, 63], global.chapter - 1);
-darmorcount = array_get([7, 22, 27, 54], global.chapter - 1);
-dweaponcount = array_get([10, 22, 26, 54], global.chapter - 1);
-dkeyitemcount = array_get([7, 15, 19, 31], global.chapter - 1);
-drecent_item = array_get([1, 16, 34, 60], global.chapter - 1);
-drecent_armor = array_get([1, 8, 23, 50], global.chapter - 1);
-drecent_weapon = array_get([1, 11, 23, 50], global.chapter - 1);
-drecent_keyitem = array_get([1, 8, 16, 30], global.chapter - 1);
 dbutton_indices = [];
+ditem_types = ["objects", "armors", "weapons", "keyitems"];
+ditem_chap = 1;
+ditemcount_all = [1, 15, 18, 6, 4];
+ditem_gaps = [0, 0, 0, 20, 0];
+darmorcount_all = [1, 7, 15, 5, 5];
+darmor_gaps = [0, 0, 0, 22, 0];
+dweaponcount_all = [1, 10, 12, 4, 5];
+dweapon_gaps = [0, 0, 0, 23, 0];
+dkeyitemcount_all = [1, 7, 8, 4, 2];
+dkeyitem_gaps = [0, 0, 0, 10, 0];
+
+ditem_index_data = function(arg0)
+{
+    var _chap = arg0;
+    var _start_at = 0;
+    
+    for (var i = 0; i < _chap; i++)
+        _start_at += (ditemcount_all[i] + ditem_gaps[i]);
+    
+    return 
+    {
+        start_id: _start_at,
+        count: ditemcount_all[_chap]
+    };
+};
+
+darmor_index_data = function(arg0)
+{
+    var _chap = arg0;
+    var _start_at = 0;
+    
+    for (var i = 0; i < _chap; i++)
+        _start_at += (darmorcount_all[i] + darmor_gaps[i]);
+    
+    return 
+    {
+        start_id: _start_at,
+        count: darmorcount_all[_chap]
+    };
+};
+
+dweapon_index_data = function(arg0)
+{
+    var _chap = arg0;
+    var _start_at = 0;
+    
+    for (var i = 0; i < _chap; i++)
+        _start_at += (dweaponcount_all[i] + dweapon_gaps[i]);
+    
+    return 
+    {
+        start_id: _start_at,
+        count: dweaponcount_all[_chap]
+    };
+};
+
+dkeyitem_index_data = function(arg0)
+{
+    var _chap = arg0;
+    var _start_at = 0;
+    
+    for (var i = 0; i < _chap; i++)
+        _start_at += (dkeyitemcount_all[i] + dkeyitem_gaps[i]);
+    
+    return 
+    {
+        start_id: _start_at,
+        count: dkeyitemcount_all[_chap]
+    };
+};
+
 cate_enum = 0;
 GONER = cate_enum++;
 SUPERBOSS = cate_enum++;
@@ -73,7 +136,7 @@ MISC3 = cate_enum++;
 MISC4 = cate_enum++;
 MOUSSE = cate_enum++;
 ROBOTEUR = cate_enum++;
-dother_categories = ["Séquence Vaisseau", "Superbosses", "Weird Route", "Œufs", "Onion san", "Misc chap 1", "Misc chap 2", "Legend of Tenna", "Sword Route", "Misc chap 3", "Misc chap 4", "Mousse", "Roboteur"];
+dother_categories = ["Séquence Vaisseau", "Superbosses", "Weird Route", "Œufs", "Onion San", "Misc chap 1", "Misc chap 2", "Legend of Tenna", "Sword Route", "Misc chap 3", "Misc chap 4", "Mousse", "Roboteur"];
 dother_all_options = [];
 dother_options = [];
 
@@ -99,9 +162,9 @@ if (global.chapter >= 1)
     array_push(dother_all_options, [MISC1, "Gâteau rendu", 253, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [MISC1, "Starwalker", 254, [["Pissing me off", 0], ["I will   join", 1]]]);
     array_push(dother_all_options, [MISC1, "Objectif de Donation", 216, [["Non rempli", 0], ["Atteint", 1]]]);
-    array_push(dother_all_options, [MISC1, "Fleurs d'Asgore", 262, [["Pas vu", 0], ["Pas donnée", 2], ["Données", 4]]]);
+    array_push(dother_all_options, [MISC1, "Fleurs d'Asgore", 262, [["Pas vu", 0], ["Pas données", 2], ["Données", 4]]]);
     array_push(dother_all_options, [MISC1, "Noëlle dehors", 276, [["Pas parlé", 0], ["Pas parlé de Susie", 1], ["A parlé de Susie", 2]]]);
-    array_push(dother_all_options, [MISC1, "Evier inspecté (chap 1)", 278, [["Non", 0], ["Oui", 1]]]);
+    array_push(dother_all_options, [MISC1, "Évier inspecté (chap 1)", 278, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [EGG, "Œuf obtenu (chap 1)", 911, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [SUPERBOSS, "Jevil vaincu", 241, [["Non", 0], ["Via violence", 6], ["Via clémence", 7]]]);
     array_push(dother_all_options, [ONION_SAN, "Relation (chap 1)", 258, [["Pas vu", 0], ["Amis", 2], ["Pas amis", 3]]]);
@@ -115,14 +178,14 @@ if (global.chapter >= 2)
     array_push(dother_all_options, [MISC2, "Peluche", 307, [["Pas donnée", 0], ["Ralsei", 1], ["Susie", 2], ["Noëlle", 3], ["Berdly", 4]]]);
     array_push(dother_all_options, [MISC2, "Hacker recruté", 659, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [MISC2, "Bras de Berdly", 457, [["Brûlé", 0], ["Ok", 1]]]);
-    array_push(dother_all_options, [WEIRD2, "Avancée", 915, [["Pas fait", 0], ["Nikomercant tué", 3], ["Berdly gelé", 6], ["A parle a Susie", 9], ["Noëlle vue a l'hôpital", 20]]]);
+    array_push(dother_all_options, [WEIRD2, "Avancée", 915, [["Pas fait", 0], ["Nikomercant tué", 3], ["Berdly gelé", 6], ["A parlé a Susie", 9], ["Noëlle vue a l'hôpital", 20]]]);
     array_push(dother_all_options, [WEIRD2, "A cancel la weird route", 916, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [EGG, "Œuf obtenu (chap 2)", 918, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [SUPERBOSS, "Spamton vaincu", 309, [["Non", 0], ["Oui", 9]]]);
-    array_push(dother_all_options, [MISC2, "\"Fan\" de mettaton", 422, [["Non", 0], ["Oui", 1]]]);
+    array_push(dother_all_options, [MISC2, "\"Fan\" de Mettaton", 422, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [MISC2, "Statue de Susie récupérée", 393, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [MISC2, "ICE-E récupéré", 394, [["Non", 0], ["Oui", 1]]]);
-    array_push(dother_all_options, [MISC2, "Evier inspecté (chap 2)", 461, [["Non", 0], ["Oui", 1]]]);
+    array_push(dother_all_options, [MISC2, "Évier inspecté (chap 2)", 461, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [ONION_SAN, "Relation (chap 2)", 425, [["Pas vu", 0], ["Amis", 1], ["Plus amis", 2]]]);
     array_push(dother_all_options, [MOUSSE, "Mousse mangée (chap 2)", 920, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [MOUSSE, "... avec Noëlle (chap 2)", 921, [["Non", 0], ["Oui", 1]]]);
@@ -136,8 +199,8 @@ if (global.chapter >= 3)
     array_push(dother_all_options, [SWORD, "Avancé", 1055, [["Pas fait", 0], ["Clé de glace obtenue", 1], ["Donjon (plateau 2)", 1.5], ["Elle a été utilisée", 2], ["Clé de l'abri obtenue", 3], ["Donjon (plateau 3)", 4], ["Clé de l'abri utilisée", 5], ["ERAM vaincu", 6]]]);
     array_push(dother_all_options, [SWORD, "Susie attaquée", 1268, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [EGG, "Œuf obtenu (chap 3)", 930, [["Non", 0], ["Oui", 1]]]);
-    array_push(dother_all_options, [SUPERBOSS, "Chevalier Vaincu", 1047, [["Non", 2], ["Oui", 1]]]);
-    array_push(dother_all_options, [MISC3, "Fontaine", 1144, [["Pas affronté", 0], ["A flirt(pas parlé au rideau)", 1], ["Pas flirte", 2], ["A flirt(a parlé au rideau)", 3]]]);
+    array_push(dother_all_options, [SUPERBOSS, "Chevalier vaincu", 1047, [["Non", 2], ["Oui", 1]]]);
+    array_push(dother_all_options, [MISC3, "Fontaine", 1144, [["Pas affronté", 0], ["A flirt(pas parlé au rideau)", 1], ["Pas flirté", 2], ["A flirt(a parlé au rideau)", 3]]]);
     array_push(dother_all_options, [MISC3, "Statue de Tenna récupérée", 1222, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [MOUSSE, "Mousse mangée (chap 3)", 1078, [["Non", 0], ["Oui", 1]]]);
 }
@@ -145,11 +208,11 @@ if (global.chapter >= 3)
 if (global.chapter >= 4)
 {
     array_push(dother_all_options, [EGG, "Œuf obtenu (chap 4)", 931, [["Non", 0], ["Oui", 1]]]);
-    array_push(dother_all_options, [SUPERBOSS, "Gerson Vaincu", 1629, [["Non", 0], ["Oui", 1]]]);
+    array_push(dother_all_options, [SUPERBOSS, "Gerson vaincu", 1629, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [MOUSSE, "Mousse mangée (chap 4)", 1592, [["Non", 0], ["Oui", 1], ["Refusée", 2]]]);
-    array_push(dother_all_options, [MISC4, "Priere", 1507, [["Pas prie", 0], ["Pour Susie", 1], ["Pour Noëlle", 2], ["Pour Asriel", 3]]]);
-    array_push(dother_all_options, [MISC4, "Prix Susie Récupéré", 747, [["Non", 0], ["Oui", 1]]]);
-    array_push(dother_all_options, [MISC4, "Tache retiré", 748, [["Non", 0], ["Oui", 1]]]);
+    array_push(dother_all_options, [MISC4, "Prière", 1507, [["Pas prié", 0], ["Pour Susie", 1], ["Pour Noëlle", 2], ["Pour Asriel", 3]]]);
+    array_push(dother_all_options, [MISC4, "Prix Susie récupéré", 747, [["Non", 0], ["Oui", 1]]]);
+    array_push(dother_all_options, [MISC4, "Tache retirée", 748, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [MISC4, "Tenna donné", 779, [["Non", 0], ["Oui", 2]]]);
     array_push(dother_all_options, [MISC4, "Échelle récupérée", 864, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [MISC4, "Oreiller récupéré", 865, [["Non", 0], ["Oui", 1]]]);
@@ -192,13 +255,24 @@ draw_monospace = function(arg0, arg1, arg2)
     }
 };
 
+function scr_array_contains(arg0, arg1)
+{
+    for (var i = 0; i < array_length(arg0); i++)
+    {
+        if (arg0[i] == arg1)
+            return true;
+    }
+    
+    return false;
+}
+
 dkeys_helper = 0;
 dkeys_data = [];
 drooms_id = scr_get_room_list();
 drooms = [];
 drooms_options = 
 {
-    target_room: 1,
+    target_room: ROOM_INITIALIZE,
     target_plot: global.plot,
     target_is_darkzone: global.darkzone,
     target_member_2: global.char[1],
@@ -208,4 +282,3 @@ dkeyboard_input = "";
 
 for (i = 0; i < array_length(drooms_id); i++)
     array_push(drooms, room_get_name(drooms_id[i].room_index));
-

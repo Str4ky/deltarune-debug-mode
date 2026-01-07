@@ -249,6 +249,8 @@ if (keyboard_check_pressed(vk_f10))
     else
         scr_debug_print(""Mode Debug désactivé !"");
 }
+
+
 ");
 ChangeSelection(obj_time_TOGGLER);
 
@@ -320,6 +322,7 @@ ChangeSelection(obj_mainchara);
 // Fonctions du jeu (compteur FPS / fonction de pause / fonction de changement de FPS)
 UndertaleGameObject obj_time = Data.GameObjects.ByName("obj_time");
 importGroup.QueueReplace(obj_time.EventHandlerFor(EventType.Draw, (uint)0, Data), @"
+
 if (global.debug == 1)
 {
     draw_set_font(fnt_main)
@@ -336,6 +339,9 @@ if (global.debug == 1)
 importGroup.QueueAppend(obj_time.EventHandlerFor(EventType.Step, (uint)0, Data), @"
 if (global.debug == 1)
 {
+    if (mouse_check_button_pressed(mb_middle))
+        instance_create(0, 0, obj_debug_xy);
+    
     if (keyboard_check_pressed(ord(""P"")))
     {
         if (room_speed == 30)

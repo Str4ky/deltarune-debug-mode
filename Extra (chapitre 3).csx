@@ -1,3 +1,11 @@
+// Variable au gamestart
+importGroup.QueueAppend(scr_gamestart.Code, @"
+global.chemg_show_room = 1;
+global.chemg_show_val = 1;
+");
+
+ChangeSelection(scr_gamestart);
+
 // Fonctions du Darkworld
 UndertaleGameObject obj_darkcontroller = Data.GameObjects.ByName("obj_darkcontroller");
 

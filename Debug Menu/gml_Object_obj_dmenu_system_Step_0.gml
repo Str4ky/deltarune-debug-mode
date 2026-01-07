@@ -170,7 +170,14 @@ if (dmenu_active && global.dreading_custom_flag)
                 vmove_menu(1, 0);
             
             if (dmenu_state == "warp")
-                snd_play(snd_menumove);
+            {
+                if (keyboard_check_pressed(global.input_k[4]) || keyboard_check_pressed(global.input_k[7]))
+                    snd_play(snd_select);
+                else if (keyboard_check_pressed(vk_escape))
+                    snd_play(snd_error);
+                else
+                    snd_play(snd_menumove);
+            }
         }
         
         global.dreading_custom_flag = 0;
@@ -451,8 +458,9 @@ else if (dmenu_active)
     if (keyboard_check_pressed(global.input_k[4]) || keyboard_check_pressed(global.input_k[7]))
     {
         must_save = dmenu_state != "givertab" && dmenu_state != "recruit_presets" && dmenu_state != "flag_misc" && dmenu_state != "warp_options" && !(dmenu_state == "warp" && dbutton_selected == 2);
-        must_save &= (dmenu_state != "flag_categories" && (!(dmenu_state == "weapons" && dhorizontal_page) && !(dmenu_state == "armors" && dhorizontal_page)));
+        must_save &= ((dmenu_state != "flag_categories" || dbutton_selected != 1) && (!(dmenu_state == "weapons" && dhorizontal_page) && !(dmenu_state == "armors" && dhorizontal_page)));
         must_save &= (dmenu_state != "recruits" || dbutton_selected == 1);
+        must_save &= !(scr_array_contains(ditem_types, dmenu_state) && dhorizontal_page == 0 && dbutton_selected == 1);
         snd_play(snd_select);
         
         if (must_save)
@@ -468,74 +476,94 @@ else if (dmenu_active)
             keyboard_string = "";
         }
         
-        if (dmenu_state == "objects" || dmenu_state == "armors" || dmenu_state == "weapons" || dmenu_state == "keyitems")
+        if (scr_array_contains(ditem_types, dmenu_state))
         {
             switch (dmenu_state)
             {
                 case "objects":
-                    real_index = dbutton_indices[dbutton_selected - 1];
-                    
-                    if (dhorizontal_page == 0)
+                    if (dhorizontal_page != 0 || dbutton_selected > 1)
                     {
-                        scr_iteminfo(real_index);
-                        dgiver_bname = itemnameb;
-                    }
-                    else
-                    {
-                        for (i = 0; i < array_length(dlight_objects); i++)
+                        real_index = dbutton_indices[dbutton_selected - 1];
+                        
+                        if (dhorizontal_page == 0)
                         {
-                            if (dlight_objects[i][0] == real_index)
+                            scr_iteminfo(real_index);
+                            dgiver_bname = itemnameb;
+                        }
+                        else
+                        {
+                            for (i = 0; i < array_length(dlight_objects); i++)
                             {
-                                real_index = i;
-                                break;
+                                if (dlight_objects[i][0] == real_index)
+                                {
+                                    real_index = i;
+                                    break;
+                                }
                             }
+                            
+                            dgiver_bname = dlight_objects[real_index][1];
                         }
                         
-                        dgiver_bname = dlight_objects[real_index][1];
+                        scr_debug_print(dgiver_bname + " sélectionné !");
                     }
                     
-                    scr_debug_print(dgiver_bname + " sélectionné !");
                     break;
                 
                 case "armors":
-                    real_index = dbutton_indices[dbutton_selected - 1];
-                    
-                    if (dhorizontal_page == 0)
+                    if (dhorizontal_page != 0 || dbutton_selected > 1)
                     {
-                        scr_armorinfo(real_index);
-                        dgiver_bname = armornametemp;
-                    }
-                    else
-                    {
-                        dgiver_bname = dlight_armors[real_index][1];
+                        real_index = dbutton_indices[dbutton_selected - 1];
+                        
+                        if (dhorizontal_page == 0)
+                        {
+                            scr_armorinfo(real_index);
+                            dgiver_bname = armornametemp;
+                        }
+                        else
+                        {
+                            dgiver_bname = dlight_armors[real_index][1];
+                        }
+                        
+                        scr_debug_print(string(dgiver_bname) + " sélectionné !");
                     }
                     
-                    scr_debug_print(string(dgiver_bname) + " sélectionné !");
                     break;
                 
                 case "weapons":
-                    real_index = dbutton_indices[dbutton_selected - 1];
-                    
-                    if (dhorizontal_page == 0)
+                    if (dhorizontal_page != 0 || dbutton_selected > 1)
                     {
-                        scr_weaponinfo(real_index);
-                        dgiver_bname = weaponnametemp;
-                    }
-                    else
-                    {
-                        dgiver_bname = dlight_weapons[real_index][1];
+                        real_index = dbutton_indices[dbutton_selected - 1];
+                        
+                        if (dhorizontal_page == 0)
+                        {
+                            scr_weaponinfo(real_index);
+                            dgiver_bname = weaponnametemp;
+                        }
+                        else
+                        {
+                            dgiver_bname = dlight_weapons[real_index][1];
+                        }
+                        
+                        scr_debug_print(string(dgiver_bname) + " sélectionné !");
                     }
                     
-                    scr_debug_print(string(dgiver_bname) + " sélectionné !");
                     break;
                 
                 case "keyitems":
-                    real_index = dbutton_indices[dbutton_selected - 1];
-                    scr_keyiteminfo(real_index);
-                    dgiver_bname = tempkeyitemname;
-                    scr_debug_print(string(dgiver_bname) + " sélectionné !");
+                    if (dbutton_selected > 1)
+                    {
+                        real_index = dbutton_indices[dbutton_selected - 1];
+                        scr_keyiteminfo(real_index);
+                        dgiver_bname = tempkeyitemname;
+                        scr_debug_print(string(dgiver_bname) + " sélectionné !");
+                    }
+                    
                     break;
             }
+        }
+        else if (dmenu_state == "warp" && dbutton_selected == 2)
+        {
+            scr_debug_print("Recherche sélectionné !");
         }
         else if (dmenu_state != "givertab" && dmenu_state != "flag_misc" && dmenu_state != "warp_options" && (dmenu_state != "recruits" || dbutton_selected == 1))
         {
@@ -588,6 +616,12 @@ else if (dmenu_active)
 if ((dmenu_active == 1 && dmenu_state == "debug" && global.darkzone == 1) || dkeys_helper == 1)
 {
     if (keyboard_check_pressed(ord("M")))
+    {
+        if (dkeys_helper == 0)
+            snd_play(snd_select);
+        else
+            snd_play(snd_smallswing);
+        
         dkeys_helper = !dkeys_helper;
+    }
 }
-
