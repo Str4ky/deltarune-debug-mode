@@ -33,73 +33,160 @@ function dmenu_pressed_key(arg0)
     return 0;
 }
 
+function vmove_menu(arg0, arg1)
+{
+    pressed_up = arg0;
+    pressed_down = arg1;
+    
+    if (pressed_up != 0 || pressed_down != 0)
+    {
+        if (pressed_up == 1 && dbutton_selected == 1)
+        {
+            dbutton_selected = array_length(dbutton_options) + 1;
+            dmenu_start_index = dbutton_selected - 3;
+        }
+        else if (pressed_down == 1 && dbutton_selected == array_length(dbutton_options))
+        {
+            dbutton_selected = 0;
+            dmenu_start_index = 0;
+        }
+        
+        increment = pressed_up ? -1 : 1;
+        
+        if ((pressed_up && dbutton_selected != 1) || (pressed_down && dbutton_selected != array_length(dbutton_options)))
+        {
+            dbutton_selected += increment;
+            snd_play(snd_menumove);
+            
+            if (pressed_up && dbutton_selected < (dmenu_start_index + 1))
+                dmenu_start_index += increment;
+            else if (pressed_down && dbutton_selected > (dmenu_start_index + dbutton_max_visible))
+                dmenu_start_index += increment;
+            
+            if (dmenu_state == "flag_misc")
+            {
+                new_options = dother_options[dbutton_selected - 1];
+                dhorizontal_index = find_subarray_index(new_options[2], new_options[3]);
+            }
+        }
+    }
+}
+
+function evaluate_custom_flag(arg0)
+{
+    proper_exit = arg0;
+    
+    if (!proper_exit)
+    {
+        global.dreading_custom_flag = 0;
+        dcustom_flag_text = ["", ""];
+        return 0;
+    }
+    
+    for (c = 1; c <= string_length(dcustom_flag_text[0]); c++)
+    {
+        if (!scr_84_is_digit(string_char_at(dcustom_flag_text[0], c)))
+        {
+            scr_debug_print("Invalid flag |" + dcustom_flag_text[0] + "| because of |" + string_char_at(dcustom_flag_text[0], c) + "|");
+            proper_exit = 0;
+            break;
+        }
+    }
+    
+    if (string_length(dcustom_flag_text[0]) == 0)
+    {
+        scr_debug_print("Empty flag");
+        proper_exit = 0;
+    }
+    
+    if (dmenu_state == "warp_options")
+        return proper_exit;
+    
+    for (c = 1; c <= string_length(dcustom_flag_text[1]); c++)
+    {
+        if (!scr_84_is_digit(string_char_at(dcustom_flag_text[1], c)) && string_char_at(dcustom_flag_text[1], c) != ".")
+        {
+            scr_debug_print("Invalid value |" + dcustom_flag_text[1] + "|");
+            proper_exit = 0;
+            break;
+        }
+    }
+    
+    if (string_length(dcustom_flag_text[1]) == 0)
+    {
+        if (proper_exit)
+            scr_debug_print("global.flag[" + string(real(dcustom_flag_text[0])) + "] = |" + string(global.flag[real(dcustom_flag_text[0])]) + "|");
+        else
+            scr_debug_print("Empty value");
+        
+        proper_exit = 0;
+    }
+    
+    if (proper_exit)
+    {
+        scr_debug_print("Updated global.flag[" + string(real(dcustom_flag_text[0])) + "] from |" + string(global.flag[real(dcustom_flag_text[0])]) + "| to |" + dcustom_flag_text[1] + "|");
+        global.flag[real(dcustom_flag_text[0])] = real(dcustom_flag_text[1]);
+    }
+    
+    if (proper_exit)
+    {
+        dmenu_active = 0;
+        global.interact = 0;
+    }
+    
+    return proper_exit;
+}
+
 if (dmenu_active && global.dreading_custom_flag)
 {
     update_visu = 1;
+    will_exit = 0;
     
-    if (keyboard_check_pressed(vk_escape) || keyboard_check_pressed(global.input_k[4]) || keyboard_check_pressed(global.input_k[7]))
+    if (dmenu_state == "warp" || dmenu_state == "warp_options")
+        dkeyboard_input = dcustom_flag_text[0];
+    
+    will_exit = keyboard_check_pressed(vk_escape) || keyboard_check_pressed(global.input_k[4]) || keyboard_check_pressed(global.input_k[7]);
+    will_exit |= ((dmenu_state == "warp_options" || dmenu_state == "warp") && (keyboard_check_pressed(vk_up) || keyboard_check_pressed(vk_down)));
+    
+    if (will_exit)
     {
-        proper_exit = !keyboard_check_pressed(vk_escape);
+        clean_exit = !keyboard_check_pressed(vk_escape);
         
-        if (proper_exit)
+        if (dmenu_state == "flag_categories" || dmenu_state == "warp_options")
         {
-            for (c = 1; c <= string_length(dcustom_flag_text[0]); c++)
-            {
-                if (!scr_84_is_digit(string_char_at(dcustom_flag_text[0], c)))
-                {
-                    scr_debug_print("Invalid flag |" + dcustom_flag_text[0] + "| because of |" + string_char_at(dcustom_flag_text[0], c) + "|");
-                    proper_exit = 0;
-                    break;
-                }
-            }
+            flags_good = evaluate_custom_flag(clean_exit);
             
-            if (string_length(dcustom_flag_text[0]) == 0)
-            {
-                scr_debug_print("Empty flag");
-                proper_exit = 0;
-            }
+            if (flags_good && dmenu_state == "warp_options")
+                drooms_options.target_plot = real(dkeyboard_input);
             
-            for (c = 1; c <= string_length(dcustom_flag_text[1]); c++)
-            {
-                if (!scr_84_is_digit(string_char_at(dcustom_flag_text[1], c)) && string_char_at(dcustom_flag_text[1], c) != ".")
-                {
-                    scr_debug_print("Invalid value |" + dcustom_flag_text[1] + "|");
-                    proper_exit = 0;
-                    break;
-                }
-            }
+            snd_play(array_get([299, 420], flags_good));
+        }
+        
+        if (dmenu_state == "warp" || dmenu_state == "warp_options")
+        {
+            if (keyboard_check_pressed(vk_down))
+                vmove_menu(0, 1);
+            else if (keyboard_check_pressed(vk_up))
+                vmove_menu(1, 0);
             
-            if (string_length(dcustom_flag_text[1]) == 0)
-            {
-				if (proper_exit)
-					scr_debug_print("global.flag[" + string(real(dcustom_flag_text[0])) + "] = |" + string(global.flag[real(dcustom_flag_text[0])]) + "|");
-				else
-					scr_debug_print("Empty value");
-                proper_exit = 0;
-            }
-            
-            if (proper_exit)
-            {
-                scr_debug_print("Updated global.flag[" + string(real(dcustom_flag_text[0])) + "] from |" + string(global.flag[real(dcustom_flag_text[0])]) + "| to |" + dcustom_flag_text[1] + "|");
-                global.flag[real(dcustom_flag_text[0])] = real(dcustom_flag_text[1]);
-            }
+            if (dmenu_state == "warp")
+                snd_play(snd_menumove);
         }
         
         global.dreading_custom_flag = 0;
-        dcustom_flag_text = ["", ""];
         
-        if (proper_exit)
-        {
-            dmenu_active = 0;
-            global.interact = 0;
-        }
+        if (!clean_exit)
+            dkeyboard_input = "";
+        
+        dcustom_flag_text = ["", ""];
+        will_exit = 1;
     }
-    else if (keyboard_check_pressed(vk_left) && dhorizontal_index != 0)
+    else if (dmenu_state == "flag_categories" && keyboard_check_pressed(vk_left) && dhorizontal_index != 0)
     {
         snd_play(snd_menumove);
         dhorizontal_index--;
     }
-    else if (keyboard_check_pressed(vk_right) && dhorizontal_index != 1)
+    else if (dmenu_state == "flag_categories" && keyboard_check_pressed(vk_right) && dhorizontal_index != 1)
     {
         snd_play(snd_menumove);
         dhorizontal_index++;
@@ -120,7 +207,12 @@ if (dmenu_active && global.dreading_custom_flag)
     }
     
     if (update_visu)
+    {
+        if (!will_exit)
+            dkeyboard_input = dcustom_flag_text[0];
+        
         dmenu_state_update();
+    }
 }
 else if (dmenu_active)
 {
@@ -202,8 +294,34 @@ else if (dmenu_active)
                 else if ((pressed_right && dhorizontal_page != global.chapter) || (pressed_left && dhorizontal_page != 0))
                 {
                     dhorizontal_page++;
+                    
                     if (pressed_left)
-						dhorizontal_page -= 2;
+                        dhorizontal_page -= 2;
+                    
+                    snd_play(snd_menumove);
+                    dmenu_state_update();
+                }
+            }
+            else if (dmenu_state == "warp_options" && (dbutton_selected == 4 || dbutton_selected == 5))
+            {
+                cur_party = array_get([drooms_options.target_member_2, drooms_options.target_member_3], dbutton_selected - 4);
+                new_party = -1;
+                
+                if (pressed_left && cur_party != 0)
+                    new_party = cur_party - 1;
+                else if (pressed_right && cur_party != (4 - (global.chapter == 1)))
+                    new_party = cur_party + 1;
+                
+                if (new_party == 1)
+                    new_party += (pressed_right - pressed_left);
+                
+                if (new_party != -1)
+                {
+                    if (dbutton_selected == 4)
+                        drooms_options.target_member_2 = new_party;
+                    else
+                        drooms_options.target_member_3 = new_party;
+                    
                     snd_play(snd_menumove);
                     dmenu_state_update();
                 }
@@ -211,7 +329,7 @@ else if (dmenu_active)
             else if ((dmenu_state == "objects" || dmenu_state == "weapons" || dmenu_state == "armors") && (pressed_left + pressed_right) == 1)
             {
                 dhorizontal_page = !dhorizontal_page;
-				dmenu_start_index = 0;
+                dmenu_start_index = 0;
                 dbutton_selected = 1;
                 snd_play(snd_menumove);
                 dmenu_state_update();
@@ -224,39 +342,7 @@ else if (dmenu_active)
         if (pressed_up && pressed_down)
             pressed_up = 0;
         
-        if (pressed_up != 0 || pressed_down != 0)
-        {
-            if (pressed_up == 1 && dbutton_selected == 1)
-            {
-                dbutton_selected = array_length(dbutton_options) + 1;
-                dmenu_start_index = dbutton_selected - 3;
-            }
-            else if (pressed_down == 1 && dbutton_selected == array_length(dbutton_options))
-            {
-                dbutton_selected = 0;
-                dmenu_start_index = 0;
-            }
-            
-            increment = pressed_up ? -1 : 1;
-            
-            if ((pressed_up && dbutton_selected != 1) || (pressed_down && dbutton_selected != array_length(dbutton_options)))
-            {
-                dbutton_selected += increment;
-                snd_play(snd_menumove);
-                
-                if (pressed_up && dbutton_selected < (dmenu_start_index + 1))
-                    dmenu_start_index += increment;
-                else if (pressed_down && dbutton_selected > (dmenu_start_index + dbutton_max_visible))
-                    dmenu_start_index += increment;
-                
-                if (dmenu_state == "flag_misc")
-                {
-                    new_options = dother_options[dbutton_selected - 1];
-                    dhorizontal_index = find_subarray_index(new_options[2], new_options[3]);
-                }
-            }
-        }
-        
+        vmove_menu(pressed_up, pressed_down);
         dmenu_start_index = clamp(dmenu_start_index, 0, max(0, array_length(dbutton_options) - dbutton_max_visible));
         
         if (dhorizontal_index != og_horizontal_index)
@@ -364,8 +450,8 @@ else if (dmenu_active)
     
     if (keyboard_check_pressed(global.input_k[4]) || keyboard_check_pressed(global.input_k[7]))
     {
-        must_save = dmenu_state != "givertab" && dmenu_state != "recruit_presets" && dmenu_state != "flag_misc";
-        must_save &= (!(dmenu_state == "weapons" && dhorizontal_page) && !(dmenu_state == "armors" && dhorizontal_page));
+        must_save = dmenu_state != "givertab" && dmenu_state != "recruit_presets" && dmenu_state != "flag_misc" && dmenu_state != "warp_options" && !(dmenu_state == "warp" && dbutton_selected == 2);
+        must_save &= (dmenu_state != "flag_categories" && (!(dmenu_state == "weapons" && dhorizontal_page) && !(dmenu_state == "armors" && dhorizontal_page)));
         must_save &= (dmenu_state != "recruits" || dbutton_selected == 1);
         snd_play(snd_select);
         
@@ -451,12 +537,12 @@ else if (dmenu_active)
                     break;
             }
         }
-        else if (dmenu_state != "givertab" && dmenu_state != "flag_misc" && (dmenu_state != "recruits" || dbutton_selected == 1))
+        else if (dmenu_state != "givertab" && dmenu_state != "flag_misc" && dmenu_state != "warp_options" && (dmenu_state != "recruits" || dbutton_selected == 1))
         {
             scr_debug_print(string(dbutton_options[dbutton_selected - 1]) + " sélectionné !");
         }
         
-        if ((dmenu_state == "recruits" && dbutton_selected != 1) || dmenu_state == "recruit_presets" || dmenu_state == "flag_misc" || ((dmenu_state == "armors" || dmenu_state == "weapons") && dhorizontal_page))
+        if ((dmenu_state == "recruits" && dbutton_selected != 1) || dmenu_state == "warp_options" || dmenu_state == "recruit_presets" || dmenu_state == "warp_options" || dmenu_state == "flag_misc" || ((dmenu_state == "armors" || dmenu_state == "weapons") && dhorizontal_page) || (dmenu_state == "warp" && dbutton_selected == 2))
         {
             dmenu_state_interact();
             dmenu_state_update();
@@ -473,6 +559,7 @@ else if (dmenu_active)
     if (keyboard_check_pressed(global.input_k[5]) || keyboard_check_pressed(global.input_k[8]))
     {
         snd_play(snd_smallswing);
+        dkeyboard_input = "";
         
         if (array_length(dmenu_state_history) > 0)
         {

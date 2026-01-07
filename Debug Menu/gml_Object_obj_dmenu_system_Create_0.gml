@@ -35,6 +35,7 @@ if (global.chapter == 1)
     array_delete(dlight_objects, 8, 1);
     array_delete(dlight_objects, 8, 1);
 }
+
 if (global.chapter < 4)
     array_delete(dbutton_options_original, 2, 1);
 
@@ -49,15 +50,15 @@ dgiver_menu_state = 0;
 dgiver_button_selected = 0;
 dgiver_amount = 1;
 dgiver_bname = 0;
-ditemcount = 0;
-darmorcount = 0;
-dweaponcount = 0;
-dkeyitemcount = 0;
+ditemcount = array_get([15, 33, 39, 63], global.chapter - 1);
+darmorcount = array_get([7, 22, 27, 54], global.chapter - 1);
+dweaponcount = array_get([10, 22, 26, 54], global.chapter - 1);
+dkeyitemcount = array_get([7, 15, 19, 31], global.chapter - 1);
+drecent_item = array_get([1, 16, 34, 60], global.chapter - 1);
+drecent_armor = array_get([1, 8, 23, 50], global.chapter - 1);
+drecent_weapon = array_get([1, 11, 23, 50], global.chapter - 1);
+drecent_keyitem = array_get([1, 8, 16, 30], global.chapter - 1);
 dbutton_indices = [];
-drecent_item = 0;
-drecent_armor = 0;
-drecent_weapon = 0;
-drecent_keyitem = 0;
 cate_enum = 0;
 GONER = cate_enum++;
 SUPERBOSS = cate_enum++;
@@ -193,3 +194,18 @@ draw_monospace = function(arg0, arg1, arg2)
 
 dkeys_helper = 0;
 dkeys_data = [];
+drooms_id = scr_get_room_list();
+drooms = [];
+drooms_options = 
+{
+    target_room: 1,
+    target_plot: global.plot,
+    target_is_darkzone: global.darkzone,
+    target_member_2: global.char[1],
+    target_member_3: global.char[2]
+};
+dkeyboard_input = "";
+
+for (i = 0; i < array_length(drooms_id); i++)
+    array_push(drooms, room_get_name(drooms_id[i].room_index));
+

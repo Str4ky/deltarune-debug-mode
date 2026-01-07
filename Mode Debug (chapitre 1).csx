@@ -237,6 +237,7 @@ if (global.chapter == 1)
     array_delete(dlight_objects, 8, 1);
     array_delete(dlight_objects, 8, 1);
 }
+
 if (global.chapter < 4)
     array_delete(dbutton_options_original, 2, 1);
 
@@ -251,15 +252,15 @@ dgiver_menu_state = 0;
 dgiver_button_selected = 0;
 dgiver_amount = 1;
 dgiver_bname = 0;
-ditemcount = 0;
-darmorcount = 0;
-dweaponcount = 0;
-dkeyitemcount = 0;
+ditemcount = array_get([15, 33, 39, 63], global.chapter - 1);
+darmorcount = array_get([7, 22, 27, 54], global.chapter - 1);
+dweaponcount = array_get([10, 22, 26, 54], global.chapter - 1);
+dkeyitemcount = array_get([7, 15, 19, 31], global.chapter - 1);
+drecent_item = array_get([1, 16, 34, 60], global.chapter - 1);
+drecent_armor = array_get([1, 8, 23, 50], global.chapter - 1);
+drecent_weapon = array_get([1, 11, 23, 50], global.chapter - 1);
+drecent_keyitem = array_get([1, 8, 16, 30], global.chapter - 1);
 dbutton_indices = [];
-drecent_item = 0;
-drecent_armor = 0;
-drecent_weapon = 0;
-drecent_keyitem = 0;
 cate_enum = 0;
 GONER = cate_enum++;
 SUPERBOSS = cate_enum++;
@@ -395,6 +396,21 @@ draw_monospace = function(arg0, arg1, arg2)
 
 dkeys_helper = 0;
 dkeys_data = [];
+drooms_id = scr_get_room_list();
+drooms = [];
+drooms_options = 
+{
+    target_room: 1,
+    target_plot: global.plot,
+    target_is_darkzone: global.darkzone,
+    target_member_2: global.char[1],
+    target_member_3: global.char[2]
+};
+dkeyboard_input = """";
+
+for (i = 0; i < array_length(drooms_id); i++)
+    array_push(drooms, room_get_name(drooms_id[i].room_index));
+
 
 ");
 
@@ -434,73 +450,160 @@ function dmenu_pressed_key(arg0)
     return 0;
 }
 
+function vmove_menu(arg0, arg1)
+{
+    pressed_up = arg0;
+    pressed_down = arg1;
+    
+    if (pressed_up != 0 || pressed_down != 0)
+    {
+        if (pressed_up == 1 && dbutton_selected == 1)
+        {
+            dbutton_selected = array_length(dbutton_options) + 1;
+            dmenu_start_index = dbutton_selected - 3;
+        }
+        else if (pressed_down == 1 && dbutton_selected == array_length(dbutton_options))
+        {
+            dbutton_selected = 0;
+            dmenu_start_index = 0;
+        }
+        
+        increment = pressed_up ? -1 : 1;
+        
+        if ((pressed_up && dbutton_selected != 1) || (pressed_down && dbutton_selected != array_length(dbutton_options)))
+        {
+            dbutton_selected += increment;
+            snd_play(snd_menumove);
+            
+            if (pressed_up && dbutton_selected < (dmenu_start_index + 1))
+                dmenu_start_index += increment;
+            else if (pressed_down && dbutton_selected > (dmenu_start_index + dbutton_max_visible))
+                dmenu_start_index += increment;
+            
+            if (dmenu_state == ""flag_misc"")
+            {
+                new_options = dother_options[dbutton_selected - 1];
+                dhorizontal_index = find_subarray_index(new_options[2], new_options[3]);
+            }
+        }
+    }
+}
+
+function evaluate_custom_flag(arg0)
+{
+    proper_exit = arg0;
+    
+    if (!proper_exit)
+    {
+        global.dreading_custom_flag = 0;
+        dcustom_flag_text = ["""", """"];
+        return 0;
+    }
+    
+    for (c = 1; c <= string_length(dcustom_flag_text[0]); c++)
+    {
+        if (!scr_84_is_digit(string_char_at(dcustom_flag_text[0], c)))
+        {
+            scr_debug_print(""Invalid flag |"" + dcustom_flag_text[0] + ""| because of |"" + string_char_at(dcustom_flag_text[0], c) + ""|"");
+            proper_exit = 0;
+            break;
+        }
+    }
+    
+    if (string_length(dcustom_flag_text[0]) == 0)
+    {
+        scr_debug_print(""Empty flag"");
+        proper_exit = 0;
+    }
+    
+    if (dmenu_state == ""warp_options"")
+        return proper_exit;
+    
+    for (c = 1; c <= string_length(dcustom_flag_text[1]); c++)
+    {
+        if (!scr_84_is_digit(string_char_at(dcustom_flag_text[1], c)) && string_char_at(dcustom_flag_text[1], c) != ""."")
+        {
+            scr_debug_print(""Invalid value |"" + dcustom_flag_text[1] + ""|"");
+            proper_exit = 0;
+            break;
+        }
+    }
+    
+    if (string_length(dcustom_flag_text[1]) == 0)
+    {
+        if (proper_exit)
+            scr_debug_print(""global.flag["" + string(real(dcustom_flag_text[0])) + ""] = |"" + string(global.flag[real(dcustom_flag_text[0])]) + ""|"");
+        else
+            scr_debug_print(""Empty value"");
+        
+        proper_exit = 0;
+    }
+    
+    if (proper_exit)
+    {
+        scr_debug_print(""Updated global.flag["" + string(real(dcustom_flag_text[0])) + ""] from |"" + string(global.flag[real(dcustom_flag_text[0])]) + ""| to |"" + dcustom_flag_text[1] + ""|"");
+        global.flag[real(dcustom_flag_text[0])] = real(dcustom_flag_text[1]);
+    }
+    
+    if (proper_exit)
+    {
+        dmenu_active = 0;
+        global.interact = 0;
+    }
+    
+    return proper_exit;
+}
+
 if (dmenu_active && global.dreading_custom_flag)
 {
     update_visu = 1;
+    will_exit = 0;
     
-    if (keyboard_check_pressed(vk_escape) || keyboard_check_pressed(global.input_k[4]) || keyboard_check_pressed(global.input_k[7]))
+    if (dmenu_state == ""warp"" || dmenu_state == ""warp_options"")
+        dkeyboard_input = dcustom_flag_text[0];
+    
+    will_exit = keyboard_check_pressed(vk_escape) || keyboard_check_pressed(global.input_k[4]) || keyboard_check_pressed(global.input_k[7]);
+    will_exit |= ((dmenu_state == ""warp_options"" || dmenu_state == ""warp"") && (keyboard_check_pressed(vk_up) || keyboard_check_pressed(vk_down)));
+    
+    if (will_exit)
     {
-        proper_exit = !keyboard_check_pressed(vk_escape);
+        clean_exit = !keyboard_check_pressed(vk_escape);
         
-        if (proper_exit)
+        if (dmenu_state == ""flag_categories"" || dmenu_state == ""warp_options"")
         {
-            for (c = 1; c <= string_length(dcustom_flag_text[0]); c++)
-            {
-                if (!scr_84_is_digit(string_char_at(dcustom_flag_text[0], c)))
-                {
-                    scr_debug_print(""Invalid flag |"" + dcustom_flag_text[0] + ""| because of |"" + string_char_at(dcustom_flag_text[0], c) + ""|"");
-                    proper_exit = 0;
-                    break;
-                }
-            }
+            flags_good = evaluate_custom_flag(clean_exit);
             
-            if (string_length(dcustom_flag_text[0]) == 0)
-            {
-                scr_debug_print(""Empty flag"");
-                proper_exit = 0;
-            }
+            if (flags_good && dmenu_state == ""warp_options"")
+                drooms_options.target_plot = real(dkeyboard_input);
             
-            for (c = 1; c <= string_length(dcustom_flag_text[1]); c++)
-            {
-                if (!scr_84_is_digit(string_char_at(dcustom_flag_text[1], c)) && string_char_at(dcustom_flag_text[1], c) != ""."")
-                {
-                    scr_debug_print(""Invalid value |"" + dcustom_flag_text[1] + ""|"");
-                    proper_exit = 0;
-                    break;
-                }
-            }
+            snd_play(array_get([299, 420], flags_good));
+        }
+        
+        if (dmenu_state == ""warp"" || dmenu_state == ""warp_options"")
+        {
+            if (keyboard_check_pressed(vk_down))
+                vmove_menu(0, 1);
+            else if (keyboard_check_pressed(vk_up))
+                vmove_menu(1, 0);
             
-            if (string_length(dcustom_flag_text[1]) == 0)
-            {
-				if (proper_exit)
-					scr_debug_print(""global.flag["" + string(real(dcustom_flag_text[0])) + ""] = |"" + string(global.flag[real(dcustom_flag_text[0])]) + ""|"");
-				else
-					scr_debug_print(""Empty value"");
-                proper_exit = 0;
-            }
-            
-            if (proper_exit)
-            {
-                scr_debug_print(""Updated global.flag["" + string(real(dcustom_flag_text[0])) + ""] from |"" + string(global.flag[real(dcustom_flag_text[0])]) + ""| to |"" + dcustom_flag_text[1] + ""|"");
-                global.flag[real(dcustom_flag_text[0])] = real(dcustom_flag_text[1]);
-            }
+            if (dmenu_state == ""warp"")
+                snd_play(snd_menumove);
         }
         
         global.dreading_custom_flag = 0;
-        dcustom_flag_text = ["""", """"];
         
-        if (proper_exit)
-        {
-            dmenu_active = 0;
-            global.interact = 0;
-        }
+        if (!clean_exit)
+            dkeyboard_input = """";
+        
+        dcustom_flag_text = ["""", """"];
+        will_exit = 1;
     }
-    else if (keyboard_check_pressed(vk_left) && dhorizontal_index != 0)
+    else if (dmenu_state == ""flag_categories"" && keyboard_check_pressed(vk_left) && dhorizontal_index != 0)
     {
         snd_play(snd_menumove);
         dhorizontal_index--;
     }
-    else if (keyboard_check_pressed(vk_right) && dhorizontal_index != 1)
+    else if (dmenu_state == ""flag_categories"" && keyboard_check_pressed(vk_right) && dhorizontal_index != 1)
     {
         snd_play(snd_menumove);
         dhorizontal_index++;
@@ -521,7 +624,12 @@ if (dmenu_active && global.dreading_custom_flag)
     }
     
     if (update_visu)
+    {
+        if (!will_exit)
+            dkeyboard_input = dcustom_flag_text[0];
+        
         dmenu_state_update();
+    }
 }
 else if (dmenu_active)
 {
@@ -603,8 +711,34 @@ else if (dmenu_active)
                 else if ((pressed_right && dhorizontal_page != global.chapter) || (pressed_left && dhorizontal_page != 0))
                 {
                     dhorizontal_page++;
+                    
                     if (pressed_left)
-						dhorizontal_page -= 2;
+                        dhorizontal_page -= 2;
+                    
+                    snd_play(snd_menumove);
+                    dmenu_state_update();
+                }
+            }
+            else if (dmenu_state == ""warp_options"" && (dbutton_selected == 4 || dbutton_selected == 5))
+            {
+                cur_party = array_get([drooms_options.target_member_2, drooms_options.target_member_3], dbutton_selected - 4);
+                new_party = -1;
+                
+                if (pressed_left && cur_party != 0)
+                    new_party = cur_party - 1;
+                else if (pressed_right && cur_party != (4 - (global.chapter == 1)))
+                    new_party = cur_party + 1;
+                
+                if (new_party == 1)
+                    new_party += (pressed_right - pressed_left);
+                
+                if (new_party != -1)
+                {
+                    if (dbutton_selected == 4)
+                        drooms_options.target_member_2 = new_party;
+                    else
+                        drooms_options.target_member_3 = new_party;
+                    
                     snd_play(snd_menumove);
                     dmenu_state_update();
                 }
@@ -612,7 +746,7 @@ else if (dmenu_active)
             else if ((dmenu_state == ""objects"" || dmenu_state == ""weapons"" || dmenu_state == ""armors"") && (pressed_left + pressed_right) == 1)
             {
                 dhorizontal_page = !dhorizontal_page;
-				dmenu_start_index = 0;
+                dmenu_start_index = 0;
                 dbutton_selected = 1;
                 snd_play(snd_menumove);
                 dmenu_state_update();
@@ -625,39 +759,7 @@ else if (dmenu_active)
         if (pressed_up && pressed_down)
             pressed_up = 0;
         
-        if (pressed_up != 0 || pressed_down != 0)
-        {
-            if (pressed_up == 1 && dbutton_selected == 1)
-            {
-                dbutton_selected = array_length(dbutton_options) + 1;
-                dmenu_start_index = dbutton_selected - 3;
-            }
-            else if (pressed_down == 1 && dbutton_selected == array_length(dbutton_options))
-            {
-                dbutton_selected = 0;
-                dmenu_start_index = 0;
-            }
-            
-            increment = pressed_up ? -1 : 1;
-            
-            if ((pressed_up && dbutton_selected != 1) || (pressed_down && dbutton_selected != array_length(dbutton_options)))
-            {
-                dbutton_selected += increment;
-                snd_play(snd_menumove);
-                
-                if (pressed_up && dbutton_selected < (dmenu_start_index + 1))
-                    dmenu_start_index += increment;
-                else if (pressed_down && dbutton_selected > (dmenu_start_index + dbutton_max_visible))
-                    dmenu_start_index += increment;
-                
-                if (dmenu_state == ""flag_misc"")
-                {
-                    new_options = dother_options[dbutton_selected - 1];
-                    dhorizontal_index = find_subarray_index(new_options[2], new_options[3]);
-                }
-            }
-        }
-        
+        vmove_menu(pressed_up, pressed_down);
         dmenu_start_index = clamp(dmenu_start_index, 0, max(0, array_length(dbutton_options) - dbutton_max_visible));
         
         if (dhorizontal_index != og_horizontal_index)
@@ -765,8 +867,8 @@ else if (dmenu_active)
     
     if (keyboard_check_pressed(global.input_k[4]) || keyboard_check_pressed(global.input_k[7]))
     {
-        must_save = dmenu_state != ""givertab"" && dmenu_state != ""recruit_presets"" && dmenu_state != ""flag_misc"";
-        must_save &= (!(dmenu_state == ""weapons"" && dhorizontal_page) && !(dmenu_state == ""armors"" && dhorizontal_page));
+        must_save = dmenu_state != ""givertab"" && dmenu_state != ""recruit_presets"" && dmenu_state != ""flag_misc"" && dmenu_state != ""warp_options"" && !(dmenu_state == ""warp"" && dbutton_selected == 2);
+        must_save &= (dmenu_state != ""flag_categories"" && (!(dmenu_state == ""weapons"" && dhorizontal_page) && !(dmenu_state == ""armors"" && dhorizontal_page)));
         must_save &= (dmenu_state != ""recruits"" || dbutton_selected == 1);
         snd_play(snd_select);
         
@@ -852,12 +954,12 @@ else if (dmenu_active)
                     break;
             }
         }
-        else if (dmenu_state != ""givertab"" && dmenu_state != ""flag_misc"" && (dmenu_state != ""recruits"" || dbutton_selected == 1))
+        else if (dmenu_state != ""givertab"" && dmenu_state != ""flag_misc"" && dmenu_state != ""warp_options"" && (dmenu_state != ""recruits"" || dbutton_selected == 1))
         {
             scr_debug_print(string(dbutton_options[dbutton_selected - 1]) + "" sélectionné !"");
         }
         
-        if ((dmenu_state == ""recruits"" && dbutton_selected != 1) || dmenu_state == ""recruit_presets"" || dmenu_state == ""flag_misc"" || ((dmenu_state == ""armors"" || dmenu_state == ""weapons"") && dhorizontal_page))
+        if ((dmenu_state == ""recruits"" && dbutton_selected != 1) || dmenu_state == ""warp_options"" || dmenu_state == ""recruit_presets"" || dmenu_state == ""warp_options"" || dmenu_state == ""flag_misc"" || ((dmenu_state == ""armors"" || dmenu_state == ""weapons"") && dhorizontal_page) || (dmenu_state == ""warp"" && dbutton_selected == 2))
         {
             dmenu_state_interact();
             dmenu_state_update();
@@ -874,6 +976,7 @@ else if (dmenu_active)
     if (keyboard_check_pressed(global.input_k[5]) || keyboard_check_pressed(global.input_k[8]))
     {
         snd_play(snd_smallswing);
+        dkeyboard_input = """";
         
         if (array_length(dmenu_state_history) > 0)
         {
@@ -1041,13 +1144,13 @@ if (dmenu_active)
                 draw_monospace(x_start + xx, y_start + yy + (i * y_spacing), dbutton_options[button_index]);
                 mono_spacing = (global.darkzone == 1) ? 15 : 8;
                 
-                if (is_cur_line && dmenu_state == ""flag_misc"")
+                if ((is_cur_line && dmenu_state == ""flag_misc"") || (dmenu_state == ""warp_options"" && (button_index == 3 || button_index == 4)))
                 {
-                    if (dhorizontal_index != 0)
+                    if ((dmenu_state == ""flag_misc"" && dhorizontal_index != 0) || (dmenu_state == ""warp_options"" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != 0))
                     {
                         for (dash_pos = 0; 1; dash_pos++)
                         {
-                            if (dash_pos > 4 && string_char_at(dbutton_options[button_index], dash_pos) == ""-"")
+                            if (dash_pos > 4 && string_char_at(dbutton_options[button_index], dash_pos) == ((dmenu_state == ""flag_misc"") ? ""-"" : "":""))
                                 break;
                         }
                         
@@ -1055,7 +1158,7 @@ if (dmenu_active)
                         draw_sprite_ext(spr_morearrow, 0, x_start + xx + ((dash_pos * mono_spacing) + floor(mono_spacing / 2)) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[0], darrow_scale, -darrow_scale, 90, c_white, 1);
                     }
                     
-                    if (dhorizontal_index < (array_length(dother_options[dbutton_selected - 1][3]) - 1))
+                    if ((dmenu_state == ""flag_misc"" && dhorizontal_index < (array_length(dother_options[dbutton_selected - 1][3]) - 1)) || (dmenu_state == ""warp_options"" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != (4 - (global.chapter == 1))))
                         draw_sprite_ext(spr_morearrow, 0, ((x_start + xx + ((string_length(dbutton_options[button_index]) + 1) * mono_spacing)) - floor(mono_spacing / 2)) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[1], darrow_scale, -darrow_scale, 270, c_white, 1);
                 }
                 else if (dmenu_state == ""recruits"" && button_index == 0)
@@ -1210,18 +1313,6 @@ enum e__VW
 ");
 
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)1, Data), @"
-if (ditemcount == 0)
-{
-    ditemcount = 15;
-    darmorcount = 7;
-    dweaponcount = 10;
-    dkeyitemcount = 7;
-    drecent_item = 1;
-    drecent_armor = 1;
-    drecent_weapon = 1;
-    drecent_keyitem = 1;
-}
-
 function dmenu_state_update()
 {
     switch (dmenu_state)
@@ -1232,195 +1323,56 @@ function dmenu_state_update()
             dmenu_box = 0;
             dbutton_layout = 0;
             break;
-
+        
         case ""warp"":
-            dmenu_title = ""Menu de sauts"";
-            dbutton_options = [""Lightworld"", ""Darkworld"", ""Combats""];
-            dmenu_box = 0;
-            dbutton_layout = 0;
-            break;
-
-        case ""lightworld"":
-            dmenu_title = ""Menu de sauts - Lightworld"";
-            dbutton_options = [""Couloir de Kris"", ""Hall de l'école"", ""Placard de l'école"", ""Après Darkworld""];
+            dmenu_title = ""Saut"";
+            dbutton_options = [""Salle actuelle"", ""Contient : ""];
+            dbutton_indices = [-1, -1];
+            dbutton_options[1] += dkeyboard_input;
+            
+            for (var i = 0; i < array_length(drooms); i++)
+            {
+                if (!string_pos(dkeyboard_input, drooms[i]))
+                    continue;
+                
+                var combined = drooms[i];
+                array_push(dbutton_options, combined);
+                array_push(dbutton_indices, drooms_id[i].room_index);
+            }
+            
+            dbutton_layout = 1;
             dmenu_box = 1;
-            dbutton_layout = 1;
             break;
-
-        case ""kris_hallway"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
+        
+        case ""warp_options"":
+            dmenu_title = ""Options saut"";
+            dbutton_options = [""Annuler"", ""Est un Darkworld : "", ""Valeure de plot : "", ""Equipier 2 :  "", ""Equipier 3 :  "", ""Sauter""];
+            dbutton_indices = [0, 1, 2, 3, 4, 5];
+            dbutton_options[1] += drooms_options.target_is_darkzone ? ""Oui"" : ""Non"";
+            
+            if (global.dreading_custom_flag)
+                dbutton_options[2] += dkeyboard_input;
+            else
+                dbutton_options[2] += string(drooms_options.target_plot);
+            
+            teammates = [""Personne"", ""Kris"", ""Susie"", ""Ralsei"", ""Noelle""];
+            dbutton_options[3] += teammates[drooms_options.target_member_2];
+            dbutton_options[4] += teammates[drooms_options.target_member_3];
             break;
-
-        case ""school_hallway"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
-        case ""school_closet"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
-        case ""after_darkworld"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Saut : 1ère apparition""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
-        case ""darkworld"":
-            dmenu_title = ""Menu de sauts - Darkworld"";
-            dbutton_options = [""Entrée du Darkworld"", ""Entrée de la Citadelle"", ""Entrée des Plaines"", ""Bazar de Seam"", ""Entrée du Grand Plateau"", ""Entrée de la Forêt"", ""Vente de Pâtisseries"", ""Entrée Château"", ""Dernier étage Château"", ""Sortie Darkworld""];
-            dmenu_box = 1;
-            dbutton_layout = 1;
-            break;
-
-        case ""dw_entrance"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
-        case ""castletown_entrance"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
-        case ""field_entrance"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
-        case ""seam_shop"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
-        case ""greatboard_entrance"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
-        case ""forest_entrance"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
-        case ""bakesale"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
-        case ""castle_entrance"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
-        case ""castle_top_floor"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
-        case ""darkworld_exit"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter"", ""Saut : 1ère apparition""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
-        case ""battles"":
-            dmenu_title = ""Menu de sauts - Combats"";
-            dbutton_options = [""Combat contre Lancer"", ""Combat contre Kouronné"", ""Combat contre Tréflette"", ""Combat contre Susie"", ""2e Combat contre Kouronné"", ""Combat contre Jevil"", ""Combat contre  le Roi""];
-            dmenu_box = 1;
-            dbutton_layout = 1;
-            break;
-
-        case ""lancer_battle"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter"", ""Saut : Combat""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
-        case ""kround_battle"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter"", ""Saut : Combat""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
-        case ""clover_battle"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter"", ""Saut : Combat""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
-        case ""susie_battle"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter"", ""Saut : Combat""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
-        case ""kround2_battle"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter"", ""Saut : Combat""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
-        case ""jevil_battle"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter"", ""Saut : Combat avec Clé""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
-        case ""king_battle"":
-            dmenu_title = ""Options de saut"";
-            dbutton_options = [""Téléporter"", ""Saut : Combat""];
-            dmenu_box = 0;
-            dbutton_layout = 1;
-            break;
-
+        
         case ""give"":
             dmenu_title = ""Type d'items"";
             dbutton_options = [""Objets"", ""Armures"", ""Armes"", ""Obj Clés""];
             dmenu_box = 0;
             dbutton_layout = 0;
             break;
-
+        
         case ""objects"":
             dmenu_title = ""Liste d'objets"";
             dbutton_options = [];
             dbutton_indices = [];
             var max_len = 40;
-
+            
             if (dhorizontal_page == 0)
             {
                 for (var i = drecent_item; i <= ditemcount; i++)
@@ -1428,25 +1380,25 @@ function dmenu_state_update()
                     scr_iteminfo(i);
                     var cleaned_desc = string_replace_all(itemdescb, ""#"", "" "");
                     var combined = itemnameb + "" - "" + cleaned_desc;
-
+                    
                     if (string_length(combined) > max_len)
                         combined = string_copy(combined, 1, max_len - 3) + ""..."";
-
+                    
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
                 }
-
+                
                 var cutoff = min(drecent_item - 1, ditemcount);
-
+                
                 for (var i = 1; i <= cutoff; i++)
                 {
                     scr_iteminfo(i);
                     var cleaned_desc = string_replace_all(itemdescb, ""#"", "" "");
                     var combined = itemnameb + "" - "" + cleaned_desc;
-
+                    
                     if (string_length(combined) > max_len)
                         combined = string_copy(combined, 1, max_len - 3) + ""..."";
-
+                    
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
                 }
@@ -1461,17 +1413,17 @@ function dmenu_state_update()
                     array_push(dbutton_indices, dlight_objects[i][0]);
                 }
             }
-
+            
             dmenu_box = 2;
             dbutton_layout = 1;
             break;
-
+        
         case ""armors"":
             dmenu_title = ""Liste d'armures"";
             dbutton_options = [];
             dbutton_indices = [];
             var max_len = 40;
-
+            
             if (dhorizontal_page == 0)
             {
                 for (var i = drecent_armor; i <= darmorcount; i++)
@@ -1479,25 +1431,25 @@ function dmenu_state_update()
                     scr_armorinfo(i);
                     var cleaned_desc = string_replace_all(armordesctemp, ""#"", "" "");
                     var combined = armornametemp + "" - "" + cleaned_desc;
-
+                    
                     if (string_length(combined) > max_len)
                         combined = string_copy(combined, 1, max_len - 3) + ""..."";
-
+                    
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
                 }
-
+                
                 var cutoff = min(drecent_armor - 1, darmorcount);
-
+                
                 for (var i = 1; i <= cutoff; i++)
                 {
                     scr_armorinfo(i);
                     var cleaned_desc = string_replace_all(armordesctemp, ""#"", "" "");
                     var combined = armornametemp + "" - "" + cleaned_desc;
-
+                    
                     if (string_length(combined) > max_len)
                         combined = string_copy(combined, 1, max_len - 3) + ""..."";
-
+                    
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
                 }
@@ -1507,25 +1459,25 @@ function dmenu_state_update()
                 for (var i = 0; i < array_length(dlight_armors); i++)
                 {
                     var combined = dlight_armors[i][1];
-
+                    
                     if (global.larmor == dlight_armors[i][0])
                         combined += "" (Equiped)"";
-
+                    
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
                 }
             }
-
+            
             dmenu_box = 2;
             dbutton_layout = 1;
             break;
-
+        
         case ""weapons"":
             dmenu_title = ""Liste d'armes"";
             dbutton_options = [];
             dbutton_indices = [];
             var max_len = 40;
-
+            
             if (dhorizontal_page == 0)
             {
                 for (var i = drecent_weapon; i <= dweaponcount; i++)
@@ -1533,25 +1485,25 @@ function dmenu_state_update()
                     scr_weaponinfo(i);
                     var cleaned_desc = string_replace_all(weapondesctemp, ""#"", "" "");
                     var combined = weaponnametemp + "" - "" + cleaned_desc;
-
+                    
                     if (string_length(combined) > max_len)
                         combined = string_copy(combined, 1, max_len - 3) + ""..."";
-
+                    
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
                 }
-
+                
                 var cutoff = min(drecent_weapon - 1, dweaponcount);
-
+                
                 for (var i = 1; i <= cutoff; i++)
                 {
                     scr_weaponinfo(i);
                     var cleaned_desc = string_replace_all(weapondesctemp, ""#"", "" "");
                     var combined = weaponnametemp + "" - "" + cleaned_desc;
-
+                    
                     if (string_length(combined) > max_len)
                         combined = string_copy(combined, 1, max_len - 3) + ""..."";
-
+                    
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
                 }
@@ -1561,120 +1513,169 @@ function dmenu_state_update()
                 for (var i = 0; i < array_length(dlight_weapons); i++)
                 {
                     var combined = dlight_weapons[i][1];
-
+                    
                     if (global.lweapon == dlight_weapons[i][0])
                         combined += "" (Equiped)"";
-
+                    
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
                 }
             }
-
+            
             dmenu_box = 2;
             dbutton_layout = 1;
             break;
-
+        
         case ""keyitems"":
             dmenu_title = ""Liste d'objets clés (Peut briser le jeu)"";
             dbutton_options = [];
             dbutton_indices = [];
             var max_len = 40;
-
+            
             for (var i = drecent_keyitem; i <= dkeyitemcount; i++)
             {
                 scr_keyiteminfo(i);
                 var cleaned_desc = string_replace_all(tempkeyitemdesc, ""#"", "" "");
                 var combined = tempkeyitemname + "" - "" + cleaned_desc;
-
+                
                 if (string_length(combined) > max_len)
                     combined = string_copy(combined, 1, max_len - 3) + ""..."";
-
+                
                 array_push(dbutton_options, combined);
                 array_push(dbutton_indices, i);
             }
-
+            
             var cutoff = min(drecent_keyitem - 1, dkeyitemcount);
-
+            
             for (var i = 1; i <= cutoff; i++)
             {
                 scr_keyiteminfo(i);
                 var cleaned_desc = string_replace_all(tempkeyitemdesc, ""#"", "" "");
                 var combined = tempkeyitemname + "" - "" + cleaned_desc;
-
+                
                 if (string_length(combined) > max_len)
                     combined = string_copy(combined, 1, max_len - 3) + ""..."";
-
+                
                 array_push(dbutton_options, combined);
                 array_push(dbutton_indices, i);
             }
-
+            
             dmenu_box = 2;
             dbutton_layout = 1;
             break;
-
+        
         case ""givertab"":
             dmenu_title = ""Ajouter combien à l'inventaire ?"";
             dgiver_amount = 1;
             dmenu_box = 0;
             dbutton_layout = 2;
             break;
-
+        
+        case ""recruits"":
+            dmenu_title = ""Liste des recrues"";
+            dbutton_options = [""Préréglages""];
+            dbutton_indices = [""Préréglages""];
+            var max_len = 40;
+            
+            if (dhorizontal_page != 0)
+            {
+                dbutton_options[0] = "" "" + dbutton_options[0];
+                dbutton_indices[0] = "" "" + dbutton_indices[0];
+            }
+            
+            if (dhorizontal_page != 0)
+            {
+                var test_lst = scr_get_chapter_recruit_data(dhorizontal_page);
+                
+                for (var i = 0; i < array_length(test_lst); i++)
+                {
+                    var enemy_id = test_lst[i];
+                    scr_recruit_info(enemy_id);
+                    var combined = _name + "" - ["" + string(max(floor(global.flag[enemy_id + 600] * _recruitcount), -1)) + ""/"" + string(_recruitcount) + ""]"";
+                    
+                    if (string_length(combined) > max_len)
+                        combined = string_copy(combined, 1, max_len - 3) + ""..."";
+                    
+                    array_push(dbutton_options, combined);
+                    array_push(dbutton_indices, enemy_id);
+                }
+            }
+            
+            dmenu_box = 1;
+            dbutton_layout = 1;
+            break;
+        
+        case ""recruit_presets"":
+            dmenu_title = ""Préréglages des recrues"";
+            dbutton_options = [""Recruter tous"", ""Perdre tous""];
+            
+            if (dhorizontal_page)
+            {
+                dmenu_title += ("" (chap "" + string(dhorizontal_page) + "")"");
+                dbutton_options[0] += "" le chapitre "" + string(dhorizontal_page);
+                dbutton_options[1] += "" le chapitre "" + string(dhorizontal_page);
+            }
+            
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
         case ""flag_categories"":
             dmenu_title = ""Divers"";
             dbutton_options = [];
             dbutton_indices = [-1];
             categories_len = array_length(dother_categories);
             var max_len = 40;
-
+            
             if (!global.dreading_custom_flag)
                 array_push(dbutton_options, ""Custom"");
             else
                 array_push(dbutton_options, ""global.flag["" + dcustom_flag_text[0] + ""] = |"" + dcustom_flag_text[1] + ""|"");
-
+            
             for (var i = 0; i < categories_len; i++)
             {
                 if (dflag_categories_len[i] == 0)
                     continue;
-
+                
                 array_push(dbutton_options, dother_categories[i]);
                 array_push(dbutton_indices, i);
             }
-
+            
             dmenu_box = 2;
             dbutton_layout = 1;
             break;
-
+        
         case ""flag_misc"":
             dmenu_title = ""Divers"";
             dbutton_options = [];
             dbutton_indices = [];
             other_len = array_length(dother_options);
             var max_len = 40;
-
+            
             for (var i = 0; i < other_len; i++)
             {
                 cur_option = dother_options[i];
                 flag_number = global.flag[cur_option[2]];
                 var combined = cur_option[1] + "" - problem lol"";
-
+                
                 if (i == (dbutton_selected - 1))
                     option_index = dhorizontal_index;
                 else
                     option_index = find_subarray_index(cur_option[2], cur_option[3]);
-
+                
                 combined = cur_option[1] + "" -  "" + cur_option[3][option_index][0];
-
+                
                 if (string_length(combined) > max_len)
                     combined = string_copy(combined, 1, max_len - 3) + ""..."";
-
+                
                 array_push(dbutton_options, combined);
                 array_push(dbutton_indices, i);
             }
-
+            
             dmenu_box = 2;
             dbutton_layout = 1;
             break;
-
+        
         default:
             dmenu_title = ""Inconnu"";
             dbutton_options = [];
@@ -1691,452 +1692,96 @@ function dmenu_state_interact()
             if (dbutton_selected == 1)
             {
                 dmenu_state = ""warp"";
+                dhorizontal_index = 0;
+                dkeyboard_input = """";
+                drooms_options.target_plot = global.plot;
+                drooms_options.target_is_darkzone = global.darkzone;
                 dbutton_selected = 1;
             }
-
+            
             if (dbutton_selected == 2)
             {
                 dmenu_state = ""give"";
                 dbutton_selected = 1;
             }
-
+            
             if (dbutton_selected == 3)
+            {
+                if (global.chapter >= 4)
+                    dmenu_state = ""recruits"";
+                else
+                    dmenu_state = ""flag_categories"";
+                
+                dhorizontal_page = 0;
+                dbutton_selected = 1;
+            }
+            
+            if (dbutton_selected == 4)
             {
                 dmenu_state = ""flag_categories"";
                 dbutton_selected = 1;
             }
-
+            
             break;
-
+        
         case ""warp"":
+            if (dbutton_selected == 2)
+            {
+                global.dreading_custom_flag = 1;
+                keyboard_string = """";
+                dkeyboard_input = """";
+                dmenu_state_update();
+            }
+            else
+            {
+                drooms_options.target_room = -1;
+                
+                if (dbutton_selected != 1)
+                    drooms_options.target_room = dbutton_indices[dbutton_selected - 1];
+                
+                drooms_options.target_plot = global.plot;
+                drooms_options.target_is_darkzone = global.darkzone;
+                drooms_options.target_member_2 = global.char[1];
+                drooms_options.target_member_3 = global.char[2];
+                dmenu_state = ""warp_options"";
+                dkeyboard_input = """";
+            }
+            
+            break;
+        
+        case ""warp_options"":
             if (dbutton_selected == 1)
             {
-                dmenu_state = ""lightworld"";
-                dbutton_selected = 1;
+                dkeyboard_input = """";
+                dmenu_state = ""warp"";
             }
-
-            if (dbutton_selected == 2)
+            else if (dbutton_selected == 2)
             {
-                dmenu_state = ""darkworld"";
-                dbutton_selected = 1;
+                drooms_options.target_is_darkzone ^= 1;
             }
-
-            if (dbutton_selected == 3)
+            else if (dbutton_selected == 3)
             {
-                dmenu_state = ""battles"";
-                dbutton_selected = 1;
+                global.dreading_custom_flag = 1;
+                keyboard_string = """";
             }
-
-            break;
-
-        case ""lightworld"":
-            if (dbutton_selected == 1)
-                dmenu_state = ""kris_hallway"";
-
-            if (dbutton_selected == 2)
-                dmenu_state = ""school_hallway"";
-
-            if (dbutton_selected == 3)
-                dmenu_state = ""school_closet"";
-
-            if (dbutton_selected == 4)
-                dmenu_state = ""after_darkworld"";
-
-            break;
-
-        case ""kris_hallway"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 0;
-            snd_free_all();
-            room_goto(room_krishallway);
-
-            if (dbutton_selected == 2)
-                global.plot = 1;
-
-            break;
-
-        case ""school_hallway"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 0;
-            snd_free_all();
-            room_goto(room_schoollobby);
-
-            if (dbutton_selected == 2)
-                global.plot = 1;
-
-            break;
-
-        case ""school_closet"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 0;
-            snd_free_all();
-            room_goto(room_schooldoor);
-            break;
-
-        case ""after_darkworld"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 0;
-            snd_free_all();
-            room_goto(room_lw_computer_lab);
-            break;
-
-        case ""darkworld"":
-            if (dbutton_selected == 1)
-                dmenu_state = ""dw_entrance"";
-
-            if (dbutton_selected == 2)
-                dmenu_state = ""castletown_entrance"";
-
-            if (dbutton_selected == 3)
-                dmenu_state = ""field_entrance"";
-
-            if (dbutton_selected == 4)
-                dmenu_state = ""seam_shop"";
-
-            if (dbutton_selected == 5)
-                dmenu_state = ""greatboard_entrance"";
-
-            if (dbutton_selected == 6)
-                dmenu_state = ""forest_entrance"";
-
-            if (dbutton_selected == 7)
-                dmenu_state = ""bakesale"";
-
-            if (dbutton_selected == 8)
-                dmenu_state = ""castle_entrance"";
-
-            if (dbutton_selected == 9)
-                dmenu_state = ""castle_top_floor"";
-
-            if (dbutton_selected == 10)
-                dmenu_state = ""darkworld_exit"";
-
-            break;
-
-        case ""dw_entrance"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_dark1);
-
-            if (dbutton_selected == 2)
+            else if (dbutton_selected == 6)
             {
-                global.char[0] = 1;
-                global.char[1] = 0;
-                global.char[2] = 0;
-                global.plot = 11;
+                new_room = drooms_options.target_room;
+                
+                if (new_room == -1)
+                    new_room = room;
+                
+                global.plot = drooms_options.target_plot;
+                global.darkzone = drooms_options.target_is_darkzone;
+                global.char[1] = drooms_options.target_member_2;
+                global.char[2] = drooms_options.target_member_3;
+                global.interact = 0;
+                dmenu_active = false;
+                room_goto(new_room);
             }
-
+            
             break;
-
-        case ""castletown_entrance"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_castle_outskirts);
-
-            if (dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 0;
-                global.char[2] = 0;
-                global.plot = 16;
-            }
-
-            break;
-
-        case ""field_entrance"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_field1);
-
-            if (dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 3;
-                global.char[2] = 0;
-                global.plot = 33;
-            }
-
-            break;
-
-        case ""seam_shop"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_field_shop1);
-
-            if (dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 3;
-                global.char[2] = 2;
-                global.plot = 40;
-            }
-
-            break;
-
-        case ""greatboard_entrance"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_field_checkers4);
-
-            if (dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 3;
-                global.char[2] = 2;
-                global.plot = 50;
-            }
-
-            break;
-
-        case ""forest_entrance"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_forest_savepoint1);
-
-            if (dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 3;
-                global.char[2] = 0;
-                global.plot = 60;
-            }
-
-            break;
-
-        case ""bakesale"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_forest_savepoint2);
-
-            if (dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 3;
-                global.char[2] = 0;
-                global.plot = 75;
-            }
-
-            break;
-
-        case ""castle_entrance"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_cc_1f);
-
-            if (dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 2;
-                global.char[2] = 3;
-                global.plot = 165;
-            }
-
-            break;
-
-        case ""castle_top_floor"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_cc_5f);
-
-            if (dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 2;
-                global.char[2] = 3;
-                global.plot = 165;
-            }
-
-            break;
-
-        case ""darkworld_exit"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_cc_prefountain);
-
-            if (dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 2;
-                global.char[2] = 0;
-                global.plot = 240;
-            }
-
-            break;
-
-        case ""battles"":
-            if (dbutton_selected == 1)
-                dmenu_state = ""lancer_battle"";
-
-            if (dbutton_selected == 2)
-                dmenu_state = ""kround_battle"";
-
-            if (dbutton_selected == 3)
-                dmenu_state = ""clover_battle"";
-
-            if (dbutton_selected == 4)
-                dmenu_state = ""susie_battle"";
-
-            if (dbutton_selected == 5)
-                dmenu_state = ""kround2_battle"";
-
-            if (dbutton_selected == 6)
-                dmenu_state = ""jevil_battle"";
-
-            if (dbutton_selected == 7)
-                dmenu_state = ""king_battle"";
-
-            break;
-
-        case ""lancer_battle"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_castle_town);
-
-            if (dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 2;
-                global.char[2] = 0;
-                global.plot = 16;
-            }
-
-            break;
-
-        case ""kround_battle"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_field_checkers7);
-
-            if (dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 3;
-                global.char[2] = 2;
-                global.plot = 55;
-            }
-
-            break;
-
-        case ""clover_battle"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_forest_area3);
-
-            if (dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 3;
-                global.char[2] = 0;
-                global.plot = 72;
-            }
-
-            break;
-
-        case ""susie_battle"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_forest_savepoint3);
-
-            if (dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 3;
-                global.char[2] = 0;
-                global.plot = 120;
-            }
-
-            break;
-
-        case ""kround2_battle"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_cc_6f);
-
-            if (dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 2;
-                global.char[2] = 3;
-                global.charauto[2] = 0;
-                global.plot = 165;
-            }
-
-            break;
-
-        case ""jevil_battle"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_cc_prison_prejoker);
-
-            if (dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 2;
-                global.char[2] = 3;
-                global.plot = 165;
-                global.charauto[2] = 0;
-                scr_keyitemget(5);
-                global.tempflag[4] = 1;
-
-                repeat (13)
-                    scr_weaponget(5);
-            }
-
-            break;
-
-        case ""king_battle"":
-            dmenu_active = false;
-            global.interact = 0;
-            global.darkzone = 1;
-            snd_free_all();
-            room_goto(room_cc_throneroom);
-
-            if (dbutton_selected == 2)
-            {
-                global.char[0] = 1;
-                global.char[1] = 2;
-                global.char[2] = 3;
-                global.charauto[2] = 0;
-            }
-
-            break;
-
+        
         case ""give"":
             if (dbutton_selected == 1)
                 dmenu_state = ""objects"";
@@ -2146,15 +1791,15 @@ function dmenu_state_interact()
                 dmenu_state = ""weapons"";
             else if (dbutton_selected == 4)
                 dmenu_state = ""keyitems"";
-
+            
             dhorizontal_page = !global.darkzone;
-
+            
             if (dbutton_selected == 4)
                 dhorizontal_page = 0;
-
+            
             dbutton_selected = 1;
             break;
-
+        
         case ""objects"":
             dgiver_menu_state = dmenu_state;
             dbutton_selected = clamp(dbutton_selected, 0, array_length(dbutton_options) - 1);
@@ -2162,47 +1807,47 @@ function dmenu_state_interact()
             dmenu_state = ""givertab"";
             dbutton_selected = 1;
             break;
-
+        
         case ""armors"":
             if (dhorizontal_page == 1)
             {
                 global.larmor = dlight_armors[dbutton_selected - 1][0];
                 break;
             }
-
+            
             dgiver_menu_state = dmenu_state;
             dgiver_button_selected = dbutton_selected;
             dmenu_state = ""givertab"";
             dbutton_selected = 1;
             break;
-
+        
         case ""weapons"":
             if (dhorizontal_page == 1)
             {
                 global.lweapon = dlight_weapons[dbutton_selected - 1][0];
                 break;
             }
-
+            
             dgiver_menu_state = dmenu_state;
             dgiver_button_selected = dbutton_selected;
             dmenu_state = ""givertab"";
             dbutton_selected = 1;
             break;
-
+        
         case ""keyitems"":
             dgiver_menu_state = dmenu_state;
             dgiver_button_selected = dbutton_selected;
             dmenu_state = ""givertab"";
             dbutton_selected = 1;
             break;
-
+        
         case ""givertab"":
             if (dgiver_menu_state == ""objects"")
             {
                 if (dgiver_amount != 0)
                 {
                     real_index = dbutton_indices[dgiver_button_selected - 1];
-
+                    
                     for (var i = 0; i < abs(dgiver_amount); i++)
                     {
                         if (dgiver_amount < 0)
@@ -2221,35 +1866,36 @@ function dmenu_state_interact()
                             scr_litemget(real_index);
                         }
                     }
-
+                    
                     if (dgiver_amount < 0)
                         scr_debug_print(string(abs(dgiver_amount)) + "" "" + dgiver_bname + "" retiré de l'inventaire"");
-                    else                        scr_debug_print(string(dgiver_amount) + "" "" + dgiver_bname + "" ajouté à l'inventaire"");
+                    else
+                        scr_debug_print(string(dgiver_amount) + "" "" + dgiver_bname + "" ajouté à l'inventaire"");
                 }
                 else
                 {
                     scr_debug_print(""Annulé"");
                 }
             }
-
+            
             if (dgiver_menu_state == ""armors"")
             {
                 if (dgiver_amount > 0)
                 {
                     real_index = dbutton_indices[dgiver_button_selected - 1];
-
-                    for (var i ; i < dgiver_amount; i++)
+                    
+                    for (var i = 0; i < dgiver_amount; i++)
                         scr_armorget(real_index);
-
+                    
                     scr_debug_print(string(dgiver_amount) + "" "" + dgiver_bname + "" ajouté à l'inventaire"");
                 }
                 else if (dgiver_amount < 0)
                 {
                     real_index = dbutton_indices[dgiver_button_selected - 1];
-
+                    
                     for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_armorremove(real_index);
-
+                    
                     scr_debug_print(string(abs(dgiver_amount)) + "" "" + dgiver_bname + "" retiré de l'inventaire"");
                 }
                 else
@@ -2257,25 +1903,25 @@ function dmenu_state_interact()
                     scr_debug_print(""Annulé"");
                 }
             }
-
+            
             if (dgiver_menu_state == ""weapons"")
             {
                 if (dgiver_amount > 0)
                 {
                     real_index = dbutton_indices[dgiver_button_selected - 1];
-
-                  for (var i = 0; i < dgiver_amount; i++)
+                    
+                    for (var i = 0; i < dgiver_amount; i++)
                         scr_weaponget(real_index);
-
+                    
                     scr_debug_print(string(dgiver_amount) + "" "" + dgiver_bname + "" ajouté à l'inventaire"");
                 }
                 else if (dgiver_amount < 0)
                 {
                     real_index = dbutton_indices[dgiver_button_selected - 1];
-
+                    
                     for (var i = 0; i < abs(dgiver_amount); i++)
-                        scr_weaponremove(real_dex);
-
+                        scr_weaponremove(real_index);
+                    
                     scr_debug_print(string(abs(dgiver_amount)) + "" "" + dgiver_bname + "" retiré de l'inventaire"");
                 }
                 else
@@ -2283,25 +1929,25 @@ function dmenu_state_interact()
                     scr_debug_print(""Annulé"");
                 }
             }
-
+            
             if (dgiver_menu_state == ""keyitems"")
             {
                 if (dgiver_amount > 0)
                 {
                     real_index = dbutton_indices[dgiver_button_selected - 1];
-
-                  for (var i = 0; i < dgiver_amount; i++)
+                    
+                    for (var i = 0; i < dgiver_amount; i++)
                         scr_keyitemget(real_index);
-
+                    
                     scr_debug_print(string(dgiver_amount) + "" "" + dgiver_bname + "" ajouté à l'inventaire"");
                 }
                 else if (dgiver_amount < 0)
                 {
                     real_index = dbutton_indices[dgiver_button_selected - 1];
-
+                    
                     for (var i = 0; i < abs(dgiver_amount); i++)
-                        scr_yitemremove(real_index);
-
+                        scr_keyitemremove(real_index);
+                    
                     scr_debug_print(string(abs(dgiver_amount)) + "" "" + dgiver_bname + "" retiré de l'inventaire"");
                 }
                 else
@@ -2309,35 +1955,74 @@ function dmenu_state_interact()
                     scr_debug_print(""Annulé"");
                 }
             }
-
+            
             dmenu_active = false;
             global.interact = 0;
             break;
-
+        
         case ""flag_categories"":
             if (dbutton_selected > 1)
             {
                 dother_options = [];
                 real_index = dbutton_indices[dbutton_selected - 1];
-
+                
                 for (var i = 0; i < array_length(dother_all_options); i++)
                 {
                     options = dother_all_options[i];
-
+                    
                     if (options[0] == real_index)
                         array_push(dother_options, options);
                 }
-
+                
                 dhorizontal_index = find_subarray_index(dother_options[0][2], dother_options[0][3]);
                 dmenu_state = ""flag_misc"";
                 dbutton_selected = 1;
             }
-
+            
             break;
-
+        
         case ""flag_misc"":
             break;
-
+        
+        case ""recruits"":
+            if (dbutton_selected == 1)
+            {
+                dmenu_state = ""recruit_presets"";
+                dbutton_selected = 1;
+            }
+            
+            break;
+        
+        case ""recruit_presets"":
+            for (var c = 1; c <= global.chapter; c++)
+            {
+                if (dhorizontal_page != 0)
+                    c = dhorizontal_page;
+                
+                var test_lst = scr_get_chapter_recruit_data(c);
+                
+                for (var i = 0; i < array_length(test_lst); i++)
+                {
+                    var enemy_id = test_lst[i];
+                    scr_recruit_info(enemy_id);
+                    
+                    if (dbutton_selected == 1)
+                        global.flag[enemy_id + 600] = 1;
+                    else
+                        global.flag[enemy_id + 600] = -1 / _recruitcount;
+                }
+                
+                if (dhorizontal_page != 0)
+                    break;
+            }
+            
+            if (dbutton_selected == 1)
+                snd_play(snd_pirouette);
+            else
+                snd_play(snd_weirdeffect);
+            
+            break;
+        
         default:
             snd_play(snd_error);
             scr_debug_print(""Sélection invalide !"");

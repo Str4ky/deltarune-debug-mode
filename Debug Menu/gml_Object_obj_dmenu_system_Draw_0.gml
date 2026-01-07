@@ -130,13 +130,13 @@ if (dmenu_active)
                 draw_monospace(x_start + xx, y_start + yy + (i * y_spacing), dbutton_options[button_index]);
                 mono_spacing = (global.darkzone == 1) ? 15 : 8;
                 
-                if (is_cur_line && dmenu_state == "flag_misc")
+                if ((is_cur_line && dmenu_state == "flag_misc") || (dmenu_state == "warp_options" && (button_index == 3 || button_index == 4)))
                 {
-                    if (dhorizontal_index != 0)
+                    if ((dmenu_state == "flag_misc" && dhorizontal_index != 0) || (dmenu_state == "warp_options" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != 0))
                     {
                         for (dash_pos = 0; 1; dash_pos++)
                         {
-                            if (dash_pos > 4 && string_char_at(dbutton_options[button_index], dash_pos) == "-")
+                            if (dash_pos > 4 && string_char_at(dbutton_options[button_index], dash_pos) == ((dmenu_state == "flag_misc") ? "-" : ":"))
                                 break;
                         }
                         
@@ -144,7 +144,7 @@ if (dmenu_active)
                         draw_sprite_ext(spr_morearrow, 0, x_start + xx + ((dash_pos * mono_spacing) + floor(mono_spacing / 2)) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[0], darrow_scale, -darrow_scale, 90, c_white, 1);
                     }
                     
-                    if (dhorizontal_index < (array_length(dother_options[dbutton_selected - 1][3]) - 1))
+                    if ((dmenu_state == "flag_misc" && dhorizontal_index < (array_length(dother_options[dbutton_selected - 1][3]) - 1)) || (dmenu_state == "warp_options" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != (4 - (global.chapter == 1))))
                         draw_sprite_ext(spr_morearrow, 0, ((x_start + xx + ((string_length(dbutton_options[button_index]) + 1) * mono_spacing)) - floor(mono_spacing / 2)) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[1], darrow_scale, -darrow_scale, 270, c_white, 1);
                 }
                 else if (dmenu_state == "recruits" && button_index == 0)

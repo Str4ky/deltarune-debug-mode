@@ -228,6 +228,10 @@ ChangeSelection(obj_time_TOGGLER);
 
 // Fonctions du Lightworld
 UndertaleGameObject obj_overworldc = Data.GameObjects.ByName("obj_overworldc");
+
+importGroup.QueueFindReplace(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, Data),
+"if (scr_debug())", "if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))");
+
 importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, Data), @"
 if (!instance_exists(obj_dmenu_system))
     instance_create(0, 0, obj_dmenu_system)
