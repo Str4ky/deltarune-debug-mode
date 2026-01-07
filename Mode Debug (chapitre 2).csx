@@ -2293,7 +2293,7 @@ if (dmenu_active)
         if (dmenu_state == ""flag_categories"")
         {
             var base_x = x_start + xx;
-            var base_y = (110 * d) + yy;
+            var base_y = ((110 - (dmenu_start_index * 20)) * d) + yy;
             var mono_spacing = (global.darkzone == 1) ? 15 : 8;
             var thickness = 1 * d;
             var visual_offset = -5;
@@ -2316,7 +2316,7 @@ if (dmenu_active)
         else if (dmenu_state == ""warp"")
         {
             var base_x = x_start + xx;
-            var base_y = (132 * d) + yy;
+            var base_y = ((130 - (dmenu_start_index * 20)) * d) + yy;
             var mono_spacing = (global.darkzone == 1) ? 15 : 8;
             var thickness = 1 * d;
             var visual_offset = -2;
@@ -2334,7 +2334,7 @@ if (dmenu_active)
         else if (dmenu_state == ""warp_options"")
         {
             var base_x = x_start + xx;
-            var base_y = (150 * d) + yy;
+            var base_y = ((150 - (dmenu_start_index * 20)) * d) + yy;
             var mono_spacing = (global.darkzone == 1) ? 15 : 8;
             var thickness = 1 * d;
             var visual_offset = -2;
