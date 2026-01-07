@@ -94,27 +94,27 @@ if (global.chapter >= 1)
     array_push(dother_all_options, [ROBOTEUR, "Corps Roboteur", 221, [["Sobre", 0], ["Roue", 1], ["Tank", 2], ["Canard", 3]]]);
     array_push(dother_all_options, [ROBOTEUR, "Jambes Roboteur", 222, [["Baskets", 0], ["Pneus", 1], ["Chaînes", 2], ["Canard", 3]]]);
     array_push(dother_all_options, [MISC1, "Nom du gang", 214, [["Les Types (unused)", 0], ["L'Escouade $?$!$", 1], ["Le Fan Club Lancer", 2], ["Le Fun Gang", 3]]]);
-    array_push(dother_all_options, [MISC1, "Prophetie entendu", 203, [["Non", 1], ["Oui", 0]]]);
-    array_push(dother_all_options, [MISC1, "Manuel jete", 207, [["Non", 0], ["A tente", 1], ["L'a jete", 2]]]);
+    array_push(dother_all_options, [MISC1, "Prophétie entendu", 203, [["Non", 1], ["Oui", 0]]]);
+    array_push(dother_all_options, [MISC1, "Manuel jeté", 207, [["Non", 0], ["A tenté", 1], ["L'a jeté", 2]]]);
     array_push(dother_all_options, [MISC1, "Gâteau rendu", 253, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [MISC1, "Starwalker", 254, [["Pissing me off", 0], ["I will   join", 1]]]);
     array_push(dother_all_options, [MISC1, "Objectif de Donation", 216, [["Non rempli", 0], ["Atteint", 1]]]);
-    array_push(dother_all_options, [MISC1, "Fleurs d'Asgore", 262, [["Pas vu", 0], ["Pas donnee", 2], ["Donnees", 4]]]);
-    array_push(dother_all_options, [MISC1, "Noelle dehors", 276, [["Pas parle", 0], ["Pas parle de Susie", 1], ["A parle de Susie", 2]]]);
-    array_push(dother_all_options, [MISC1, "Evier inspecte (chap 1)", 278, [["Non", 0], ["Oui", 1]]]);
+    array_push(dother_all_options, [MISC1, "Fleurs d'Asgore", 262, [["Pas vu", 0], ["Pas donnée", 2], ["Données", 4]]]);
+    array_push(dother_all_options, [MISC1, "Noëlle dehors", 276, [["Pas parlé", 0], ["Pas parlé de Susie", 1], ["A parlé de Susie", 2]]]);
+    array_push(dother_all_options, [MISC1, "Evier inspecté (chap 1)", 278, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [EGG, "Œuf obtenu (chap 1)", 911, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [SUPERBOSS, "Jevil vaincu", 241, [["Non", 0], ["Via violence", 6], ["Via clémence", 7]]]);
     array_push(dother_all_options, [ONION_SAN, "Relation (chap 1)", 258, [["Pas vu", 0], ["Amis", 2], ["Pas amis", 3]]]);
-    array_push(dother_all_options, [ONION_SAN, "Nom de Kris", 259, [["Pas donne", 0], ["Kris", 1], ["Hippopotame", 2]]]);
-    array_push(dother_all_options, [ONION_SAN, "Nom d'Onion", 260, [["Pas donne", 0], ["Onion", 1], ["Beaute", 2], ["Asriel II", 3], ["Degoutant", 4]]]);
-    array_push(dother_all_options, [MOUSSE, "Mousse mangee (chap 1)", 106, [["Non", 0], ["Oui", 1]]]);
+    array_push(dother_all_options, [ONION_SAN, "Nom de Kris", 259, [["Pas donné", 0], ["Kris", 1], ["Hippopotame", 2]]]);
+    array_push(dother_all_options, [ONION_SAN, "Nom d'Onion", 260, [["Pas donné", 0], ["Onion", 1], ["Beauté", 2], ["Asriel II", 3], ["Dégoûtant", 4]]]);
+    array_push(dother_all_options, [MOUSSE, "Mousse mangée (chap 1)", 106, [["Non", 0], ["Oui", 1]]]);
 }
 
 if (global.chapter >= 2)
 {
     array_push(dother_all_options, [MISC2, "Peluche", 307, [["Pas donnée", 0], ["Ralsei", 1], ["Susie", 2], ["Noëlle", 3], ["Berdly", 4]]]);
     array_push(dother_all_options, [MISC2, "Hacker recruté", 659, [["Non", 0], ["Oui", 1]]]);
-    array_push(dother_all_options, [MISC2, "Bras de Berdly", 457, [["Brulé", 0], ["Ok", 1]]]);
+    array_push(dother_all_options, [MISC2, "Bras de Berdly", 457, [["Brûlé", 0], ["Ok", 1]]]);
     array_push(dother_all_options, [WEIRD2, "Avancée", 915, [["Pas fait", 0], ["Nikomercant tué", 3], ["Berdly gelé", 6], ["A parle a Susie", 9], ["Noëlle vue a l'hôpital", 20]]]);
     array_push(dother_all_options, [WEIRD2, "A cancel la weird route", 916, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [EGG, "Œuf obtenu (chap 2)", 918, [["Non", 0], ["Oui", 1]]]);
@@ -122,10 +122,10 @@ if (global.chapter >= 2)
     array_push(dother_all_options, [MISC2, "\"Fan\" de mettaton", 422, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [MISC2, "Statue de Susie récupérée", 393, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [MISC2, "ICE-E récupéré", 394, [["Non", 0], ["Oui", 1]]]);
-    array_push(dother_all_options, [MISC2, "Evier inspecte (chap 2)", 461, [["Non", 0], ["Oui", 1]]]);
+    array_push(dother_all_options, [MISC2, "Evier inspecté (chap 2)", 461, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [ONION_SAN, "Relation (chap 2)", 425, [["Pas vu", 0], ["Amis", 1], ["Plus amis", 2]]]);
-    array_push(dother_all_options, [MOUSSE, "Mousse mangee (chap 2)", 920, [["Non", 0], ["Oui", 1]]]);
-    array_push(dother_all_options, [MOUSSE, "... avec Noelle (chap 2)", 921, [["Non", 0], ["Oui", 1]]]);
+    array_push(dother_all_options, [MOUSSE, "Mousse mangée (chap 2)", 920, [["Non", 0], ["Oui", 1]]]);
+    array_push(dother_all_options, [MOUSSE, "... avec Noëlle (chap 2)", 921, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [MOUSSE, "... avec Susie (chap 2)", 922, [["Non", 0], ["Oui", 1]]]);
 }
 
@@ -137,19 +137,19 @@ if (global.chapter >= 3)
     array_push(dother_all_options, [SWORD, "Susie attaquée", 1268, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [EGG, "Œuf obtenu (chap 3)", 930, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [SUPERBOSS, "Chevalier Vaincu", 1047, [["Non", 2], ["Oui", 1]]]);
-    array_push(dother_all_options, [MISC3, "Fontaine", 1144, [["Pas affronte", 0], ["A flirt(pas parle au rideau)", 1], ["Pas flirte", 2], ["A flirt(a parle au rideau)", 3]]]);
+    array_push(dother_all_options, [MISC3, "Fontaine", 1144, [["Pas affronté", 0], ["A flirt(pas parlé au rideau)", 1], ["Pas flirte", 2], ["A flirt(a parlé au rideau)", 3]]]);
     array_push(dother_all_options, [MISC3, "Statue de Tenna récupérée", 1222, [["Non", 0], ["Oui", 1]]]);
-    array_push(dother_all_options, [MOUSSE, "Mousse mangee (chap 3)", 1078, [["Non", 0], ["Oui", 1]]]);
+    array_push(dother_all_options, [MOUSSE, "Mousse mangée (chap 3)", 1078, [["Non", 0], ["Oui", 1]]]);
 }
 
 if (global.chapter >= 4)
 {
     array_push(dother_all_options, [EGG, "Œuf obtenu (chap 4)", 931, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [SUPERBOSS, "Gerson Vaincu", 1629, [["Non", 0], ["Oui", 1]]]);
-    array_push(dother_all_options, [MOUSSE, "Mousse mangee (chap 4)", 1592, [["Non", 0], ["Oui", 1], ["Refuser", 2]]]);
-    array_push(dother_all_options, [MISC4, "Priere", 1507, [["Pas prie", 0], ["Pour Susie", 1], ["Pour Noelle", 2], ["Pour Asriel", 3]]]);
-    array_push(dother_all_options, [MISC4, "Prix Susie Recupere", 747, [["Non", 0], ["Oui", 1]]]);
-    array_push(dother_all_options, [MISC4, "Tache retire", 748, [["Non", 0], ["Oui", 1]]]);
+    array_push(dother_all_options, [MOUSSE, "Mousse mangée (chap 4)", 1592, [["Non", 0], ["Oui", 1], ["Refusée", 2]]]);
+    array_push(dother_all_options, [MISC4, "Priere", 1507, [["Pas prie", 0], ["Pour Susie", 1], ["Pour Noëlle", 2], ["Pour Asriel", 3]]]);
+    array_push(dother_all_options, [MISC4, "Prix Susie Récupéré", 747, [["Non", 0], ["Oui", 1]]]);
+    array_push(dother_all_options, [MISC4, "Tache retiré", 748, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [MISC4, "Tenna donné", 779, [["Non", 0], ["Oui", 2]]]);
     array_push(dother_all_options, [MISC4, "Échelle récupérée", 864, [["Non", 0], ["Oui", 1]]]);
     array_push(dother_all_options, [MISC4, "Oreiller récupéré", 865, [["Non", 0], ["Oui", 1]]]);

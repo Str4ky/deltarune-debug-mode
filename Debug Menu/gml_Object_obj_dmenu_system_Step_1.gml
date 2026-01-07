@@ -31,7 +31,7 @@ function dmenu_state_update()
         
         case "warp_options":
             dmenu_title = "Options saut";
-            dbutton_options = ["Annuler", "Est un Darkworld : ", "Valeure de plot : ", "Equipier 2 :  ", "Equipier 3 :  ", "Sauter"];
+            dbutton_options = ["Annuler", "Est un Darkworld : ", "Valeure de plot : ", "Équipier 2 :  ", "Équipier 3 :  ", "Sauter"];
             dbutton_indices = [0, 1, 2, 3, 4, 5];
             dbutton_options[1] += drooms_options.target_is_darkzone ? "Oui" : "Non";
             
@@ -40,7 +40,7 @@ function dmenu_state_update()
             else
                 dbutton_options[2] += string(drooms_options.target_plot);
             
-            teammates = ["Personne", "Kris", "Susie", "Ralsei", "Noelle"];
+            teammates = ["Personne", "Kris", "Susie", "Ralsei", "Noëlle"];
             dbutton_options[3] += teammates[drooms_options.target_member_2];
             dbutton_options[4] += teammates[drooms_options.target_member_3];
             break;
