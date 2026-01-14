@@ -328,6 +328,7 @@ cate_enum = 0;
 GONER = cate_enum++;
 SUPERBOSS = cate_enum++;
 WEIRD2 = cate_enum++;
+SEAM = cate_enum++;
 EGG = cate_enum++;
 ONION_SAN = cate_enum++;
 MISC1 = cate_enum++;
@@ -338,7 +339,7 @@ MISC3 = cate_enum++;
 MISC4 = cate_enum++;
 MOUSSE = cate_enum++;
 ROBOTEUR = cate_enum++;
-dother_categories = [""Séquence Vaisseau"", ""Superbosses"", ""Weird Route"", ""Œufs"", ""Onion San"", ""Misc chap 1"", ""Misc chap 2"", ""Legend of Tenna"", ""Sword Route"", ""Misc chap 3"", ""Misc chap 4"", ""Mousse"", ""Roboteur""];
+dother_categories = [""Séquence Vaisseau"", ""Superbosses"", ""Seam"", ""Weird Route"", ""Œufs"", ""Onion San"", ""Misc chap 1"", ""Misc chap 2"", ""Legend of Tenna"", ""Sword Route"", ""Misc chap 3"", ""Misc chap 4"", ""Mousse"", ""Roboteur""];
 dother_all_options = [];
 dother_options = [];
 
@@ -388,10 +389,15 @@ if (global.chapter >= 2)
     array_push(dother_all_options, [MISC2, ""Statue de Susie récupérée"", 393, [[""Non"", 0], [""Oui"", 1]]]);
     array_push(dother_all_options, [MISC2, ""ICE-E récupéré"", 394, [[""Non"", 0], [""Oui"", 1]]]);
     array_push(dother_all_options, [MISC2, ""Évier inspecté (chap 2)"", 461, [[""Non"", 0], [""Oui"", 1]]]);
+    array_push(dother_all_options, [MISC2, ""Scène de l'abri vue"", 315, [[""Non"", 0], [""Oui"", 1]]]);
     array_push(dother_all_options, [ONION_SAN, ""Relation (chap 2)"", 425, [[""Pas vu"", 0], [""Amis"", 1], [""Plus amis"", 2]]]);
     array_push(dother_all_options, [MOUSSE, ""Mousse mangée (chap 2)"", 920, [[""Non"", 0], [""Oui"", 1]]]);
     array_push(dother_all_options, [MOUSSE, ""... avec Noëlle (chap 2)"", 921, [[""Non"", 0], [""Oui"", 1]]]);
     array_push(dother_all_options, [MOUSSE, ""... avec Susie (chap 2)"", 922, [[""Non"", 0], [""Oui"", 1]]]);
+    array_push(dother_all_options, [SEAM, ""Seam a abandonné la quête"", 961, [[""Non"", 0], [""Oui"", 1]]]);
+    array_push(dother_all_options, [SEAM, ""Cristal de Jevil donné"", 954, [[""Non"", 0], [""Oui"", 1]]]);
+    array_push(dother_all_options, [SEAM, ""Cristal de Spamton donné"", 353, [[""Non"", 0], [""Oui"", 1]]]);
+    array_push(dother_all_options, [SEAM, ""A parlé a Seam tout court"", 312, [[""Non"", 0], [""Oui"", 1]]]);
 }
 
 if (global.chapter >= 3)
@@ -405,6 +411,7 @@ if (global.chapter >= 3)
     array_push(dother_all_options, [MISC3, ""Fontaine"", 1144, [[""Pas affronté"", 0], [""A flirt(pas parlé au rideau)"", 1], [""Pas flirté"", 2], [""A flirt(a parlé au rideau)"", 3]]]);
     array_push(dother_all_options, [MISC3, ""Statue de Tenna récupérée"", 1222, [[""Non"", 0], [""Oui"", 1]]]);
     array_push(dother_all_options, [MOUSSE, ""Mousse mangée (chap 3)"", 1078, [[""Non"", 0], [""Oui"", 1]]]);
+    array_push(dother_all_options, [SEAM, ""Cristal du Chevalier donné"", 856, [[""Non"", 0], [""Oui"", 1]]]);
 }
 
 if (global.chapter >= 4)
@@ -412,10 +419,12 @@ if (global.chapter >= 4)
     array_push(dother_all_options, [EGG, ""Œuf obtenu (chap 4)"", 931, [[""Non"", 0], [""Oui"", 1]]]);
     array_push(dother_all_options, [SUPERBOSS, ""Gerson vaincu"", 1629, [[""Non"", 0], [""Oui"", 1]]]);
     array_push(dother_all_options, [MOUSSE, ""Mousse mangée (chap 4)"", 1592, [[""Non"", 0], [""Oui"", 1], [""Refusée"", 2]]]);
+    array_push(dother_all_options, [MISC4, ""QC avec Susie"", 701, [[""Pas allé"", 0], [""Y est allé"", 1]]]);
     array_push(dother_all_options, [MISC4, ""Prière"", 1507, [[""Pas prié"", 0], [""Pour Susie"", 1], [""Pour Noëlle"", 2], [""Pour Asriel"", 3]]]);
+    array_push(dother_all_options, [MISC4, ""Tenna donné"", 779, [[""Non"", 0], [""Oui"", 2]]]);
+    array_push(dother_all_options, [MISC4, ""Tel. de Noelle"", 714, [[""Pas inspecté"", 0], [""Pas répondu"", 1], [""Allez au festival"", 2], [""Wrong number song"", 3]]]);
     array_push(dother_all_options, [MISC4, ""Prix Susie récupéré"", 747, [[""Non"", 0], [""Oui"", 1]]]);
     array_push(dother_all_options, [MISC4, ""Tache retirée"", 748, [[""Non"", 0], [""Oui"", 1]]]);
-    array_push(dother_all_options, [MISC4, ""Tenna donné"", 779, [[""Non"", 0], [""Oui"", 2]]]);
     array_push(dother_all_options, [MISC4, ""Échelle récupérée"", 864, [[""Non"", 0], [""Oui"", 1]]]);
     array_push(dother_all_options, [MISC4, ""Oreiller récupéré"", 865, [[""Non"", 0], [""Oui"", 1]]]);
 }
@@ -435,14 +444,16 @@ find_subarray_index = function(arg0, arg1)
 {
     value = global.flag[arg0];
     lst = arg1;
+    prev = lst[0][1];
     
     for (i = 0; i < array_length(lst); i++)
     {
-        if (value == lst[i][1])
-            return i;
+        if (value > lst[i][1])
+            break;
+        prev = lst[i][1];
     }
     
-    return 0;
+    return prev;
 };
 
 draw_monospace = function(arg0, arg1, arg2)
@@ -484,6 +495,7 @@ dkeyboard_input = """";
 
 for (i = 0; i < array_length(drooms_id); i++)
     array_push(drooms, room_get_name(drooms_id[i].room_index));
+
 ");
 
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)0, Data), @"
@@ -1500,6 +1512,7 @@ enum e__VW
     Camera,
     SurfaceID
 }
+
 ");
 
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)1, Data), @"
