@@ -448,7 +448,7 @@ find_subarray_index = function(arg0, arg1)
     
     for (i = 0; i < array_length(lst); i++)
     {
-        if (value > lst[i][1])
+        if (lst[i][1] > value)
             break;
         
         prev = i;
