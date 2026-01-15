@@ -137,7 +137,7 @@ MISC3 = cate_enum++;
 MISC4 = cate_enum++;
 MOUSSE = cate_enum++;
 ROBOTEUR = cate_enum++;
-dother_categories = ["Séquence Vaisseau", "Superbosses", "Seam", "Weird Route", "Œufs", "Onion San", "Misc chap 1", "Misc chap 2", "Legend of Tenna", "Sword Route", "Misc chap 3", "Misc chap 4", "Mousse", "Roboteur"];
+dother_categories = ["Séquence Vaisseau", "Superbosses", "Weird Route", "Seam", "Œufs", "Onion San", "Misc chap 1", "Misc chap 2", "Legend of Tenna", "Sword Route", "Misc chap 3", "Misc chap 4", "Mousse", "Roboteur"];
 dother_all_options = [];
 dother_options = [];
 
@@ -242,13 +242,14 @@ find_subarray_index = function(arg0, arg1)
 {
     value = global.flag[arg0];
     lst = arg1;
-    prev = lst[0][1];
+    prev = 0;
     
     for (i = 0; i < array_length(lst); i++)
     {
         if (value > lst[i][1])
             break;
-        prev = lst[i][1];
+        
+        prev = i;
     }
     
     return prev;
@@ -283,7 +284,7 @@ drooms_id = scr_get_room_list();
 drooms = [];
 drooms_options = 
 {
-    target_room: ROOM_INITIALIZE,
+    target_room: 1,
     target_plot: global.plot,
     target_is_darkzone: global.darkzone,
     target_member_2: global.char[1],
@@ -293,3 +294,4 @@ dkeyboard_input = "";
 
 for (i = 0; i < array_length(drooms_id); i++)
     array_push(drooms, room_get_name(drooms_id[i].room_index));
+
