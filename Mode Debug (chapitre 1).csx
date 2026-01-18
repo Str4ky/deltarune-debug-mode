@@ -218,16 +218,21 @@ dlight_armors = [[3, ""Pansement""], [14, ""Montre""]];
 dlight_objects = [[1, ""Chocolat Chaud""], [2, ""Crayon""], [3, ""Pansement""], [4, ""Bouquet""], [5, ""Boule de Trucs""], [6, ""Crayon Halloween""], [7, ""Crayon Fétiche""], [8, ""Œuf""], [9, ""Cartes""], [10, ""Boîte de ChocoCœurs""], [11, ""Verre""], [12, ""Gomme""], [13, ""Critérium""], [14, ""Montre""], [15, ""Crayon de Noël""], [16, ""Épine de Cactus""], [17, ""ÉclatNoir""], [18, ""Stylo-Plume""]];
 
 if (global.chapter >= 4)
+{
     dtemp_lst = get_lw_dw_weapon_list();
+    
+    for (i = 0; i < array_length(dtemp_lst); i++)
+        array_push(dlight_weapons, dlight_objects[dtemp_lst[i].lw_id - 1]);
+}
 else
+{
     dlight_weapons = [[2, ""Crayon""], [6, ""Crayon Halloween""], [7, ""Crayon Fétiche""], [12, ""Gomme""], [13, ""Critérium""]];
+}
 
 for (i = 0; i < array_length(dlight_objects); i++)
 {
     if (dlight_objects[i][0] > dnumber_litems[global.chapter])
         array_delete(dlight_objects, i--, 1);
-    else if (global.chapter >= 4 && i == (dtemp_lst[array_length(dlight_weapons)].lw_id - 1))
-        array_push(dlight_weapons, dlight_objects[i]);
 }
 
 if (global.chapter == 1)
@@ -329,12 +334,12 @@ GONER = cate_enum++;
 SUPERBOSS = cate_enum++;
 WEIRD2 = cate_enum++;
 SEAM = cate_enum++;
-EGG = cate_enum++;
+ZOEUFS = cate_enum++;
 ONION_SAN = cate_enum++;
 MISC1 = cate_enum++;
 MISC2 = cate_enum++;
 LOT = cate_enum++;
-SWORD = cate_enum++;
+SWORD3 = cate_enum++;
 MISC3 = cate_enum++;
 MISC4 = cate_enum++;
 MOUSSE = cate_enum++;
@@ -368,11 +373,11 @@ if (global.chapter >= 1)
     array_push(dother_all_options, [MISC1, ""Fleurs d'Asgore"", 262, [[""Pas vu"", 0], [""Pas données"", 2], [""Données"", 4]]]);
     array_push(dother_all_options, [MISC1, ""Noëlle dehors"", 276, [[""Pas parlé"", 0], [""Pas parlé de Susie"", 1], [""A parlé de Susie"", 2]]]);
     array_push(dother_all_options, [MISC1, ""Évier inspecté (chap 1)"", 278, [[""Non"", 0], [""Oui"", 1]]]);
-    array_push(dother_all_options, [EGG, ""Œuf obtenu (chap 1)"", 911, [[""Non"", 0], [""Oui"", 1]]]);
+    array_push(dother_all_options, [ZOEUFS, ""Œuf obtenu (chap 1)"", 911, [[""Non"", 0], [""Oui"", 1]]]);
     array_push(dother_all_options, [SUPERBOSS, ""Jevil vaincu"", 241, [[""Non"", 0], [""Via violence"", 6], [""Via clémence"", 7]]]);
     array_push(dother_all_options, [ONION_SAN, ""Relation (chap 1)"", 258, [[""Pas vu"", 0], [""Amis"", 2], [""Pas amis"", 3]]]);
     array_push(dother_all_options, [ONION_SAN, ""Nom de Kris"", 259, [[""Pas donné"", 0], [""Kris"", 1], [""Hippopotame"", 2]]]);
-    array_push(dother_all_options, [ONION_SAN, ""Nom d'Onion"", 260, [[""Pas donné"", 0], [""Onion"", 1], [""Beauté"", 2], [""Asriel II"", 3], [""Dégoûtant"", 4]]]);
+    array_push(dother_all_options, [ONION_SAN, ""Nom d'Onion"", 260, [[""Pas donné"", 0], [""Oignon"", 1], [""Beauté"", 2], [""Asriel II"", 3], [""Dégoûtant"", 4]]]);
     array_push(dother_all_options, [MOUSSE, ""Mousse mangée (chap 1)"", 106, [[""Non"", 0], [""Oui"", 1]]]);
 }
 
@@ -383,7 +388,7 @@ if (global.chapter >= 2)
     array_push(dother_all_options, [MISC2, ""Bras de Berdly"", 457, [[""Brûlé"", 0], [""Ok"", 1]]]);
     array_push(dother_all_options, [WEIRD2, ""Avancée"", 915, [[""Pas fait"", 0], [""Nikomercant tué"", 3], [""Berdly gelé"", 6], [""A parlé a Susie"", 9], [""Noëlle vue a l'hôpital"", 20]]]);
     array_push(dother_all_options, [WEIRD2, ""A cancel la weird route"", 916, [[""Non"", 0], [""Oui"", 1]]]);
-    array_push(dother_all_options, [EGG, ""Œuf obtenu (chap 2)"", 918, [[""Non"", 0], [""Oui"", 1]]]);
+    array_push(dother_all_options, [ZOEUFS, ""Œuf obtenu (chap 2)"", 918, [[""Non"", 0], [""Oui"", 1]]]);
     array_push(dother_all_options, [SUPERBOSS, ""Spamton vaincu"", 309, [[""Non"", 0], [""Oui"", 9]]]);
     array_push(dother_all_options, [MISC2, ""\""Fan\"" de Mettaton"", 422, [[""Non"", 0], [""Oui"", 1]]]);
     array_push(dother_all_options, [MISC2, ""Statue de Susie récupérée"", 393, [[""Non"", 0], [""Oui"", 1]]]);
@@ -404,9 +409,9 @@ if (global.chapter >= 3)
 {
     array_push(dother_all_options, [LOT, ""LOT Rang Board 1"", 1173, [[""Z"", 0], [""C"", 1], [""B"", 2], [""A"", 3], [""S"", 4], [""T"", 5]]]);
     array_push(dother_all_options, [LOT, ""LOT Rang Board 2"", 1174, [[""Z"", 0], [""C"", 1], [""B"", 2], [""A"", 3], [""S"", 4], [""T"", 5]]]);
-    array_push(dother_all_options, [SWORD, ""Avancé"", 1055, [[""Pas fait"", 0], [""Clé de glace obtenue"", 1], [""Donjon (plateau 2)"", 1.5], [""Elle a été utilisée"", 2], [""Clé de l'abri obtenue"", 3], [""Donjon (plateau 3)"", 4], [""Clé de l'abri utilisée"", 5], [""ERAM vaincu"", 6]]]);
-    array_push(dother_all_options, [SWORD, ""Susie attaquée"", 1268, [[""Non"", 0], [""Oui"", 1]]]);
-    array_push(dother_all_options, [EGG, ""Œuf obtenu (chap 3)"", 930, [[""Non"", 0], [""Oui"", 1]]]);
+    array_push(dother_all_options, [SWORD3, ""Avancé"", 1055, [[""Pas fait"", 0], [""Clé de glace obtenue"", 1], [""Donjon (plateau 2)"", 1.5], [""Elle a été utilisée"", 2], [""Clé de l'abri obtenue"", 3], [""Donjon (plateau 3)"", 4], [""Clé de l'abri utilisée"", 5], [""ERAM vaincu"", 6]]]);
+    array_push(dother_all_options, [SWORD3, ""Susie attaquée"", 1268, [[""Non"", 0], [""Oui"", 1]]]);
+    array_push(dother_all_options, [ZOEUFS, ""Œuf obtenu (chap 3)"", 930, [[""Non"", 0], [""Oui"", 1]]]);
     array_push(dother_all_options, [SUPERBOSS, ""Chevalier vaincu"", 1047, [[""Non"", 2], [""Oui"", 1]]]);
     array_push(dother_all_options, [MISC3, ""Fontaine"", 1144, [[""Pas affronté"", 0], [""A flirt(pas parlé au rideau)"", 1], [""Pas flirté"", 2], [""A flirt(a parlé au rideau)"", 3]]]);
     array_push(dother_all_options, [MISC3, ""Statue de Tenna récupérée"", 1222, [[""Non"", 0], [""Oui"", 1]]]);
@@ -416,13 +421,15 @@ if (global.chapter >= 3)
 
 if (global.chapter >= 4)
 {
-    array_push(dother_all_options, [EGG, ""Œuf obtenu (chap 4)"", 931, [[""Non"", 0], [""Oui"", 1]]]);
+    array_push(dother_all_options, [ZOEUFS, ""Œuf obtenu (chap 4)"", 931, [[""Non"", 0], [""Oui"", 1]]]);
     array_push(dother_all_options, [SUPERBOSS, ""Gerson vaincu"", 1629, [[""Non"", 0], [""Oui"", 1]]]);
     array_push(dother_all_options, [MOUSSE, ""Mousse mangée (chap 4)"", 1592, [[""Non"", 0], [""Oui"", 1], [""Refusée"", 2]]]);
+    array_push(dother_all_options, [MISC4, ""Chambre de Ralsei"", 710, [[""Pas vue"", 0], [""Vue"", 2]]]);
     array_push(dother_all_options, [MISC4, ""QC avec Susie"", 701, [[""Pas allé"", 0], [""Y est allé"", 1]]]);
+    array_push(dother_all_options, [MISC4, ""Thé avec Ralsei"", 1514, [[""Non"", 0], [""Oui"", 1]]]);
     array_push(dother_all_options, [MISC4, ""Prière"", 1507, [[""Pas prié"", 0], [""Pour Susie"", 1], [""Pour Noëlle"", 2], [""Pour Asriel"", 3]]]);
     array_push(dother_all_options, [MISC4, ""Tenna donné"", 779, [[""Non"", 0], [""Oui"", 2]]]);
-    array_push(dother_all_options, [MISC4, ""Tel. de Noelle"", 714, [[""Pas inspecté"", 0], [""Pas répondu"", 1], [""Allez au festival"", 2], [""Wrong number song"", 3]]]);
+    array_push(dother_all_options, [MISC4, ""Tel. de Noëlle"", 714, [[""Pas inspecté"", 0], [""Pas répondu"", 1], [""Allez au festival"", 2], [""Wrong number song"", 3]]]);
     array_push(dother_all_options, [MISC4, ""Prix Susie récupéré"", 747, [[""Non"", 0], [""Oui"", 1]]]);
     array_push(dother_all_options, [MISC4, ""Tache retirée"", 748, [[""Non"", 0], [""Oui"", 1]]]);
     array_push(dother_all_options, [MISC4, ""Échelle récupérée"", 864, [[""Non"", 0], [""Oui"", 1]]]);
