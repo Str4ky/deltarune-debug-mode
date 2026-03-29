@@ -74,7 +74,7 @@ function dmenu_state_update()
                 {
                     scr_iteminfo(i);
                     var cleaned_desc = string_replace_all(itemdescb, "#", " ");
-                    var combined = itemnameb + " - " + cleaned_desc;
+                    var combined = itemnameb;
                     
                     if (string_length(combined) > max_len)
                         combined = string_copy(combined, 1, max_len - 3) + "...";
@@ -117,7 +117,7 @@ function dmenu_state_update()
                 {
                     scr_armorinfo(i);
                     var cleaned_desc = string_replace_all(armordesctemp, "#", " ");
-                    var combined = armornametemp + " - " + cleaned_desc;
+                    var combined = armornametemp;
                     
                     if (string_length(combined) > max_len)
                         combined = string_copy(combined, 1, max_len - 3) + "...";
@@ -163,7 +163,7 @@ function dmenu_state_update()
                 {
                     scr_weaponinfo(i);
                     var cleaned_desc = string_replace_all(weapondesctemp, "#", " ");
-                    var combined = weaponnametemp + " - " + cleaned_desc;
+                    var combined = weaponnametemp;
                     
                     if (string_length(combined) > max_len)
                         combined = string_copy(combined, 1, max_len - 3) + "...";
@@ -207,7 +207,7 @@ function dmenu_state_update()
             {
                 scr_keyiteminfo(i);
                 var cleaned_desc = string_replace_all(tempkeyitemdesc, "#", " ");
-                var combined = tempkeyitemname + " - " + cleaned_desc;
+                var combined = tempkeyitemname;
                 
                 if (string_length(combined) > max_len)
                     combined = string_copy(combined, 1, max_len - 3) + "...";

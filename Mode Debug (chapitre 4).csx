@@ -1267,12 +1267,19 @@ dscroll_timer = 0;
 dscroll_cur_key = 0;
 dscroll_delay = 15;
 dscroll_speed = 5;
+dbackspace_timer = 0;
 dmenu_title = ""Menu Debug"";
 dbutton_options_original = [""Sauts"", ""Items"", ""Recrues"", ""Divers""];
 dnumber_litems = [0, 11, 14, 14, 18];
 dlight_weapons = [];
 dlight_armors = [[3, ""Pansement""], [14, ""Montre""]];
 dlight_objects = [[1, ""Chocolat Chaud""], [2, ""Crayon""], [3, ""Pansement""], [4, ""Bouquet""], [5, ""Boule de Trucs""], [6, ""Crayon Halloween""], [7, ""Crayon Fétiche""], [8, ""Œuf""], [9, ""Cartes""], [10, ""Boîte de ChocoCœurs""], [11, ""Verre""], [12, ""Gomme""], [13, ""Critérium""], [14, ""Montre""], [15, ""Crayon de Noël""], [16, ""Épine de Cactus""], [17, ""ÉclatNoir""], [18, ""Stylo-Plume""]];
+dhinter_active = false;
+itemdescb = """";
+armordesctemp = """";
+weapondesctemp = """";
+tempkeyitemdesc = """";
+dhinter_text = """";
 
 if (global.chapter >= 4)
 {
@@ -1551,6 +1558,7 @@ drooms = [];
 drooms_options = 
 {
     target_room: 1,
+    target_room: ROOM_INITIALIZE,
     target_plot: global.plot,
     target_is_darkzone: global.darkzone,
     target_member_2: global.char[1],
@@ -1560,8 +1568,6 @@ dkeyboard_input = """";
 
 for (i = 0; i < array_length(drooms_id); i++)
     array_push(drooms, room_get_name(drooms_id[i].room_index));
-
-
 ");
 
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)0, Data), @"
@@ -1765,14 +1771,27 @@ if (dmenu_active && global.dreading_custom_flag)
         snd_play(snd_menumove);
         dhorizontal_index++;
     }
-    else if (keyboard_check_pressed(vk_backspace))
+    else if (keyboard_check(vk_backspace))
     {
-        dcustom_flag_text[dhorizontal_index] = string_delete(dcustom_flag_text[dhorizontal_index], string_length(dcustom_flag_text[dhorizontal_index]), 1);
-        keyboard_string = """";
+        if (keyboard_check_pressed(vk_backspace))
+        {
+            dcustom_flag_text[dhorizontal_index] = string_delete(dcustom_flag_text[dhorizontal_index], string_length(dcustom_flag_text[dhorizontal_index]), 1);
+            keyboard_string = """";
+            dbackspace_timer = 20;
+        }
+        
+        dbackspace_timer--;
+        
+        if (dbackspace_timer <= 0)
+        {
+            dcustom_flag_text[dhorizontal_index] = string_delete(dcustom_flag_text[dhorizontal_index], string_length(dcustom_flag_text[dhorizontal_index]), 1);
+            keyboard_string = """";
+            dbackspace_timer = 1;
+        }
     }
-    else if (keyboard_check_pressed(vk_anykey))
+    else if (keyboard_string != """")
     {
-        dcustom_flag_text[dhorizontal_index] += string(keyboard_string);
+        dcustom_flag_text[dhorizontal_index] += keyboard_string;
         keyboard_string = """";
     }
     else
@@ -2178,6 +2197,80 @@ else if (dmenu_active)
         dmenu_state_update();
         dmenu_start_index = clamp(dbutton_selected - 1, 0, max(0, array_length(dbutton_options) - dbutton_max_visible));
     }
+    
+    if (dhinter_active)
+    {
+        if (dmenu_state == ""warp_options"")
+        {
+            new_room = drooms_options.target_room;
+            
+            if (new_room == -1)
+                new_room = room;
+            
+            dhinter_text = ""Salle sélectionnée : "" + room_get_name(new_room);
+        }
+        
+        if (scr_array_contains(ditem_types, dmenu_state))
+        {
+            if (dhorizontal_page == 0 && dbutton_selected == 1)
+            {
+                dhinter_text = ""Appuyez sur "" + scr_get_input_name(4) + "" pour changer de chapitre"";
+            }
+            else if (dhorizontal_page == 0 && dbutton_selected > 1)
+            {
+                var hover_id = dbutton_indices[dbutton_selected - 1];
+                
+                if (hover_id != -1)
+                {
+                    var raw_desc = """";
+                    
+                    switch (dmenu_state)
+                    {
+                        case ""objects"":
+                            scr_iteminfo(hover_id);
+                            raw_desc = itemdescb;
+                            break;
+                        
+                        case ""armors"":
+                            scr_armorinfo(hover_id);
+                            raw_desc = armordesctemp;
+                            break;
+                        
+                        case ""weapons"":
+                            scr_weaponinfo(hover_id);
+                            raw_desc = weapondesctemp;
+                            break;
+                        
+                        case ""keyitems"":
+                            scr_keyiteminfo(hover_id);
+                            raw_desc = tempkeyitemdesc;
+                            break;
+                    }
+                    
+                    dhinter_text = string_replace_all(raw_desc, ""#"", "" "");
+                    var max_w = (menu_width - (x_padding * 2)) * d;
+                    var line_sep = 18 * d;
+                    var max_h = line_sep * 2;
+                    
+                    if (string_height_ext(dhinter_text, line_sep, max_w) > max_h)
+                    {
+                        while (string_height_ext(dhinter_text + ""..."", line_sep, max_w) > max_h && string_length(dhinter_text) > 0)
+                            dhinter_text = string_delete(dhinter_text, string_length(dhinter_text), 1);
+                        
+                        dhinter_text += ""..."";
+                    }
+                }
+                else
+                {
+                    dhinter_text = ""---"";
+                }
+            }
+            else
+            {
+                dhinter_text = """";
+            }
+        }
+    }
 }
 
 if ((dmenu_active == 1 && dmenu_state == ""debug"" && global.darkzone == 1) || dkeys_helper == 1)
@@ -2216,8 +2309,6 @@ if (!global.dreading_custom_flag && keyboard_check_pressed(ord(""D"")))
     }
 }
 
-var xcenter, menu_width, ycenter, menu_length;
-
 if (dmenu_box == 0)
 {
     menu_width = 214;
@@ -2243,11 +2334,10 @@ if (dmenu_box == 2)
 }
 
 var x_start = 0;
-var x_spacing, y_start, y_spacing;
 
 if (dbutton_layout == 0)
 {
-    var x_padding = 7;
+    x_padding = 7;
     y_start = 60 * d;
     x_spacing = 10 * d;
     y_spacing = 10 * d;
@@ -2256,7 +2346,7 @@ if (dbutton_layout == 0)
 
 if (dbutton_layout == 1)
 {
-    var x_padding = 7;
+    x_padding = 7;
     y_start = 95 * d;
     x_spacing = 10 * d;
     y_spacing = 20 * d;
@@ -2265,7 +2355,7 @@ if (dbutton_layout == 1)
 
 if (dbutton_layout == 2)
 {
-    var x_padding = 7;
+    x_padding = 7;
     y_start = 95 * d;
     x_start = ((xcenter - (menu_width / 2)) + x_padding) * d;
 }
@@ -2314,7 +2404,7 @@ if (dmenu_active)
         if (dmenu_state == ""flag_categories"")
         {
             var base_x = x_start + xx;
-            var base_y = ((110 - (dmenu_start_index * 20)) * d) + yy;
+            var base_y = (((110 - (dmenu_start_index * 20)) + 2) * d) + yy;
             var mono_spacing = (global.darkzone == 1) ? 15 : 8;
             var thickness = 1 * d;
             var visual_offset = -5;
@@ -2337,7 +2427,7 @@ if (dmenu_active)
         else if (dmenu_state == ""warp"")
         {
             var base_x = x_start + xx;
-            var base_y = ((130 - (dmenu_start_index * 20)) * d) + yy;
+            var base_y = (((130 - (dmenu_start_index * 20)) + 2) * d) + yy;
             var mono_spacing = (global.darkzone == 1) ? 15 : 8;
             var thickness = 1 * d;
             var visual_offset = -2;
@@ -2355,7 +2445,7 @@ if (dmenu_active)
         else if (dmenu_state == ""warp_options"")
         {
             var base_x = x_start + xx;
-            var base_y = ((150 - (dmenu_start_index * 20)) * d) + yy;
+            var base_y = (((150 - (dmenu_start_index * 20)) + 2) * d) + yy;
             var mono_spacing = (global.darkzone == 1) ? 15 : 8;
             var thickness = 1 * d;
             var visual_offset = -2;
@@ -2520,12 +2610,25 @@ if (dmenu_active)
         draw_sprite_ext(spr_morearrow, 0, ((xcenter - 15) * d) + xx + dmenu_arrow_yoffset, ((ycenter + 6) * d) + yy, darrow_scale, darrow_scale, 270, c_white, 1);
         draw_sprite_ext(spr_morearrow, 0, (((xcenter + 15) * d) + xx) - dmenu_arrow_yoffset, ((ycenter + 12) * d) + yy, darrow_scale, darrow_scale, 90, c_white, 1);
     }
+    
+    dhinter_active = true;
+    
+    if (dhinter_active && dhinter_text != """" && (scr_array_contains(ditem_types, dmenu_state) || dmenu_state == ""warp_options""))
+    {
+        draw_set_color(c_white);
+        draw_rectangle(((xcenter - (menu_width / 2) - 3) * d) + xx, (2 * d) + yy, ((xcenter + (menu_width / 2) + 3) * d) + xx, (51 * d) + yy, false);
+        draw_set_color(c_black);
+        draw_rectangle(((xcenter - (menu_width / 2)) * d) + xx, (5 * d) + yy, ((xcenter + (menu_width / 2)) * d) + xx, (48 * d) + yy, false);
+        draw_set_color(c_white);
+        var x_start_desc = ((xcenter - (menu_width / 2)) + x_padding) * d;
+        draw_text_ext(x_start_desc + xx, (10 * d) + yy, dhinter_text, 18 * d, (menu_width - (x_padding * 2)) * d);
+    }
 }
 
 if (dkeys_helper == 1)
 {
     dkeys_data = [""F10 - Activer/désactiver le debug mode"", ""S - Sauvegarder la partie"", ""L - Charger la dernière sauvegarde"", ""R - Charger la salle | Retour arrière+R - Redémarrer le jeu"", ""P - Mettre en pause/reprendre le jeu"", ""M+1 | M+2 - Ajouter/retirer 100 D$"", ""Suppr - Se rendre à la salle précédente"", ""Insert - Se rendre à la salle suivante"", ""W - Gagner instantanément un combat"", ""V - Passer le tour de l'ennemi"", ""H - Restaurer les HP du party"", ""T - Remplir/vider la barre de TP"", ""O - Basculer entre 30, 60 et 120 FPS"", ""Retour arrière - Passer le segment d'intro (Ch1)"", ""Clic milieu - Éditeur de salle""];
-    var x_padding = 7;
+    x_padding = 7;
     y_start = 50 * d;
     x_spacing = 10 * d;
     y_spacing = 10.5 * d;
@@ -2578,7 +2681,6 @@ enum e__VW
     Camera,
     SurfaceID
 }
-
 ");
 
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)1, Data), @"
@@ -2658,7 +2760,7 @@ function dmenu_state_update()
                 {
                     scr_iteminfo(i);
                     var cleaned_desc = string_replace_all(itemdescb, ""#"", "" "");
-                    var combined = itemnameb + "" - "" + cleaned_desc;
+                    var combined = itemnameb;
                     
                     if (string_length(combined) > max_len)
                         combined = string_copy(combined, 1, max_len - 3) + ""..."";
@@ -2701,7 +2803,7 @@ function dmenu_state_update()
                 {
                     scr_armorinfo(i);
                     var cleaned_desc = string_replace_all(armordesctemp, ""#"", "" "");
-                    var combined = armornametemp + "" - "" + cleaned_desc;
+                    var combined = armornametemp;
                     
                     if (string_length(combined) > max_len)
                         combined = string_copy(combined, 1, max_len - 3) + ""..."";
@@ -2747,7 +2849,7 @@ function dmenu_state_update()
                 {
                     scr_weaponinfo(i);
                     var cleaned_desc = string_replace_all(weapondesctemp, ""#"", "" "");
-                    var combined = weaponnametemp + "" - "" + cleaned_desc;
+                    var combined = weaponnametemp;
                     
                     if (string_length(combined) > max_len)
                         combined = string_copy(combined, 1, max_len - 3) + ""..."";
@@ -2791,7 +2893,7 @@ function dmenu_state_update()
             {
                 scr_keyiteminfo(i);
                 var cleaned_desc = string_replace_all(tempkeyitemdesc, ""#"", "" "");
-                var combined = tempkeyitemname + "" - "" + cleaned_desc;
+                var combined = tempkeyitemname;
                 
                 if (string_length(combined) > max_len)
                     combined = string_copy(combined, 1, max_len - 3) + ""..."";

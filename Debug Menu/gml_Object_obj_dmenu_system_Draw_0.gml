@@ -19,8 +19,6 @@ if (!global.dreading_custom_flag && keyboard_check_pressed(ord("D")))
     }
 }
 
-var xcenter, menu_width, ycenter, menu_length;
-
 if (dmenu_box == 0)
 {
     menu_width = 214;
@@ -46,11 +44,10 @@ if (dmenu_box == 2)
 }
 
 var x_start = 0;
-var x_spacing, y_start, y_spacing;
 
 if (dbutton_layout == 0)
 {
-    var x_padding = 7;
+    x_padding = 7;
     y_start = 60 * d;
     x_spacing = 10 * d;
     y_spacing = 10 * d;
@@ -59,7 +56,7 @@ if (dbutton_layout == 0)
 
 if (dbutton_layout == 1)
 {
-    var x_padding = 7;
+    x_padding = 7;
     y_start = 95 * d;
     x_spacing = 10 * d;
     y_spacing = 20 * d;
@@ -68,7 +65,7 @@ if (dbutton_layout == 1)
 
 if (dbutton_layout == 2)
 {
-    var x_padding = 7;
+    x_padding = 7;
     y_start = 95 * d;
     x_start = ((xcenter - (menu_width / 2)) + x_padding) * d;
 }
@@ -117,7 +114,7 @@ if (dmenu_active)
         if (dmenu_state == "flag_categories")
         {
             var base_x = x_start + xx;
-            var base_y = ((110 - (dmenu_start_index * 20)) * d) + yy;
+            var base_y = (((110 - (dmenu_start_index * 20)) + 2) * d) + yy;
             var mono_spacing = (global.darkzone == 1) ? 15 : 8;
             var thickness = 1 * d;
             var visual_offset = -5;
@@ -140,7 +137,7 @@ if (dmenu_active)
         else if (dmenu_state == "warp")
         {
             var base_x = x_start + xx;
-            var base_y = ((130 - (dmenu_start_index * 20)) * d) + yy;
+            var base_y = (((130 - (dmenu_start_index * 20)) + 2) * d) + yy;
             var mono_spacing = (global.darkzone == 1) ? 15 : 8;
             var thickness = 1 * d;
             var visual_offset = -2;
@@ -158,7 +155,7 @@ if (dmenu_active)
         else if (dmenu_state == "warp_options")
         {
             var base_x = x_start + xx;
-            var base_y = ((150 - (dmenu_start_index * 20)) * d) + yy;
+            var base_y = (((150 - (dmenu_start_index * 20)) + 2) * d) + yy;
             var mono_spacing = (global.darkzone == 1) ? 15 : 8;
             var thickness = 1 * d;
             var visual_offset = -2;
@@ -323,12 +320,25 @@ if (dmenu_active)
         draw_sprite_ext(spr_morearrow, 0, ((xcenter - 15) * d) + xx + dmenu_arrow_yoffset, ((ycenter + 6) * d) + yy, darrow_scale, darrow_scale, 270, c_white, 1);
         draw_sprite_ext(spr_morearrow, 0, (((xcenter + 15) * d) + xx) - dmenu_arrow_yoffset, ((ycenter + 12) * d) + yy, darrow_scale, darrow_scale, 90, c_white, 1);
     }
+    
+    dhinter_active = true;
+    
+    if (dhinter_active && dhinter_text != "" && (scr_array_contains(ditem_types, dmenu_state) || dmenu_state == "warp_options"))
+    {
+        draw_set_color(c_white);
+        draw_rectangle(((xcenter - (menu_width / 2) - 3) * d) + xx, (2 * d) + yy, ((xcenter + (menu_width / 2) + 3) * d) + xx, (51 * d) + yy, false);
+        draw_set_color(c_black);
+        draw_rectangle(((xcenter - (menu_width / 2)) * d) + xx, (5 * d) + yy, ((xcenter + (menu_width / 2)) * d) + xx, (48 * d) + yy, false);
+        draw_set_color(c_white);
+        var x_start_desc = ((xcenter - (menu_width / 2)) + x_padding) * d;
+        draw_text_ext(x_start_desc + xx, (10 * d) + yy, dhinter_text, 18 * d, (menu_width - (x_padding * 2)) * d);
+    }
 }
 
 if (dkeys_helper == 1)
 {
     dkeys_data = ["F10 - Activer/désactiver le debug mode", "S - Sauvegarder la partie", "L - Charger la dernière sauvegarde", "R - Charger la salle | Retour arrière+R - Redémarrer le jeu", "P - Mettre en pause/reprendre le jeu", "M+1 | M+2 - Ajouter/retirer 100 D$", "Suppr - Se rendre à la salle précédente", "Insert - Se rendre à la salle suivante", "W - Gagner instantanément un combat", "V - Passer le tour de l'ennemi", "H - Restaurer les HP du party", "T - Remplir/vider la barre de TP", "O - Basculer entre 30, 60 et 120 FPS", "Retour arrière - Passer le segment d'intro (Ch1)", "Clic milieu - Éditeur de salle"];
-    var x_padding = 7;
+    x_padding = 7;
     y_start = 50 * d;
     x_spacing = 10 * d;
     y_spacing = 10.5 * d;

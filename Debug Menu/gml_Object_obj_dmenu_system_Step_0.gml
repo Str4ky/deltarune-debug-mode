@@ -198,14 +198,27 @@ if (dmenu_active && global.dreading_custom_flag)
         snd_play(snd_menumove);
         dhorizontal_index++;
     }
-    else if (keyboard_check_pressed(vk_backspace))
+    else if (keyboard_check(vk_backspace))
     {
-        dcustom_flag_text[dhorizontal_index] = string_delete(dcustom_flag_text[dhorizontal_index], string_length(dcustom_flag_text[dhorizontal_index]), 1);
-        keyboard_string = "";
+        if (keyboard_check_pressed(vk_backspace))
+        {
+            dcustom_flag_text[dhorizontal_index] = string_delete(dcustom_flag_text[dhorizontal_index], string_length(dcustom_flag_text[dhorizontal_index]), 1);
+            keyboard_string = "";
+            dbackspace_timer = 20;
+        }
+        
+        dbackspace_timer--;
+        
+        if (dbackspace_timer <= 0)
+        {
+            dcustom_flag_text[dhorizontal_index] = string_delete(dcustom_flag_text[dhorizontal_index], string_length(dcustom_flag_text[dhorizontal_index]), 1);
+            keyboard_string = "";
+            dbackspace_timer = 1;
+        }
     }
-    else if (keyboard_check_pressed(vk_anykey))
+    else if (keyboard_string != "")
     {
-        dcustom_flag_text[dhorizontal_index] += string(keyboard_string);
+        dcustom_flag_text[dhorizontal_index] += keyboard_string;
         keyboard_string = "";
     }
     else
@@ -610,6 +623,80 @@ else if (dmenu_active)
         
         dmenu_state_update();
         dmenu_start_index = clamp(dbutton_selected - 1, 0, max(0, array_length(dbutton_options) - dbutton_max_visible));
+    }
+    
+    if (dhinter_active)
+    {
+        if (dmenu_state == "warp_options")
+        {
+            new_room = drooms_options.target_room;
+            
+            if (new_room == -1)
+                new_room = room;
+            
+            dhinter_text = "Salle sélectionnée : " + room_get_name(new_room);
+        }
+        
+        if (scr_array_contains(ditem_types, dmenu_state))
+        {
+            if (dhorizontal_page == 0 && dbutton_selected == 1)
+            {
+                dhinter_text = "Appuyez sur " + scr_get_input_name(4) + " pour changer de chapitre";
+            }
+            else if (dhorizontal_page == 0 && dbutton_selected > 1)
+            {
+                var hover_id = dbutton_indices[dbutton_selected - 1];
+                
+                if (hover_id != -1)
+                {
+                    var raw_desc = "";
+                    
+                    switch (dmenu_state)
+                    {
+                        case "objects":
+                            scr_iteminfo(hover_id);
+                            raw_desc = itemdescb;
+                            break;
+                        
+                        case "armors":
+                            scr_armorinfo(hover_id);
+                            raw_desc = armordesctemp;
+                            break;
+                        
+                        case "weapons":
+                            scr_weaponinfo(hover_id);
+                            raw_desc = weapondesctemp;
+                            break;
+                        
+                        case "keyitems":
+                            scr_keyiteminfo(hover_id);
+                            raw_desc = tempkeyitemdesc;
+                            break;
+                    }
+                    
+                    dhinter_text = string_replace_all(raw_desc, "#", " ");
+                    var max_w = (menu_width - (x_padding * 2)) * d;
+                    var line_sep = 18 * d;
+                    var max_h = line_sep * 2;
+                    
+                    if (string_height_ext(dhinter_text, line_sep, max_w) > max_h)
+                    {
+                        while (string_height_ext(dhinter_text + "...", line_sep, max_w) > max_h && string_length(dhinter_text) > 0)
+                            dhinter_text = string_delete(dhinter_text, string_length(dhinter_text), 1);
+                        
+                        dhinter_text += "...";
+                    }
+                }
+                else
+                {
+                    dhinter_text = "---";
+                }
+            }
+            else
+            {
+                dhinter_text = "";
+            }
+        }
     }
 }
 

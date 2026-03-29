@@ -8,12 +8,19 @@ dscroll_timer = 0;
 dscroll_cur_key = 0;
 dscroll_delay = 15;
 dscroll_speed = 5;
+dbackspace_timer = 0;
 dmenu_title = "Menu Debug";
 dbutton_options_original = ["Sauts", "Items", "Recrues", "Divers"];
 dnumber_litems = [0, 11, 14, 14, 18];
 dlight_weapons = [];
 dlight_armors = [[3, "Pansement"], [14, "Montre"]];
 dlight_objects = [[1, "Chocolat Chaud"], [2, "Crayon"], [3, "Pansement"], [4, "Bouquet"], [5, "Boule de Trucs"], [6, "Crayon Halloween"], [7, "Crayon Fétiche"], [8, "Œuf"], [9, "Cartes"], [10, "Boîte de ChocoCœurs"], [11, "Verre"], [12, "Gomme"], [13, "Critérium"], [14, "Montre"], [15, "Crayon de Noël"], [16, "Épine de Cactus"], [17, "ÉclatNoir"], [18, "Stylo-Plume"]];
+dhinter_active = false;
+itemdescb = "";
+armordesctemp = "";
+weapondesctemp = "";
+tempkeyitemdesc = "";
+dhinter_text = "";
 
 if (global.chapter >= 4)
 {
@@ -292,6 +299,7 @@ drooms = [];
 drooms_options = 
 {
     target_room: 1,
+    target_room: ROOM_INITIALIZE,
     target_plot: global.plot,
     target_is_darkzone: global.darkzone,
     target_member_2: global.char[1],
@@ -301,4 +309,3 @@ dkeyboard_input = "";
 
 for (i = 0; i < array_length(drooms_id); i++)
     array_push(drooms, room_get_name(drooms_id[i].room_index));
-
