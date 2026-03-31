@@ -1557,7 +1557,6 @@ drooms_id = scr_get_room_list();
 drooms = [];
 drooms_options = 
 {
-    target_room: 1,
     target_room: ROOM_INITIALIZE,
     target_plot: global.plot,
     target_is_darkzone: global.darkzone,
@@ -3604,6 +3603,19 @@ function scr_turn_skip()
 ChangeSelection(scr_turn_skip);
 
 // Fonctions du Darkworld
+UndertaleGameObject obj_time = Data.GameObjects.ByName("obj_time");
+
+importGroup.QueueFindReplace(obj_time.EventHandlerFor(EventType.Step, (uint)1, Data),
+"if (scr_debug())", "if (0)");
+
+importGroup.QueueAppend(obj_time.EventHandlerFor(EventType.Step, (uint)1, Data), @"
+if (scr_debug())
+{
+    if (mouse_check_button_pressed(mb_middle))
+        instance_create(0, 0, obj_debug_xy);
+}
+");
+
 UndertaleGameObject obj_darkcontroller = Data.GameObjects.ByName("obj_darkcontroller");
 
 importGroup.QueueFindReplace(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint)0, Data),
