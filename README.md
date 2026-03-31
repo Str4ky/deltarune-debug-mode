@@ -12,7 +12,7 @@ Fonctionnent uniquement avec la démo LTS et la version payante du jeu.
 ## Utilisation
 
 - Ouvrez le data.win du chapitre de votre choix avec Undertale Mod Tool.
-- Allez dans le menu `Scripts` puis `Deltarune FR` et choisissez l'option adaptée.
+- Allez dans le menu `Scripts` puis choisissez l'option adaptée.
 - Laissez-vous guider par les fenêtres et les options de l'interface.
 
 ## Fonctionnalités et contrôles associés (Chapitres 1 à 4)
