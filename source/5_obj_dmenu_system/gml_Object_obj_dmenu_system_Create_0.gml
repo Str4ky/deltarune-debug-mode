@@ -298,7 +298,7 @@ drooms_id = scr_get_room_list();
 drooms = [];
 drooms_options = 
 {
-    target_room: 1,
+    target_room: ROOM_INITIALIZE,
     target_room: ROOM_INITIALIZE,
     target_plot: global.plot,
     target_is_darkzone: global.darkzone,

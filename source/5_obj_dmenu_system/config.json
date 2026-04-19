@@ -1,0 +1,20 @@
+{
+    "create_new": true,
+    "visible": true,
+    "persistent": true,
+    "awake": true,
+    "events": {
+        "Create_0": {
+            "mode": "replace"
+        },
+        "Step_0": {
+            "mode": "replace"
+        },
+        "Step_1": {
+            "mode": "replace"
+        },
+        "Draw_0": {
+            "mode": "replace"
+        }
+    }
+}

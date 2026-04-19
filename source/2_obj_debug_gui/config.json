@@ -1,0 +1,17 @@
+{
+    "create_new": false,
+    "events": {
+        "Create_0": {
+            "mode": "replace"
+        },
+        "Step_0": {
+            "mode": "replace"
+        },
+        "Draw_64": {
+            "mode": "replace"
+        },
+        "CleanUp_0": {
+            "mode": "replace"
+        }
+    }
+}
