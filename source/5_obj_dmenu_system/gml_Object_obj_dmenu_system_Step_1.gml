@@ -546,40 +546,38 @@ function dmenu_state_interact()
             break;
         
         case "givertab":
+            if (dgiver_amount == 0)
+            {
+				scr_debug_print("Annulé");
+				break;
+            }
             if (dgiver_menu_state == "objects")
             {
-                if (dgiver_amount != 0)
-                {
-                    real_index = dbutton_indices[dgiver_button_selected - 1];
-                    
-                    for (var i = 0; i < abs(dgiver_amount); i++)
-                    {
-                        if (dgiver_amount < 0)
-                        {
-                            if (dhorizontal_page == 0)
-                                scr_itemremove(real_index);
-                            else
-                                scr_litemremove(real_index);
-                        }
-                        else if (dhorizontal_page == 0)
-                        {
-                            scr_itemget(real_index);
-                        }
-                        else
-                        {
-                            scr_litemget(real_index);
-                        }
-                    }
-                    
-                    if (dgiver_amount < 0)
-                        scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + " retiré de l'inventaire");
-                    else
-                        scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + " ajouté à l'inventaire");
-                }
-                else
-                {
-                    scr_debug_print("Annulé");
-                }
+				real_index = dbutton_indices[dgiver_button_selected - 1];
+				
+				for (var i = 0; i < abs(dgiver_amount); i++)
+				{
+					if (dgiver_amount < 0)
+					{
+						if (dhorizontal_page == 0)
+							scr_itemremove(real_index);
+						else
+							scr_litemremove(real_index);
+					}
+					else if (dhorizontal_page == 0)
+					{
+						scr_itemget(real_index);
+					}
+					else
+					{
+						scr_litemget(real_index);
+					}
+				}
+				
+				if (dgiver_amount < 0)
+					scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + " retiré de l'inventaire");
+				else
+					scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + " ajouté à l'inventaire");
             }
             
             if (dgiver_menu_state == "armors")
@@ -601,10 +599,6 @@ function dmenu_state_interact()
                         scr_armorremove(real_index);
                     
                     scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + " retiré de l'inventaire");
-                }
-                else
-                {
-                    scr_debug_print("Annulé");
                 }
             }
             
@@ -628,10 +622,6 @@ function dmenu_state_interact()
                     
                     scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + " retiré de l'inventaire");
                 }
-                else
-                {
-                    scr_debug_print("Annulé");
-                }
             }
             
             if (dgiver_menu_state == "keyitems")
@@ -654,12 +644,9 @@ function dmenu_state_interact()
                     
                     scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + " retiré de l'inventaire");
                 }
-                else
-                {
-                    scr_debug_print("Annulé");
-                }
             }
             
+            dpop_history();
             dmenu_active = false;
             global.interact = 0;
             break;
@@ -713,7 +700,7 @@ function dmenu_state_interact()
                     if (dbutton_selected == 1)
                         global.flag[enemy_id + 600] = 1;
                     else
-                        global.flag[enemy_id + 600] = -1 / _recruitcount;
+                        global.flag[enemy_id + 600] = -1;
                 }
                 
                 if (dhorizontal_page != 0)
@@ -725,6 +712,7 @@ function dmenu_state_interact()
             else
                 snd_play(snd_weirdeffect);
             
+            dpop_history();
             break;
         
         default:

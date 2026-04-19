@@ -85,6 +85,7 @@ function evaluate_custom_flag(arg0)
     
     for (c = 1; c <= string_length(dcustom_flag_text[0]); c++)
     {
+        cur_char = string_char_at(dcustom_flag_text[0], c);
         if (!scr_84_is_digit(string_char_at(dcustom_flag_text[0], c)))
         {
             scr_debug_print("Invalid flag |" + dcustom_flag_text[0] + "| because of |" + string_char_at(dcustom_flag_text[0], c) + "|");
@@ -104,7 +105,8 @@ function evaluate_custom_flag(arg0)
     
     for (c = 1; c <= string_length(dcustom_flag_text[1]); c++)
     {
-        if (!scr_84_is_digit(string_char_at(dcustom_flag_text[1], c)) && string_char_at(dcustom_flag_text[1], c) != ".")
+        cur_char = string_char_at(dcustom_flag_text[0], c);
+        if (!scr_84_is_digit(cur_char) && cur_char != "." && cur_char != "-")
         {
             scr_debug_print("Invalid value |" + dcustom_flag_text[1] + "|");
             proper_exit = 0;
@@ -145,7 +147,7 @@ if (dmenu_active && global.dreading_custom_flag)
     if (dmenu_state == "warp" || dmenu_state == "warp_options")
         dkeyboard_input = dcustom_flag_text[0];
     
-    will_exit = keyboard_check_pressed(vk_escape) || keyboard_check_pressed(global.input_k[4]) || keyboard_check_pressed(global.input_k[7]);
+    will_exit = keyboard_check_pressed(vk_escape) || keyboard_check_pressed(global.input_k[7]);
     will_exit |= ((dmenu_state == "warp_options" || dmenu_state == "warp") && (keyboard_check_pressed(vk_up) || keyboard_check_pressed(vk_down)));
     
     if (will_exit)
@@ -298,7 +300,17 @@ else if (dmenu_active)
                     to_add = 1 / _recruitcount;
                     
                     if (pressed_left)
+                    {
                         to_add = -to_add;
+                        if (recruit_count == 0)
+                        {
+                            to_add = -1;
+                        }
+                    }
+                    else if (pressed_right && recruit_count == -1)
+					{
+						to_add = 1;
+					}
                     
                     if ((pressed_right && (recruit_count * _recruitcount) < _recruitcount) || (pressed_left && (recruit_count * _recruitcount) > -1))
                     {
@@ -600,29 +612,7 @@ else if (dmenu_active)
     if (keyboard_check_pressed(global.input_k[5]) || keyboard_check_pressed(global.input_k[8]))
     {
         snd_play(snd_smallswing);
-        dkeyboard_input = "";
-        
-        if (array_length(dmenu_state_history) > 0)
-        {
-            dmenu_state = dmenu_state_history[array_length(dmenu_state_history) - 1];
-            array_resize(dmenu_state_history, array_length(dmenu_state_history) - 1);
-        }
-        else
-        {
-            dmenu_active = !dmenu_active;
-            dmenu_state_history = [];
-            dbutton_selected_history = [];
-            global.interact = 0;
-        }
-        
-        if (array_length(dbutton_selected_history) > 0)
-        {
-            dbutton_selected = dbutton_selected_history[array_length(dbutton_selected_history) - 1];
-            array_resize(dbutton_selected_history, array_length(dbutton_selected_history) - 1);
-        }
-        
-        dmenu_state_update();
-        dmenu_start_index = clamp(dbutton_selected - 1, 0, max(0, array_length(dbutton_options) - dbutton_max_visible));
+		dpop_history();
     }
     
     if (dhinter_active)
