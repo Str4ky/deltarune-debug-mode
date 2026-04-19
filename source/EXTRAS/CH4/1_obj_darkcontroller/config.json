@@ -1,0 +1,14 @@
+{
+    "create_new": false,
+    "events": {
+        "Step_0": {
+            "mode": "append",
+            "find_replace": [
+                {
+                    "find": "if (scr_debug())",
+                    "replace": "if (0)"
+                }
+            ]
+        }
+    }
+}

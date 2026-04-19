@@ -1,5 +1,3 @@
-// Mode Debug Custom par Jazzky et Straky
-
 EnsureDataLoaded();
 
 if (!Data.IsVersionAtLeast(2023, 6))
@@ -31,41 +29,62 @@ bool enable = ScriptQuestion(
 "Ajouter le Mode Debug pour le Chapitre 1 ?" + versionInfo
 );
 
-if (!enable)
-{
-    return;
-}
+if (!enable) return;
 
 GlobalDecompileContext globalDecompileContext = new(Data);
 Underanalyzer.Decompiler.IDecompileSettings decompilerSettings = new Underanalyzer.Decompiler.DecompileSettings();
 UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, globalDecompileContext, decompilerSettings)
 {
-    ThrowOnNoOpFindReplace = true
+    ThrowOnNoOpFindReplace = false
 };
-
-// Fonction de Log debug
-
-// Script debug print
 
 if (isDemo)
 {
-    // Seulement pour la démo
+    // Set scr_debug_print
     UndertaleScript CREATE_scr_debug_print = new UndertaleScript();
     CREATE_scr_debug_print.Name = Data.Strings.MakeString("scr_debug_print");
     CREATE_scr_debug_print.Code = new UndertaleCode();
     CREATE_scr_debug_print.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_print");
     CREATE_scr_debug_print.Code.LocalsCount = 1;
-
     Data.Scripts.Add(CREATE_scr_debug_print);
     Data.Code.Add(CREATE_scr_debug_print.Code);
+
+    // Set obj_debug_gui
+    UndertaleGameObject CREATE_obj_debug_gui = new UndertaleGameObject(); 
+    CREATE_obj_debug_gui.Name = Data.Strings.MakeString("obj_debug_gui");
+    CREATE_obj_debug_gui.Visible = true;
+    CREATE_obj_debug_gui.CollisionShape = (CollisionShapeFlags)1;
+    CREATE_obj_debug_gui.Awake = true;
+    Data.GameObjects.Add(CREATE_obj_debug_gui);
 }
 
-var scr_debug_print = Data.Scripts.ByName("scr_debug_print");
+// Set scr_debug_fullheal
+UndertaleScript CREATE_scr_debug_fullheal = new UndertaleScript();
+CREATE_scr_debug_fullheal.Name = Data.Strings.MakeString("scr_debug_fullheal");
+CREATE_scr_debug_fullheal.Code = new UndertaleCode();
+CREATE_scr_debug_fullheal.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_fullheal");
+CREATE_scr_debug_fullheal.Code.LocalsCount = 1;
 
+Data.Scripts.Add(CREATE_scr_debug_fullheal);
+Data.Code.Add(CREATE_scr_debug_fullheal.Code);
+
+// Set scr_turn_skip
+UndertaleScript CREATE_scr_turn_skip = new UndertaleScript();
+CREATE_scr_turn_skip.Name = Data.Strings.MakeString("scr_turn_skip");
+CREATE_scr_turn_skip.Code = new UndertaleCode();
+CREATE_scr_turn_skip.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_turn_skip");
+CREATE_scr_turn_skip.Code.LocalsCount = 1;
+
+Data.Scripts.Add(CREATE_scr_turn_skip);
+Data.Code.Add(CREATE_scr_turn_skip.Code);
+
+// --- COMMON CODE ---
+
+// Script scr_debug_print
+UndertaleScript scr_debug_print = Data.Scripts.ByName("scr_debug_print");
 importGroup.QueueReplace(scr_debug_print.Code, @"
 function scr_debug_print(arg0)
 {
-    
     if (!instance_exists(obj_debug_gui))
     {
         instance_create(__view_get(e__VW.XView, 0) + 10, __view_get(e__VW.YView, 0) + 10, obj_debug_gui);
@@ -86,6 +105,19 @@ function scr_debug_print(arg0)
         for (i = 1; i < messagecount; i++)
             debugmessage += (""#"" + message[i]);
     }
+}
+
+function print_message(arg0)
+{
+}
+
+function debug_print(arg0)
+{
+}
+
+function scr_debug_clear_all()
+{
+    scr_debug_clear_persistent();
 }
 
 enum e__VW
@@ -109,25 +141,10 @@ enum e__VW
     SurfaceID
 }
 ");
-
 ChangeSelection(scr_debug_print);
 
-// GameObject debug gui
-
-if (isDemo)
-{
-    // Seulement pour la démo
-    UndertaleGameObject CREATE_obj_debug_gui = new UndertaleGameObject(); // Ajoute le GameObject
-    CREATE_obj_debug_gui.Name = Data.Strings.MakeString("obj_debug_gui");
-    CREATE_obj_debug_gui.Visible = (true);
-    CREATE_obj_debug_gui.CollisionShape = (CollisionShapeFlags)1;
-    CREATE_obj_debug_gui.Awake = (true);
-
-    Data.GameObjects.Add(CREATE_obj_debug_gui); // Répertorie le GameObject
-}
-
-var obj_debug_gui = Data.GameObjects.ByName("obj_debug_gui");
-
+// GameObject obj_debug_gui
+UndertaleGameObject obj_debug_gui = Data.GameObjects.ByName("obj_debug_gui");
 importGroup.QueueReplace(obj_debug_gui.EventHandlerFor(EventType.Create, (uint)0, Data), @"
 message[0] = """";
 debugmessage = """";
@@ -136,7 +153,6 @@ newtext = """";
 messagecount = 0;
 totaltimer = 0;
 ");
-
 importGroup.QueueReplace(obj_debug_gui.EventHandlerFor(EventType.Step, (uint)0, Data), @"
 if (timer[0] > 0)
 {
@@ -169,7 +185,6 @@ if (timer[0] <= 0)
     }
 }
 ");
-
 importGroup.QueueReplace(obj_debug_gui.EventHandlerFor(EventType.Draw, (uint)64, Data), @"
 var fnt = draw_get_font();
 draw_set_font(fnt_comicsans);
@@ -184,21 +199,18 @@ draw_text_transformed(8, 8, string_hash_to_newline(debugmessage), 1, 1, 0);
 draw_set_color(col);
 draw_set_font(fnt);
 ");
-
-importGroup.QueueReplace(obj_debug_gui.EventHandlerFor(EventType.PreCreate, (uint)0, Data), @"
+importGroup.QueueReplace(obj_debug_gui.EventHandlerFor(EventType.CleanUp, (uint)0, Data), @"
 event_inherited();
 ");
-ChangeSelection(scr_debug_print.Code);
+ChangeSelection(obj_debug_gui);
 
-// Menu Debug
-UndertaleGameObject obj_dmenu_system = new UndertaleGameObject(); // Ajoute le GameObject
+// GameObject obj_dmenu_system
+UndertaleGameObject obj_dmenu_system = new UndertaleGameObject();
 obj_dmenu_system.Name = Data.Strings.MakeString("obj_dmenu_system");
-obj_dmenu_system.Visible = (true);
-obj_dmenu_system.Persistent = (true);
-obj_dmenu_system.Awake = (true);
-
-Data.GameObjects.Add(obj_dmenu_system); // Répertorie le GameObject
-
+obj_dmenu_system.Visible = true;
+obj_dmenu_system.Persistent = true;
+obj_dmenu_system.Awake = true;
+Data.GameObjects.Add(obj_dmenu_system);
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Create, (uint)0, Data), @"
 dmenu_active = false;
 dmenu_box = 0;
@@ -500,6 +512,8 @@ drooms_id = scr_get_room_list();
 drooms = [];
 drooms_options = 
 {
+    target_room: ROOM_INITIALIZE,
+    target_room: ROOM_INITIALIZE,
     target_plot: global.plot,
     target_is_darkzone: global.darkzone,
     target_member_2: global.char[1],
@@ -510,7 +524,6 @@ dkeyboard_input = """";
 for (i = 0; i < array_length(drooms_id); i++)
     array_push(drooms, room_get_name(drooms_id[i].room_index));
 ");
-
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)0, Data), @"
 dmenu_arrow_timer += 1;
 
@@ -1227,403 +1240,6 @@ if ((dmenu_active == 1 && dmenu_state == ""debug"" && global.darkzone == 1) || d
     }
 }
 ");
-
-importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Draw, (uint)0, Data), @"
-xx = __view_get(e__VW.XView, 0);
-yy = __view_get(e__VW.YView, 0);
-d = global.darkzone + 1;
-
-if (!global.dreading_custom_flag && keyboard_check_pressed(ord(""D"")))
-{
-    dmenu_active = !dmenu_active;
-    
-    if (dmenu_active)
-    {
-        dmenu_previous_interact = global.interact;
-        snd_play(snd_egg);
-        global.interact = 1;
-    }
-    else
-    {
-        snd_play(snd_smallswing);
-        global.interact = dmenu_previous_interact;
-    }
-}
-
-if (dmenu_box == 0)
-{
-    menu_width = 214;
-    menu_length = 94;
-    xcenter = 160;
-    ycenter = 105;
-}
-
-if (dmenu_box == 1)
-{
-    menu_width = 214;
-    menu_length = 154;
-    xcenter = 160;
-    ycenter = 135;
-}
-
-if (dmenu_box == 2)
-{
-    menu_width = 256;
-    menu_length = 154;
-    xcenter = 160;
-    ycenter = 135;
-}
-
-var x_start = 0;
-
-if (dbutton_layout == 0)
-{
-    x_padding = 7;
-    y_start = 60 * d;
-    x_spacing = 10 * d;
-    y_spacing = 10 * d;
-    x_start = ((xcenter - (menu_width / 2)) + x_padding) * d;
-}
-
-if (dbutton_layout == 1)
-{
-    x_padding = 7;
-    y_start = 95 * d;
-    x_spacing = 10 * d;
-    y_spacing = 20 * d;
-    x_start = ((xcenter - (menu_width / 2)) + x_padding) * d;
-}
-
-if (dbutton_layout == 2)
-{
-    x_padding = 7;
-    y_start = 95 * d;
-    x_start = ((xcenter - (menu_width / 2)) + x_padding) * d;
-}
-
-var button_count = array_length(dbutton_options);
-
-if (dmenu_active)
-{
-    draw_set_color(c_white);
-    draw_rectangle(((xcenter - (menu_width / 2) - 3) * d) + xx, ((ycenter - (menu_length / 2) - 3) * d) + yy, ((xcenter + (menu_width / 2) + 3) * d) + xx, ((ycenter + (menu_length / 2) + 3) * d) + yy, false);
-    draw_set_color(c_black);
-    draw_rectangle(((xcenter - (menu_width / 2)) * d) + xx, ((ycenter - (menu_length / 2)) * d) + yy, ((xcenter + (menu_width / 2)) * d) + xx, ((ycenter + (menu_length / 2)) * d) + yy, false);
-    
-    if (global.darkzone == 1)
-        draw_set_font(fnt_mainbig);
-    else
-        draw_set_font(fnt_main);
-    
-    draw_set_color(c_white);
-    draw_text(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, string(dmenu_title));
-    
-    if (dmenu_state == ""debug"" && global.darkzone == 1)
-    {
-        draw_set_font(fnt_main);
-        draw_set_color(c_gray);
-        var draw_x = x_start + (335 * (d / 2)) + xx;
-        var draw_y = (((ycenter - (menu_length / 2)) + 82) * d) + yy;
-        draw_text(draw_x, draw_y, ""M - Touches"");
-        draw_set_font(fnt_mainbig);
-    }
-    
-    if (global.dreading_custom_flag)
-    {
-        draw_set_halign(fa_right);
-        draw_set_color(c_gray);
-        var right_border = (xcenter + (menu_width / 2)) * d;
-        var padding = 8 * d;
-        var draw_x = (right_border + xx) - padding;
-        var draw_y = (((ycenter - (menu_length / 2)) + 8) * d) + yy;
-        draw_text(draw_x, draw_y, ""Esc - Annuler"");
-        draw_set_halign(fa_left);
-    }
-    
-    if (global.dreading_custom_flag)
-    {
-        if (dmenu_state == ""flag_categories"")
-        {
-            var base_x = x_start + xx;
-            var base_y = (((110 - (dmenu_start_index * 20)) + 2) * d) + yy;
-            var mono_spacing = (global.darkzone == 1) ? 15 : 8;
-            var thickness = 1 * d;
-            var visual_offset = -5;
-            var cursor_padding = 3 * d;
-            var w_prefix = string_length(""global.flag["") * mono_spacing;
-            var w_name = string_length(dcustom_flag_text[0]) * mono_spacing;
-            var w_middle = string_length(""] = |"") * mono_spacing;
-            var w_value = string_length(dcustom_flag_text[1]) * mono_spacing;
-            var x1_start = base_x + w_prefix;
-            var x2_start = x1_start + w_name + w_middle;
-            draw_set_color(c_yellow);
-            var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
-            var draw_w_value = (w_value == 0) ? (mono_spacing / 4) : w_value;
-            
-            if (dhorizontal_index == 0)
-                draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
-            else if (dhorizontal_index == 1)
-                draw_rectangle((x2_start + visual_offset) - cursor_padding - 2, base_y, (x2_start + draw_w_value + visual_offset + cursor_padding) - 2, base_y + thickness, false);
-        }
-        else if (dmenu_state == ""warp"")
-        {
-            var base_x = x_start + xx;
-            var base_y = (((130 - (dmenu_start_index * 20)) + 2) * d) + yy;
-            var mono_spacing = (global.darkzone == 1) ? 15 : 8;
-            var thickness = 1 * d;
-            var visual_offset = -2;
-            var cursor_padding = 3 * d;
-            var w_prefix = string_length(""Contient : "") * mono_spacing;
-            var w_name = string_length(dcustom_flag_text[0]) * mono_spacing;
-            var x1_start = base_x + w_prefix;
-            var x2_start = x1_start + w_name;
-            draw_set_color(c_yellow);
-            var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
-            
-            if (dhorizontal_index == 0)
-                draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
-        }
-        else if (dmenu_state == ""warp_options"")
-        {
-            var base_x = x_start + xx;
-            var base_y = (((150 - (dmenu_start_index * 20)) + 2) * d) + yy;
-            var mono_spacing = (global.darkzone == 1) ? 15 : 8;
-            var thickness = 1 * d;
-            var visual_offset = -2;
-            var cursor_padding = 3 * d;
-            var w_prefix = string_length(""Valeur de plot : "") * mono_spacing;
-            var w_name = string_length(dcustom_flag_text[0]) * mono_spacing;
-            var x1_start = base_x + w_prefix;
-            var x2_start = x1_start + w_name;
-            draw_set_color(c_yellow);
-            var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
-            
-            if (dhorizontal_index == 0)
-                draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
-        }
-    }
-    
-    if (dbutton_layout == 0)
-    {
-        for (var i = 0; i < button_count; i++)
-        {
-            var text_width = string_width(dbutton_options[i]);
-            draw_set_color((dbutton_selected == (i + 1)) ? c_yellow : c_white);
-            draw_text(x_start + xx, (100 * d) + yy, dbutton_options[i]);
-            x_start += (text_width + x_spacing);
-        }
-    }
-    
-    side_arrows_mult = (global.darkzone == 1) ? [23, 10] : [12, 5];
-    var dmenu_arrow_yoffset, darrow_scale;
-    
-    if (dbutton_layout == 1)
-    {
-        var dcan_scroll_up = dmenu_start_index > 0;
-        var dcan_scroll_down = (dmenu_start_index + dbutton_max_visible) < array_length(dbutton_options);
-        dmenu_arrow_yoffset = 2 * sin(dmenu_arrow_timer / 10);
-        darrow_scale = d / 2;
-        
-        for (var i = 0; i < dbutton_max_visible; i++)
-        {
-            var button_index = dmenu_start_index + i;
-            
-            if (button_index < array_length(dbutton_options))
-            {
-                is_cur_line = dbutton_selected == (button_index + 1);
-                var text_color = is_cur_line ? c_yellow : c_white;
-                draw_set_color(text_color);
-                draw_monospace(x_start + xx, y_start + yy + (i * y_spacing), dbutton_options[button_index]);
-                var mono_spacing = (global.darkzone == 1) ? 15 : 8;
-                
-                if ((is_cur_line && dmenu_state == ""flag_misc"") || (dmenu_state == ""warp_options"" && (button_index == 3 || button_index == 4)))
-                {
-                    if ((dmenu_state == ""flag_misc"" && dhorizontal_index != 0) || (dmenu_state == ""warp_options"" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != 0))
-                    {
-                        for (dash_pos = 0; 1; dash_pos++)
-                        {
-                            if (dash_pos > 4 && string_char_at(dbutton_options[button_index], dash_pos) == ((dmenu_state == ""flag_misc"") ? ""-"" : "":""))
-                                break;
-                        }
-                        
-                        dash_pos++;
-                        draw_sprite_ext(spr_morearrow, 0, x_start + xx + ((dash_pos * mono_spacing) + floor(mono_spacing / 2)) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[0], darrow_scale, -darrow_scale, 90, c_white, 1);
-                    }
-                    
-                    if ((dmenu_state == ""flag_misc"" && dhorizontal_index < (array_length(dother_options[dbutton_selected - 1][3]) - 1)) || (dmenu_state == ""warp_options"" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != (4 - (global.chapter == 1))))
-                        draw_sprite_ext(spr_morearrow, 0, (x_start + xx + ((string_length(dbutton_options[button_index]) + 1) * mono_spacing)) - floor(mono_spacing / 2) - dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[1], darrow_scale, -darrow_scale, 270, c_white, 1);
-                }
-                else if (dmenu_state == ""recruits"" && button_index == 0)
-                {
-                    if (dhorizontal_page != 0)
-                        draw_sprite_ext(spr_morearrow, 0, x_start + xx + floor(mono_spacing / 2) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[0], darrow_scale, -darrow_scale, 90, c_white, 1);
-                    
-                    if (dhorizontal_page != global.chapter)
-                        draw_sprite_ext(spr_morearrow, 0, (x_start + xx + ((string_length(dbutton_options[button_index]) + 1) * mono_spacing)) - floor(mono_spacing / 2) - dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[1], darrow_scale, -darrow_scale, 270, c_white, 1);
-                }
-            }
-        }
-        
-        draw_set_color(c_white);
-        
-        if (dcan_scroll_up)
-            draw_sprite_ext(spr_morearrow, 0, x_start + xx, y_start + yy + (dbutton_max_visible * (y_spacing * -0.03)) + dmenu_arrow_yoffset, darrow_scale, -darrow_scale, 0, c_white, 1);
-        
-        if (dcan_scroll_down)
-            draw_sprite_ext(spr_morearrow, 0, x_start + xx, (y_start + yy + (dbutton_max_visible * y_spacing)) - dmenu_arrow_yoffset, darrow_scale, darrow_scale, 0, c_white, 1);
-    }
-    
-    if (dmenu_state == ""recruits"" || dmenu_state == ""weapons"" || dmenu_state == ""armors"" || dmenu_state == ""objects"")
-    {
-        draw_set_halign(fa_right);
-        var draw_y = (((ycenter - (menu_length / 2)) + 8) * d) + yy;
-        var draw_x = x_start + xx + 200;
-        
-        if (global.darkzone)
-            draw_x += 200;
-        
-        if (dmenu_state == ""recruits"")
-        {
-            if (dhorizontal_page != 0)
-                draw_text(draw_x, draw_y, ""(chap "" + string(dhorizontal_page) + "")"");
-            else
-                draw_text(draw_x, draw_y, ""(tout chap)"");
-        }
-        else if (dhorizontal_page == 0)
-        {
-            draw_text(draw_x + 30 + (global.darkzone * 30), draw_y, ""(Darkworld)"");
-            draw_sprite_ext(spr_morearrow, 0, draw_x + 35 + (global.darkzone * 35) + dmenu_arrow_yoffset, draw_y + side_arrows_mult[1], darrow_scale, -darrow_scale, 270, c_white, 1);
-        }
-        else
-        {
-            draw_text(draw_x + 30 + (global.darkzone * 30), draw_y, ""(Lightworld)"");
-            draw_sprite_ext(spr_morearrow, 0, draw_x + -55 + (global.darkzone * -55) + dmenu_arrow_yoffset, draw_y + side_arrows_mult[0], darrow_scale, -darrow_scale, 90, c_white, 1);
-        }
-        
-        draw_set_halign(fa_left);
-    }
-    
-    if (dbutton_layout == 2)
-    {
-        dmenu_arrow_yoffset = 2 * sin(dmenu_arrow_timer / 10);
-        draw_set_color(c_yellow);
-        draw_text(((xcenter - (string_length(dgiver_amount) * 4)) * d) + xx, (ycenter * d) + yy, string(dgiver_amount));
-        draw_set_color(c_white);
-        var itemreminder;
-        
-        if (dgiver_menu_state == ""objects"")
-        {
-            itemreminder = ""["" + string(dgiver_bname) + ""]"";
-            
-            if (dhorizontal_page == 0)
-                scr_itemcheck(0);
-            else
-                scr_litemcheck(0);
-            
-            max_items = (dhorizontal_page == 0) ? 12 : 8;
-            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, ""OBJETs : "" + string(max_items - itemcount) + "" / "" + string(max_items));
-        }
-        
-        if (dgiver_menu_state == ""armors"")
-        {
-            itemreminder = ""["" + string(dgiver_bname) + ""]"";
-            scr_armorcheck_inventory(0);
-            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, ""ARMUREs : "" + string(48 - itemcount) + "" / 48"");
-        }
-        
-        if (dgiver_menu_state == ""weapons"")
-        {
-            itemreminder = ""["" + string(dgiver_bname) + ""]"";
-            scr_weaponcheck_inventory(0);
-            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, ""ARMEs : "" + string(48 - itemcount) + "" / 48"");
-        }
-        
-        if (dgiver_menu_state == ""keyitems"")
-        {
-            itemreminder = ""["" + string(dgiver_bname) + ""]"";
-            scr_keyitemcheck(0);
-            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, ""OBJETs CLÉs : "" + string(12 - itemcount) + "" / 12"");
-        }
-        
-        var text_width = string_width(itemreminder);
-        draw_text(((xcenter * d) - (text_width / 2)) + xx, ((ycenter - 22) * d) + yy, itemreminder);
-        darrow_scale = d / 2;
-        draw_sprite_ext(spr_morearrow, 0, ((xcenter - 15) * d) + xx + dmenu_arrow_yoffset, ((ycenter + 6) * d) + yy, darrow_scale, darrow_scale, 270, c_white, 1);
-        draw_sprite_ext(spr_morearrow, 0, (((xcenter + 15) * d) + xx) - dmenu_arrow_yoffset, ((ycenter + 12) * d) + yy, darrow_scale, darrow_scale, 90, c_white, 1);
-    }
-    
-    dhinter_active = true;
-    
-    if (dhinter_active && dhinter_text != """" && (scr_array_contains(ditem_types, dmenu_state) || dmenu_state == ""warp_options""))
-    {
-        draw_set_color(c_white);
-        draw_rectangle(((xcenter - (menu_width / 2) - 3) * d) + xx, (2 * d) + yy, ((xcenter + (menu_width / 2) + 3) * d) + xx, (51 * d) + yy, false);
-        draw_set_color(c_black);
-        draw_rectangle(((xcenter - (menu_width / 2)) * d) + xx, (5 * d) + yy, ((xcenter + (menu_width / 2)) * d) + xx, (48 * d) + yy, false);
-        draw_set_color(c_white);
-        var x_start_desc = ((xcenter - (menu_width / 2)) + x_padding) * d;
-        draw_text_ext(x_start_desc + xx, (10 * d) + yy, dhinter_text, 18 * d, (menu_width - (x_padding * 2)) * d);
-    }
-}
-
-if (dkeys_helper == 1)
-{
-    dkeys_data = [""F10 - Activer/désactiver le debug mode"", ""S - Sauvegarder la partie"", ""L - Charger la dernière sauvegarde"", ""R - Charger la salle | Retour arrière+R - Redémarrer le jeu"", ""P - Mettre en pause/reprendre le jeu"", ""M+1 | M+2 - Ajouter/retirer 100 D$"", ""Suppr - Se rendre à la salle précédente"", ""Insert - Se rendre à la salle suivante"", ""W - Gagner instantanément un combat"", ""V - Passer le tour de l'ennemi"", ""H - Restaurer les HP du party"", ""T - Remplir/vider la barre de TP"", ""O - Basculer entre 30, 60 et 120 FPS"", ""Retour arrière - Passer le segment d'intro (Ch1)"", ""Clic milieu - Éditeur de salle""];
-    x_padding = 7;
-    y_start = 50 * d;
-    x_spacing = 10 * d;
-    y_spacing = 10.5 * d;
-    x_start = (((xcenter - (menu_width / 2)) + x_padding) * d) - 35;
-    menu_width = 264;
-    menu_length = 204;
-    xcenter = 160;
-    ycenter = 120;
-    draw_set_color(c_white);
-    draw_rectangle(((xcenter - (menu_width / 2) - 3) * d) + xx, ((ycenter - (menu_length / 2) - 3) * d) + yy, ((xcenter + (menu_width / 2) + 3) * d) + xx, ((ycenter + (menu_length / 2) + 3) * d) + yy, false);
-    draw_set_color(c_black);
-    draw_rectangle(((xcenter - (menu_width / 2)) * d) + xx, ((ycenter - (menu_length / 2)) * d) + yy, ((xcenter + (menu_width / 2)) * d) + xx, ((ycenter + (menu_length / 2)) * d) + yy, false);
-    draw_set_font(fnt_mainbig);
-    draw_set_halign(fa_right);
-    draw_set_color(c_gray);
-    var right_border = (xcenter + (menu_width / 2)) * d;
-    var padding = 8 * d;
-    var draw_x = (right_border + xx) - padding;
-    var draw_y = (((ycenter - (menu_length / 2)) + 8) * d) + yy;
-    draw_text(draw_x, draw_y, ""M - Fermer"");
-    draw_set_halign(fa_left);
-    draw_set_color(c_white);
-    draw_text(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, ""Touches du debug mode"");
-    
-    for (var i = 0; i < array_length(dkeys_data); i++)
-    {
-        draw_set_font(fnt_main);
-        draw_set_color(c_white);
-        draw_text(x_start + xx, y_start + yy + (i * y_spacing), dkeys_data[i]);
-    }
-}
-
-enum e__VW
-{
-    XView,
-    YView,
-    WView,
-    HView,
-    Angle,
-    HBorder,
-    VBorder,
-    HSpeed,
-    VSpeed,
-    Object,
-    Visible,
-    XPort,
-    YPort,
-    WPort,
-    HPort,
-    Camera,
-    SurfaceID
-}
-");
-
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)1, Data), @"
 function dmenu_state_update()
 {
@@ -2360,22 +1976,411 @@ function dmenu_state_interact()
     }
 }
 ");
+importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Draw, (uint)0, Data), @"
+xx = __view_get(e__VW.XView, 0);
+yy = __view_get(e__VW.YView, 0);
+d = global.darkzone + 1;
 
+if (!global.dreading_custom_flag && keyboard_check_pressed(ord(""D"")))
+{
+    dmenu_active = !dmenu_active;
+    
+    if (dmenu_active)
+    {
+        dmenu_previous_interact = global.interact;
+        snd_play(snd_egg);
+        global.interact = 1;
+    }
+    else
+    {
+        snd_play(snd_smallswing);
+        global.interact = dmenu_previous_interact;
+    }
+}
+
+if (dmenu_box == 0)
+{
+    menu_width = 214;
+    menu_length = 94;
+    xcenter = 160;
+    ycenter = 105;
+}
+
+if (dmenu_box == 1)
+{
+    menu_width = 214;
+    menu_length = 154;
+    xcenter = 160;
+    ycenter = 135;
+}
+
+if (dmenu_box == 2)
+{
+    menu_width = 256;
+    menu_length = 154;
+    xcenter = 160;
+    ycenter = 135;
+}
+
+var x_start = 0;
+
+if (dbutton_layout == 0)
+{
+    x_padding = 7;
+    y_start = 60 * d;
+    x_spacing = 10 * d;
+    y_spacing = 10 * d;
+    x_start = ((xcenter - (menu_width / 2)) + x_padding) * d;
+}
+
+if (dbutton_layout == 1)
+{
+    x_padding = 7;
+    y_start = 95 * d;
+    x_spacing = 10 * d;
+    y_spacing = 20 * d;
+    x_start = ((xcenter - (menu_width / 2)) + x_padding) * d;
+}
+
+if (dbutton_layout == 2)
+{
+    x_padding = 7;
+    y_start = 95 * d;
+    x_start = ((xcenter - (menu_width / 2)) + x_padding) * d;
+}
+
+var button_count = array_length(dbutton_options);
+
+if (dmenu_active)
+{
+    draw_set_color(c_white);
+    draw_rectangle(((xcenter - (menu_width / 2) - 3) * d) + xx, ((ycenter - (menu_length / 2) - 3) * d) + yy, ((xcenter + (menu_width / 2) + 3) * d) + xx, ((ycenter + (menu_length / 2) + 3) * d) + yy, false);
+    draw_set_color(c_black);
+    draw_rectangle(((xcenter - (menu_width / 2)) * d) + xx, ((ycenter - (menu_length / 2)) * d) + yy, ((xcenter + (menu_width / 2)) * d) + xx, ((ycenter + (menu_length / 2)) * d) + yy, false);
+    
+    if (global.darkzone == 1)
+        draw_set_font(fnt_mainbig);
+    else
+        draw_set_font(fnt_main);
+    
+    draw_set_color(c_white);
+    draw_text(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, string(dmenu_title));
+    
+    if (dmenu_state == ""debug"" && global.darkzone == 1)
+    {
+        draw_set_font(fnt_main);
+        draw_set_color(c_gray);
+        var draw_x = x_start + (335 * (d / 2)) + xx;
+        var draw_y = (((ycenter - (menu_length / 2)) + 82) * d) + yy;
+        draw_text(draw_x, draw_y, ""M - Touches"");
+        draw_set_font(fnt_mainbig);
+    }
+    
+    if (global.dreading_custom_flag)
+    {
+        draw_set_halign(fa_right);
+        draw_set_color(c_gray);
+        var right_border = (xcenter + (menu_width / 2)) * d;
+        var padding = 8 * d;
+        var draw_x = (right_border + xx) - padding;
+        var draw_y = (((ycenter - (menu_length / 2)) + 8) * d) + yy;
+        draw_text(draw_x, draw_y, ""Esc - Annuler"");
+        draw_set_halign(fa_left);
+    }
+    
+    if (global.dreading_custom_flag)
+    {
+        if (dmenu_state == ""flag_categories"")
+        {
+            var base_x = x_start + xx;
+            var base_y = (((110 - (dmenu_start_index * 20)) + 2) * d) + yy;
+            var mono_spacing = (global.darkzone == 1) ? 15 : 8;
+            var thickness = 1 * d;
+            var visual_offset = -5;
+            var cursor_padding = 3 * d;
+            var w_prefix = string_length(""global.flag["") * mono_spacing;
+            var w_name = string_length(dcustom_flag_text[0]) * mono_spacing;
+            var w_middle = string_length(""] = |"") * mono_spacing;
+            var w_value = string_length(dcustom_flag_text[1]) * mono_spacing;
+            var x1_start = base_x + w_prefix;
+            var x2_start = x1_start + w_name + w_middle;
+            draw_set_color(c_yellow);
+            var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
+            var draw_w_value = (w_value == 0) ? (mono_spacing / 4) : w_value;
+            
+            if (dhorizontal_index == 0)
+                draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
+            else if (dhorizontal_index == 1)
+                draw_rectangle((x2_start + visual_offset) - cursor_padding - 2, base_y, (x2_start + draw_w_value + visual_offset + cursor_padding) - 2, base_y + thickness, false);
+        }
+        else if (dmenu_state == ""warp"")
+        {
+            var base_x = x_start + xx;
+            var base_y = (((130 - (dmenu_start_index * 20)) + 2) * d) + yy;
+            var mono_spacing = (global.darkzone == 1) ? 15 : 8;
+            var thickness = 1 * d;
+            var visual_offset = -2;
+            var cursor_padding = 3 * d;
+            var w_prefix = string_length(""Contient : "") * mono_spacing;
+            var w_name = string_length(dcustom_flag_text[0]) * mono_spacing;
+            var x1_start = base_x + w_prefix;
+            var x2_start = x1_start + w_name;
+            draw_set_color(c_yellow);
+            var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
+            
+            if (dhorizontal_index == 0)
+                draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
+        }
+        else if (dmenu_state == ""warp_options"")
+        {
+            var base_x = x_start + xx;
+            var base_y = (((150 - (dmenu_start_index * 20)) + 2) * d) + yy;
+            var mono_spacing = (global.darkzone == 1) ? 15 : 8;
+            var thickness = 1 * d;
+            var visual_offset = -2;
+            var cursor_padding = 3 * d;
+            var w_prefix = string_length(""Valeur de plot : "") * mono_spacing;
+            var w_name = string_length(dcustom_flag_text[0]) * mono_spacing;
+            var x1_start = base_x + w_prefix;
+            var x2_start = x1_start + w_name;
+            draw_set_color(c_yellow);
+            var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
+            
+            if (dhorizontal_index == 0)
+                draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
+        }
+    }
+    
+    if (dbutton_layout == 0)
+    {
+        for (var i = 0; i < button_count; i++)
+        {
+            var text_width = string_width(dbutton_options[i]);
+            draw_set_color((dbutton_selected == (i + 1)) ? c_yellow : c_white);
+            draw_text(x_start + xx, (100 * d) + yy, dbutton_options[i]);
+            x_start += (text_width + x_spacing);
+        }
+    }
+    
+    side_arrows_mult = (global.darkzone == 1) ? [23, 10] : [12, 5];
+    var dmenu_arrow_yoffset, darrow_scale;
+    
+    if (dbutton_layout == 1)
+    {
+        var dcan_scroll_up = dmenu_start_index > 0;
+        var dcan_scroll_down = (dmenu_start_index + dbutton_max_visible) < array_length(dbutton_options);
+        dmenu_arrow_yoffset = 2 * sin(dmenu_arrow_timer / 10);
+        darrow_scale = d / 2;
+        
+        for (var i = 0; i < dbutton_max_visible; i++)
+        {
+            var button_index = dmenu_start_index + i;
+            
+            if (button_index < array_length(dbutton_options))
+            {
+                is_cur_line = dbutton_selected == (button_index + 1);
+                var text_color = is_cur_line ? c_yellow : c_white;
+                draw_set_color(text_color);
+                draw_monospace(x_start + xx, y_start + yy + (i * y_spacing), dbutton_options[button_index]);
+                var mono_spacing = (global.darkzone == 1) ? 15 : 8;
+                
+                if ((is_cur_line && dmenu_state == ""flag_misc"") || (dmenu_state == ""warp_options"" && (button_index == 3 || button_index == 4)))
+                {
+                    if ((dmenu_state == ""flag_misc"" && dhorizontal_index != 0) || (dmenu_state == ""warp_options"" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != 0))
+                    {
+                        for (dash_pos = 0; 1; dash_pos++)
+                        {
+                            if (dash_pos > 4 && string_char_at(dbutton_options[button_index], dash_pos) == ((dmenu_state == ""flag_misc"") ? ""-"" : "":""))
+                                break;
+                        }
+                        
+                        dash_pos++;
+                        draw_sprite_ext(spr_morearrow, 0, x_start + xx + ((dash_pos * mono_spacing) + floor(mono_spacing / 2)) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[0], darrow_scale, -darrow_scale, 90, c_white, 1);
+                    }
+                    
+                    if ((dmenu_state == ""flag_misc"" && dhorizontal_index < (array_length(dother_options[dbutton_selected - 1][3]) - 1)) || (dmenu_state == ""warp_options"" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != (4 - (global.chapter == 1))))
+                        draw_sprite_ext(spr_morearrow, 0, (x_start + xx + ((string_length(dbutton_options[button_index]) + 1) * mono_spacing)) - floor(mono_spacing / 2) - dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[1], darrow_scale, -darrow_scale, 270, c_white, 1);
+                }
+                else if (dmenu_state == ""recruits"" && button_index == 0)
+                {
+                    if (dhorizontal_page != 0)
+                        draw_sprite_ext(spr_morearrow, 0, x_start + xx + floor(mono_spacing / 2) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[0], darrow_scale, -darrow_scale, 90, c_white, 1);
+                    
+                    if (dhorizontal_page != global.chapter)
+                        draw_sprite_ext(spr_morearrow, 0, (x_start + xx + ((string_length(dbutton_options[button_index]) + 1) * mono_spacing)) - floor(mono_spacing / 2) - dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[1], darrow_scale, -darrow_scale, 270, c_white, 1);
+                }
+            }
+        }
+        
+        draw_set_color(c_white);
+        
+        if (dcan_scroll_up)
+            draw_sprite_ext(spr_morearrow, 0, x_start + xx, y_start + yy + (dbutton_max_visible * (y_spacing * -0.03)) + dmenu_arrow_yoffset, darrow_scale, -darrow_scale, 0, c_white, 1);
+        
+        if (dcan_scroll_down)
+            draw_sprite_ext(spr_morearrow, 0, x_start + xx, (y_start + yy + (dbutton_max_visible * y_spacing)) - dmenu_arrow_yoffset, darrow_scale, darrow_scale, 0, c_white, 1);
+    }
+    
+    if (dmenu_state == ""recruits"" || dmenu_state == ""weapons"" || dmenu_state == ""armors"" || dmenu_state == ""objects"")
+    {
+        draw_set_halign(fa_right);
+        var draw_y = (((ycenter - (menu_length / 2)) + 8) * d) + yy;
+        var draw_x = x_start + xx + 200;
+        
+        if (global.darkzone)
+            draw_x += 200;
+        
+        if (dmenu_state == ""recruits"")
+        {
+            if (dhorizontal_page != 0)
+                draw_text(draw_x, draw_y, ""(chap "" + string(dhorizontal_page) + "")"");
+            else
+                draw_text(draw_x, draw_y, ""(tout chap)"");
+        }
+        else if (dhorizontal_page == 0)
+        {
+            draw_text(draw_x + 30 + (global.darkzone * 30), draw_y, ""(Darkworld)"");
+            draw_sprite_ext(spr_morearrow, 0, draw_x + 35 + (global.darkzone * 35) + dmenu_arrow_yoffset, draw_y + side_arrows_mult[1], darrow_scale, -darrow_scale, 270, c_white, 1);
+        }
+        else
+        {
+            draw_text(draw_x + 30 + (global.darkzone * 30), draw_y, ""(Lightworld)"");
+            draw_sprite_ext(spr_morearrow, 0, draw_x + -55 + (global.darkzone * -55) + dmenu_arrow_yoffset, draw_y + side_arrows_mult[0], darrow_scale, -darrow_scale, 90, c_white, 1);
+        }
+        
+        draw_set_halign(fa_left);
+    }
+    
+    if (dbutton_layout == 2)
+    {
+        dmenu_arrow_yoffset = 2 * sin(dmenu_arrow_timer / 10);
+        draw_set_color(c_yellow);
+        draw_text(((xcenter - (string_length(dgiver_amount) * 4)) * d) + xx, (ycenter * d) + yy, string(dgiver_amount));
+        draw_set_color(c_white);
+        var itemreminder;
+        
+        if (dgiver_menu_state == ""objects"")
+        {
+            itemreminder = ""["" + string(dgiver_bname) + ""]"";
+            
+            if (dhorizontal_page == 0)
+                scr_itemcheck(0);
+            else
+                scr_litemcheck(0);
+            
+            max_items = (dhorizontal_page == 0) ? 12 : 8;
+            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, ""OBJETs : "" + string(max_items - itemcount) + "" / "" + string(max_items));
+        }
+        
+        if (dgiver_menu_state == ""armors"")
+        {
+            itemreminder = ""["" + string(dgiver_bname) + ""]"";
+            scr_armorcheck_inventory(0);
+            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, ""ARMUREs : "" + string(48 - itemcount) + "" / 48"");
+        }
+        
+        if (dgiver_menu_state == ""weapons"")
+        {
+            itemreminder = ""["" + string(dgiver_bname) + ""]"";
+            scr_weaponcheck_inventory(0);
+            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, ""ARMEs : "" + string(48 - itemcount) + "" / 48"");
+        }
+        
+        if (dgiver_menu_state == ""keyitems"")
+        {
+            itemreminder = ""["" + string(dgiver_bname) + ""]"";
+            scr_keyitemcheck(0);
+            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, ""OBJETs CLÉs : "" + string(12 - itemcount) + "" / 12"");
+        }
+        
+        var text_width = string_width(itemreminder);
+        draw_text(((xcenter * d) - (text_width / 2)) + xx, ((ycenter - 22) * d) + yy, itemreminder);
+        darrow_scale = d / 2;
+        draw_sprite_ext(spr_morearrow, 0, ((xcenter - 15) * d) + xx + dmenu_arrow_yoffset, ((ycenter + 6) * d) + yy, darrow_scale, darrow_scale, 270, c_white, 1);
+        draw_sprite_ext(spr_morearrow, 0, (((xcenter + 15) * d) + xx) - dmenu_arrow_yoffset, ((ycenter + 12) * d) + yy, darrow_scale, darrow_scale, 90, c_white, 1);
+    }
+    
+    dhinter_active = true;
+    
+    if (dhinter_active && dhinter_text != """" && (scr_array_contains(ditem_types, dmenu_state) || dmenu_state == ""warp_options""))
+    {
+        draw_set_color(c_white);
+        draw_rectangle(((xcenter - (menu_width / 2) - 3) * d) + xx, (2 * d) + yy, ((xcenter + (menu_width / 2) + 3) * d) + xx, (51 * d) + yy, false);
+        draw_set_color(c_black);
+        draw_rectangle(((xcenter - (menu_width / 2)) * d) + xx, (5 * d) + yy, ((xcenter + (menu_width / 2)) * d) + xx, (48 * d) + yy, false);
+        draw_set_color(c_white);
+        var x_start_desc = ((xcenter - (menu_width / 2)) + x_padding) * d;
+        draw_text_ext(x_start_desc + xx, (10 * d) + yy, dhinter_text, 18 * d, (menu_width - (x_padding * 2)) * d);
+    }
+}
+
+if (dkeys_helper == 1)
+{
+    dkeys_data = [""F10 - Activer/désactiver le debug mode"", ""S - Sauvegarder la partie"", ""L - Charger la dernière sauvegarde"", ""R - Charger la salle | Retour arrière+R - Redémarrer le jeu"", ""P - Mettre en pause/reprendre le jeu"", ""M+1 | M+2 - Ajouter/retirer 100 D$"", ""Suppr - Se rendre à la salle précédente"", ""Insert - Se rendre à la salle suivante"", ""W - Gagner instantanément un combat"", ""V - Passer le tour de l'ennemi"", ""H - Restaurer les HP du party"", ""T - Remplir/vider la barre de TP"", ""O - Basculer entre 30, 60 et 120 FPS"", ""Retour arrière - Passer le segment d'intro (Ch1)"", ""Clic milieu - Éditeur de salle""];
+    x_padding = 7;
+    y_start = 50 * d;
+    x_spacing = 10 * d;
+    y_spacing = 10.5 * d;
+    x_start = (((xcenter - (menu_width / 2)) + x_padding) * d) - 35;
+    menu_width = 264;
+    menu_length = 204;
+    xcenter = 160;
+    ycenter = 120;
+    draw_set_color(c_white);
+    draw_rectangle(((xcenter - (menu_width / 2) - 3) * d) + xx, ((ycenter - (menu_length / 2) - 3) * d) + yy, ((xcenter + (menu_width / 2) + 3) * d) + xx, ((ycenter + (menu_length / 2) + 3) * d) + yy, false);
+    draw_set_color(c_black);
+    draw_rectangle(((xcenter - (menu_width / 2)) * d) + xx, ((ycenter - (menu_length / 2)) * d) + yy, ((xcenter + (menu_width / 2)) * d) + xx, ((ycenter + (menu_length / 2)) * d) + yy, false);
+    draw_set_font(fnt_mainbig);
+    draw_set_halign(fa_right);
+    draw_set_color(c_gray);
+    var right_border = (xcenter + (menu_width / 2)) * d;
+    var padding = 8 * d;
+    var draw_x = (right_border + xx) - padding;
+    var draw_y = (((ycenter - (menu_length / 2)) + 8) * d) + yy;
+    draw_text(draw_x, draw_y, ""M - Fermer"");
+    draw_set_halign(fa_left);
+    draw_set_color(c_white);
+    draw_text(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, ""Touches du debug mode"");
+    
+    for (var i = 0; i < array_length(dkeys_data); i++)
+    {
+        draw_set_font(fnt_main);
+        draw_set_color(c_white);
+        draw_text(x_start + xx, y_start + yy + (i * y_spacing), dkeys_data[i]);
+    }
+}
+
+enum e__VW
+{
+    XView,
+    YView,
+    WView,
+    HView,
+    Angle,
+    HBorder,
+    VBorder,
+    HSpeed,
+    VSpeed,
+    Object,
+    Visible,
+    XPort,
+    YPort,
+    WPort,
+    HPort,
+    Camera,
+    SurfaceID
+}
+");
 ChangeSelection(obj_dmenu_system);
-importGroup.Import();
 
-ChangeSelection(obj_dmenu_system);
-importGroup.Import();
-
-// Variable au gamestart
+// Script scr_gamestart
 UndertaleScript scr_gamestart = Data.Scripts.ByName("scr_gamestart");
-
 importGroup.QueueAppend(scr_gamestart.Code, @"
 global.debug = 0;
 ");
 ChangeSelection(scr_gamestart);
 
-// Toggler
+// Script scr_debug
 UndertaleScript scr_debug = Data.Scripts.ByName("scr_debug");
 importGroup.QueueReplace(scr_debug.Code, @"
 function scr_debug()
@@ -2385,109 +2390,21 @@ function scr_debug()
 ");
 ChangeSelection(scr_debug);
 
-UndertaleGameObject obj_time_TOGGLER = Data.GameObjects.ByName("obj_time");
-importGroup.QueueReplace(obj_time_TOGGLER.EventHandlerFor(EventType.Step, (uint)0, Data), @"
+// GameObject obj_time
+UndertaleGameObject obj_time = Data.GameObjects.ByName("obj_time");
+importGroup.QueueAppend(obj_time.EventHandlerFor(EventType.Step, (uint)0, Data), @"
 if (keyboard_check_pressed(vk_f10))
 {
     global.debug = !global.debug;
+    
     if (global.debug)
         scr_debug_print(""Mode Debug activé !"");
     else
         scr_debug_print(""Mode Debug désactivé !"");
 }
 
-
-");
-ChangeSelection(obj_time_TOGGLER);
-
-// Fonctions du Lightworld
-UndertaleGameObject obj_overworldc = Data.GameObjects.ByName("obj_overworldc");
-importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, Data), @"
-if (global.debug == 1)
+if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
 {
-    if (keyboard_check_pressed(ord(""S"")))
-        instance_create(0, 0, obj_saveu);
-    if (keyboard_check_pressed(ord(""L"")))
-        scr_load();
-    if (keyboard_check_pressed(ord(""R"")))
-        game_restart_true();
-}
-if (!instance_exists(obj_dmenu_system))
-    instance_create(0, 0, obj_dmenu_system)
-");
-ChangeSelection(obj_overworldc);
-
-// Fonctions du Darkworld
-UndertaleGameObject obj_darkcontroller = Data.GameObjects.ByName("obj_darkcontroller");
-importGroup.QueueAppend(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint)0, Data), @"
-if (global.debug == 1)
-{
-    if (keyboard_check_pressed(ord(""S"")))
-        instance_create(0, 0, obj_savemenu);
-    if (keyboard_check_pressed(ord(""L"")))
-        scr_load();
-    if (keyboard_check_pressed(ord(""R"")))
-        game_restart_true();
-    if (keyboard_check_pressed(ord(""2"")) && keyboard_check(ord(""M"")))
-    {
-        if (global.gold >= 100)
-        {
-            global.gold -= 100;
-            scr_debug_print(""- 100 D$"");
-        }
-        else
-        {
-            scr_debug_print(""- "" + string(global.gold) + "" D$"");
-            global.gold = 0;
-        }
-    }
-    if (keyboard_check_pressed(ord(""1"")) && keyboard_check(ord(""M"")))
-    {
-        global.gold += 100;
-        scr_debug_print(""+ 100 D$"");
-    }
-}
-if (!instance_exists(obj_dmenu_system))
-    instance_create(0, 0, obj_dmenu_system)
-");
-ChangeSelection(obj_darkcontroller);
-
-// Fonctions du joueur (téléportation)
-UndertaleGameObject obj_mainchara = Data.GameObjects.ByName("obj_mainchara");
-importGroup.QueueAppend(obj_mainchara.EventHandlerFor(EventType.Step, (uint)0, Data), @"
-if (global.debug == 1)
-{
-    if (keyboard_check_pressed(vk_insert))
-        room_goto_next();
-    if (keyboard_check_pressed(vk_delete))
-        room_goto_previous();
-}
-");
-ChangeSelection(obj_mainchara);
-
-// Fonctions du jeu (compteur FPS / fonction de pause / fonction de changement de FPS)
-UndertaleGameObject obj_time = Data.GameObjects.ByName("obj_time");
-importGroup.QueueReplace(obj_time.EventHandlerFor(EventType.Draw, (uint)0, Data), @"
-
-if (global.debug == 1)
-{
-    draw_set_font(fnt_main)
-    draw_set_color(c_red)
-    draw_text(__view_get(0, 0), __view_get(1, 0), fps)
-
-    draw_set_font(fnt_main);
-    draw_set_color(c_green);
-    draw_text(__view_get(0, 0) + __view_get(2, 0) - string_width(room_get_name(room)), __view_get(1, 0), room_get_name(room));
-    draw_text((__view_get(0, 0) + __view_get(2, 0)) - string_width(""plot "" + string(global.plot)), __view_get(1, 0) + 15, ""plot "" + string(global.plot));
-};
-");
-
-importGroup.QueueAppend(obj_time.EventHandlerFor(EventType.Step, (uint)0, Data), @"
-if (global.debug == 1)
-{
-    if (mouse_check_button_pressed(mb_middle))
-        instance_create(0, 0, obj_debug_xy);
-    
     if (keyboard_check_pressed(ord(""P"")))
     {
         if (room_speed == 30)
@@ -2501,46 +2418,47 @@ if (global.debug == 1)
             scr_debug_print(""FPS à 30"");
         }
     }
-
+    
     if (keyboard_check_pressed(ord(""O"")))
     {
         if (room_speed == 120 || room_speed == 1)
         {
             room_speed = 30;
             scr_debug_print(""FPS à 30"");
-        }      else if (room_speed == 60)
+        }
+        else if (room_speed == 60)
         {
             room_speed = 120;
             scr_debug_print(""FPS à 120"");
         }
-        else if (room_speed == 30) {
+        else if (room_speed == 30)
+        {
             room_speed = 60;
             scr_debug_print(""FPS à 60"");
         }
     }
-};
+}
+");
+importGroup.QueueReplace(obj_time.EventHandlerFor(EventType.Draw, (uint)0, Data), @"
+if (scr_debug())
+{
+    draw_set_font(fnt_main);
+    draw_set_color(c_red);
+    draw_text(__view_get(0, 0), __view_get(1, 0), fps);
+    draw_set_font(fnt_main);
+    draw_set_color(c_green);
+    draw_text((__view_get(0, 0) + __view_get(2, 0)) - string_width(room_get_name(room)), __view_get(1, 0), room_get_name(room));
+    draw_text((__view_get(0, 0) + __view_get(2, 0)) - string_width(""plot "" + string(global.plot)), __view_get(1, 0) + 15, ""plot "" + string(global.plot));
+}
 ");
 ChangeSelection(obj_time);
 
-// Fonctions de combat
+// GameObject obj_battlecontroller
 UndertaleGameObject obj_battlecontroller = Data.GameObjects.ByName("obj_battlecontroller");
+importGroup.QueueFindReplace(obj_battlecontroller.EventHandlerFor(EventType.Step, (uint)0, Data), @"if (scr_debug())", @"if (0)");
 importGroup.QueueAppend(obj_battlecontroller.EventHandlerFor(EventType.Step, (uint)0, Data), @"
-if (global.debug == 1)
+if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
 {
-    if (keyboard_check_pressed(ord(""W"")))
-    {
-        scr_wincombat();
-        scr_debug_print(""Combat passé"");
-    }
-    if (keyboard_check_pressed(ord(""H"")))
-    {
-        scr_debug_fullheal();
-        scr_debug_print(""HP du party restaurés"");
-    }
-    if (keyboard_check_pressed(ord(""V"")))
-    {
-        scr_turn_skip();
-    }
     if (keyboard_check_pressed(ord(""T"")))
     {
         if (global.tension < 250)
@@ -2554,35 +2472,27 @@ if (global.debug == 1)
             scr_debug_print(""TP à 0 %"");
         }
     }
+    
+    if (keyboard_check_pressed(ord(""V"")))
+        scr_turn_skip();
+    
+    if (keyboard_check_pressed(ord(""H"")))
+    {
+        scr_debug_fullheal();
+        scr_debug_print(""HP du party restaurés"");
+    }
+    
+    if (keyboard_check_pressed(ord(""W"")))
+    {
+        scr_wincombat();
+        scr_debug_print(""Combat passé"");
+    }
 }
 ");
 ChangeSelection(obj_battlecontroller);
 
-// Fonctions intro (skip Gaster)
-UndertaleGameObject DEVICE_CONTACT = Data.GameObjects.ByName("DEVICE_CONTACT");
-importGroup.QueueAppend(DEVICE_CONTACT.EventHandlerFor(EventType.Step, (uint)0, Data), @"
-if (global.debug == 1)
-{
-    if (keyboard_check_pressed(vk_backspace))
-    {
-        global.flag[6] = 0;
-        snd_free_l();
-        room_goto(room_krisroom);
-    }
-}
-");
-ChangeSelection(DEVICE_CONTACT);
-
-// Script fullheal
-UndertaleScript scr_debug_fullheal = new UndertaleScript(); // Ajoute le Script
-scr_debug_fullheal.Name = Data.Strings.MakeString("scr_debug_fullheal");
-scr_debug_fullheal.Code = new UndertaleCode(); // Ajoute le Code
-scr_debug_fullheal.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_fullheal");
-scr_debug_fullheal.Code.LocalsCount = 1;
-
-Data.Scripts.Add(scr_debug_fullheal); // Répertorie e Script
-Data.Code.Add(scr_debug_fullheal.Code); // Répertorie le Code
-
+// Script scr_debug_fullheal
+UndertaleScript scr_debug_fullheal = Data.Scripts.ByName("scr_debug_fullheal");
 importGroup.QueueReplace(scr_debug_fullheal.Code, @"
 function scr_debug_fullheal()
 {
@@ -2603,17 +2513,108 @@ function scr_debug_fullheal()
 ");
 ChangeSelection(scr_debug_fullheal);
 
-// Script turn skip
-UndertaleScript scr_turn_skip = new UndertaleScript(); // Aoute le Script
-scr_turn_skip.Name = Data.Strings.MakeString("scr_turn_skip");
-scr_turn_skip.Code = new UndertaleCode(); // Ajoute le Code
-scr_turn_skip.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_turn_skip");
-scr_turn_skip.Code.LocalsCount = 1;
+// --- EXTRAS CHAPTER 1 ---
 
-Data.Scripts.Add(scr_turn_skip); // Répertorie le Script
-Data.Code.Add(scr_turn_skip.Code); // Répertorie le Code
+// GameObject obj_overworldc
+UndertaleGameObject obj_overworldc = Data.GameObjects.ByName("obj_overworldc");
+importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, Data), @"
+if (global.debug == 1)
+{
+    if (keyboard_check_pressed(ord(""S"")))
+        instance_create(0, 0, obj_savemenu);
+    if (keyboard_check_pressed(ord(""L"")))
+        scr_load();
+    if (keyboard_check_pressed(ord(""R"")) && keyboard_check(vk_backspace))
+        game_restart_true();
 
-importGroup.QueueAppend(scr_turn_skip.Code, @"
+    if (keyboard_check_pressed(ord(""R"")) && !keyboard_check(vk_backspace))
+    {
+        snd_free_all();
+        room_restart();
+        global.interact = 0;
+    }
+}
+if (!instance_exists(obj_dmenu_system))
+    instance_create(0, 0, obj_dmenu_system)
+");
+ChangeSelection(obj_overworldc);
+
+// GameObject obj_darkcontroller
+UndertaleGameObject obj_darkcontroller = Data.GameObjects.ByName("obj_darkcontroller");
+importGroup.QueueAppend(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint)0, Data), @"
+if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
+{
+    if (keyboard_check_pressed(ord(""2"")) && keyboard_check(ord(""M"")))
+    {
+        if (global.gold >= 100)
+        {
+            global.gold -= 100;
+            scr_debug_print(""- 100 D$"");
+        }
+        else
+        {
+            scr_debug_print(""- "" + string(global.gold) + "" D$"");
+            global.gold = 0;
+        }
+    }
+    if (keyboard_check_pressed(ord(""1"")) && keyboard_check(ord(""M"")))
+    {
+        global.gold += 100;
+        scr_debug_print(""+ 100 D$"");
+    }
+
+    if (keyboard_check_pressed(ord(""S"")))
+        instance_create(0, 0, obj_savemenu);
+
+    if (keyboard_check_pressed(ord(""L"")))
+        scr_load();
+
+    if (keyboard_check_pressed(ord(""R"")) && keyboard_check(vk_backspace))
+        game_restart_true();
+
+    if (keyboard_check_pressed(ord(""R"")) && !keyboard_check(vk_backspace))
+    {
+        snd_free_all();
+        room_restart();
+        global.interact = 0;
+    }
+}
+if (!instance_exists(obj_dmenu_system))
+    instance_create(0, 0, obj_dmenu_system)
+");
+ChangeSelection(obj_darkcontroller);
+
+// GameObject obj_mainchara
+UndertaleGameObject obj_mainchara = Data.GameObjects.ByName("obj_mainchara");
+importGroup.QueueAppend(obj_mainchara.EventHandlerFor(EventType.Step, (uint)0, Data), @"
+if (global.debug == 1)
+{
+    if (keyboard_check_pressed(vk_insert))
+        room_goto_next();
+    if (keyboard_check_pressed(vk_delete))
+        room_goto_previous();
+}
+");
+ChangeSelection(obj_mainchara);
+
+// GameObject DEVICE_CONTACT
+UndertaleGameObject DEVICE_CONTACT = Data.GameObjects.ByName("DEVICE_CONTACT");
+importGroup.QueueAppend(DEVICE_CONTACT.EventHandlerFor(EventType.Step, (uint)0, Data), @"
+if (global.debug == 1)
+{
+    if (keyboard_check_pressed(vk_backspace))
+    {
+        global.flag[6] = 0;
+        snd_free_all();
+        room_goto(room_krisroom);
+    }
+}
+");
+ChangeSelection(DEVICE_CONTACT);
+
+// Script scr_turn_skip
+UndertaleScript scr_turn_skip = Data.Scripts.ByName("scr_turn_skip");
+importGroup.QueueReplace(scr_turn_skip.Code, @"
 function scr_turn_skip()
 {
     if (global.mnfight == 2

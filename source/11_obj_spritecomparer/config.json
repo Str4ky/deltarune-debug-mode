@@ -1,0 +1,15 @@
+{
+    "create_new": false,
+    "skip_ch1": true,
+    "events": {
+        "Draw_0": {
+            "mode": "append",
+            "find_replace": [
+                {
+                    "find": "if (keyboard_check_pressed(ord(\"D\")))",
+                    "replace": "if (keyboard_check_pressed(vk_f2))"
+                }
+            ]
+        }
+    }
+}

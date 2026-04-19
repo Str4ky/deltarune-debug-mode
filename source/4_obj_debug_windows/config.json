@@ -1,0 +1,15 @@
+{
+    "create_new": false,
+    "skip_ch1": true,
+    "events": {
+        "Create_0": {
+            "mode": "replace"
+        },
+        "Draw_64": {
+            "mode": "replace"
+        },
+        "Other_25": {
+            "mode": "replace"
+        }
+    }
+}

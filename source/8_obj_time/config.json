@@ -1,0 +1,11 @@
+{
+    "create_new": false,
+    "events": {
+        "Step_0": {
+            "mode": "append"
+        },
+        "Draw_0": {
+            "mode": "replace"
+        }
+    }
+}

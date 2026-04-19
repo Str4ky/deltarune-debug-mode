@@ -1,0 +1,18 @@
+{
+    "create_new": false,
+    "skip_ch1": true,
+    "events": {
+        "Create_0": {
+            "mode": "replace"
+        },
+        "Step_0": {
+            "mode": "replace"
+        },
+        "Draw_0": {
+            "mode": "replace"
+        },
+        "Draw_74": {
+            "mode": "replace"
+        }
+    }
+}
