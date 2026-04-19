@@ -14,6 +14,17 @@ if (Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapter 1" &
     return;
 }
 
+bool isFrenchPatch = false;
+foreach (var str in Data.Strings)
+{
+    if (str.Content == "Français")
+    {
+        isFrenchPatch = true;
+        break;
+    }
+}
+string defaultLang = isFrenchPatch ? "fr" : "en";
+
 bool isDemo = false;
 foreach (var str in Data.Strings)
 {

@@ -1,0 +1,6 @@
+{
+    "order": [
+        "scr_gamestart",
+        "obj_darkcontroller"
+    ]
+}

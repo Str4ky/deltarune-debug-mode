@@ -88,7 +88,7 @@ function evaluate_custom_flag(arg0)
         cur_char = string_char_at(dcustom_flag_text[0], c);
         if (!scr_84_is_digit(string_char_at(dcustom_flag_text[0], c)))
         {
-            scr_debug_print("Invalid flag |" + dcustom_flag_text[0] + "| because of |" + string_char_at(dcustom_flag_text[0], c) + "|");
+            scr_debug_print(scr_dmode_get_text("dbg_inv_flag") + "|" + dcustom_flag_text[0] + "|" + scr_dmode_get_text("dbg_because") + "|" + string_char_at(dcustom_flag_text[0], c) + "|");
             proper_exit = 0;
             break;
         }
@@ -96,7 +96,7 @@ function evaluate_custom_flag(arg0)
     
     if (string_length(dcustom_flag_text[0]) == 0)
     {
-        scr_debug_print("Empty flag");
+        scr_debug_print(scr_dmode_get_text("dbg_empty_flag"));
         proper_exit = 0;
     }
     
@@ -108,7 +108,7 @@ function evaluate_custom_flag(arg0)
         cur_char = string_char_at(dcustom_flag_text[0], c);
         if (!scr_84_is_digit(cur_char) && cur_char != "." && cur_char != "-")
         {
-            scr_debug_print("Invalid value |" + dcustom_flag_text[1] + "|");
+            scr_debug_print(scr_dmode_get_text("dbg_inv_val") + "|" + dcustom_flag_text[1] + "|");
             proper_exit = 0;
             break;
         }
@@ -119,14 +119,14 @@ function evaluate_custom_flag(arg0)
         if (proper_exit)
             scr_debug_print("global.flag[" + string(real(dcustom_flag_text[0])) + "] = |" + string(global.flag[real(dcustom_flag_text[0])]) + "|");
         else
-            scr_debug_print("Empty value");
+            scr_debug_print(scr_dmode_get_text("dbg_empty_val"));
         
         proper_exit = 0;
     }
     
     if (proper_exit)
     {
-        scr_debug_print("Updated global.flag[" + string(real(dcustom_flag_text[0])) + "] from |" + string(global.flag[real(dcustom_flag_text[0])]) + "| to |" + dcustom_flag_text[1] + "|");
+        scr_debug_print(scr_dmode_get_text("dbg_updated") + "global.flag[" + string(real(dcustom_flag_text[0])) + "]" + scr_dmode_get_text("dbg_from") + "|" + string(global.flag[real(dcustom_flag_text[0])]) + "|" + scr_dmode_get_text("dbg_to") + "|" + dcustom_flag_text[1] + "|");
         global.flag[real(dcustom_flag_text[0])] = real(dcustom_flag_text[1]);
     }
     
@@ -277,7 +277,7 @@ else if (dmenu_active)
             if (playsound)
             {
                 global.flag[cur_options[2]] = cur_options[3][dhorizontal_index][1];
-                scr_debug_print("Updated global.flag[" + string(cur_options[2]) + "] to |" + string(cur_options[3][dhorizontal_index][1]) + "|");
+                scr_debug_print(scr_dmode_get_text("dbg_updated") + "global.flag[" + string(cur_options[2]) + "]" + scr_dmode_get_text("dbg_to") + "|" + string(cur_options[3][dhorizontal_index][1]) + "|");
                 snd_play(snd_menumove);
             }
         }
@@ -308,9 +308,9 @@ else if (dmenu_active)
                         }
                     }
                     else if (pressed_right && recruit_count == -1)
-					{
-						to_add = 1;
-					}
+                    {
+                        to_add = 1;
+                    }
                     
                     if ((pressed_right && (recruit_count * _recruitcount) < _recruitcount) || (pressed_left && (recruit_count * _recruitcount) > -1))
                     {
@@ -529,7 +529,7 @@ else if (dmenu_active)
                             dgiver_bname = dlight_objects[real_index][1];
                         }
                         
-                        scr_debug_print(dgiver_bname + " sélectionné !");
+                        scr_debug_print(dgiver_bname + scr_dmode_get_text("msg_selected"));
                     }
                     
                     break;
@@ -549,7 +549,7 @@ else if (dmenu_active)
                             dgiver_bname = dlight_armors[real_index][1];
                         }
                         
-                        scr_debug_print(string(dgiver_bname) + " sélectionné !");
+                        scr_debug_print(string(dgiver_bname) + scr_dmode_get_text("msg_selected"));
                     }
                     
                     break;
@@ -569,7 +569,7 @@ else if (dmenu_active)
                             dgiver_bname = dlight_weapons[real_index][1];
                         }
                         
-                        scr_debug_print(string(dgiver_bname) + " sélectionné !");
+                        scr_debug_print(string(dgiver_bname) + scr_dmode_get_text("msg_selected"));
                     }
                     
                     break;
@@ -580,7 +580,7 @@ else if (dmenu_active)
                         real_index = dbutton_indices[dbutton_selected - 1];
                         scr_keyiteminfo(real_index);
                         dgiver_bname = tempkeyitemname;
-                        scr_debug_print(string(dgiver_bname) + " sélectionné !");
+                        scr_debug_print(string(dgiver_bname) + scr_dmode_get_text("msg_selected"));
                     }
                     
                     break;
@@ -588,11 +588,11 @@ else if (dmenu_active)
         }
         else if (dmenu_state == "warp" && dbutton_selected == 2)
         {
-            scr_debug_print("Recherche sélectionné !");
+            scr_debug_print(scr_dmode_get_text("msg_search_selected"));
         }
         else if (dmenu_state != "givertab" && dmenu_state != "flag_misc" && dmenu_state != "warp_options" && (dmenu_state != "recruits" || dbutton_selected == 1))
         {
-            scr_debug_print(string(dbutton_options[dbutton_selected - 1]) + " sélectionné !");
+            scr_debug_print(string(dbutton_options[dbutton_selected - 1]) + scr_dmode_get_text("msg_selected"));
         }
         
         if ((dmenu_state == "recruits" && dbutton_selected != 1) || dmenu_state == "warp_options" || dmenu_state == "recruit_presets" || dmenu_state == "warp_options" || dmenu_state == "flag_misc" || ((dmenu_state == "armors" || dmenu_state == "weapons") && dhorizontal_page) || (dmenu_state == "warp" && dbutton_selected == 2))
@@ -612,7 +612,7 @@ else if (dmenu_active)
     if (keyboard_check_pressed(global.input_k[5]) || keyboard_check_pressed(global.input_k[8]))
     {
         snd_play(snd_smallswing);
-		dpop_history();
+        dpop_history();
     }
     
     if (dhinter_active)
@@ -624,14 +624,14 @@ else if (dmenu_active)
             if (new_room == -1)
                 new_room = room;
             
-            dhinter_text = "Salle sélectionnée : " + room_get_name(new_room);
+            dhinter_text = scr_dmode_get_text("hint_room") + room_get_name(new_room);
         }
         
         if (scr_array_contains(ditem_types, dmenu_state))
         {
             if (dhorizontal_page == 0 && dbutton_selected == 1)
             {
-                dhinter_text = "Appuyez sur " + scr_get_input_name(4) + " pour changer de chapitre";
+                dhinter_text = scr_dmode_get_text("hint_press") + scr_get_input_name(4) + scr_dmode_get_text("hint_change_chap");
             }
             else if (dhorizontal_page == 0 && dbutton_selected > 1)
             {

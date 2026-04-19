@@ -14,6 +14,16 @@ if (Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapter CHAP
     return;
 }
 
+bool isFrenchPatch = false;
+foreach (var str in Data.Strings)
+{
+    if (str.Content == "Français")
+    {
+        isFrenchPatch = true;
+        break;
+    }
+}
+string defaultLang = isFrenchPatch ? "fr" : "en";
 
 bool enable = ScriptQuestion(
 "Ajouter le Mode Debug pour le Chapitre CHAPTER_NUMBER ?"

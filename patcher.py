@@ -14,25 +14,32 @@ def parse_folder(folder_path, declared_elements=None, current_chapter=0):
     if not os.path.exists(folder_path):
         return csx_lines
 
+    master_config_path = os.path.join(folder_path, "config.json")
+    folder_order = []
+    if os.path.exists(master_config_path):
+        with open(master_config_path, 'r', encoding='utf-8') as f:
+            try:
+                master_config = json.load(f)
+                folder_order = master_config.get("order", [])
+            except json.JSONDecodeError:
+                print(f"Error: Malformed master config.json in '{folder_path}'.")
+
     folders = [d for d in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, d))]
     
     def get_priority(folder_name):
-        match = re.match(r'^(\d+)_', folder_name)
-        return int(match.group(1)) if match else float('inf')
+        if folder_name in folder_order:
+            return folder_order.index(folder_name)
+        return float('inf')
         
     folders.sort(key=get_priority)
 
     for folder in folders:
-        if folder.upper() == "EXTRAS":
+        if folder.upper() == "EXTRAS" or folder.startswith('.'):
             continue
 
         subfolder_path = os.path.join(folder_path, folder)
-        folder_match = re.match(r'^(\d+)_([A-Za-z0-9_]+)$', folder)
-
-        if not folder_match:
-            continue
-
-        element_name = folder_match.group(2)
+        
+        element_name = folder
         element_type = 'scr' if element_name.startswith('scr_') else 'obj'
 
         config_path = os.path.join(subfolder_path, "config.json")
@@ -61,14 +68,19 @@ def parse_folder(folder_path, declared_elements=None, current_chapter=0):
                 
                 csx_lines.append(f'\n// Script {element_name}')
                 
-                # Check memory to prevent duplicate C# declarations
                 if element_name not in declared_elements:
+                    is_ch1_precreated = (current_chapter == 1 and element_name in ["scr_debug_fullheal", "scr_turn_skip", "scr_debug_print"])
+                    
                     if create_new:
                         csx_lines.append(f'UndertaleScript {element_name} = new UndertaleScript();')
                         csx_lines.append(f'{element_name}.Name = Data.Strings.MakeString("{element_name}");')
                         csx_lines.append(f'Data.Scripts.Add({element_name});')
                     else:
-                        csx_lines.append(f'UndertaleScript {element_name} = Data.Scripts.ByName("{element_name}");')
+                        if is_ch1_precreated:
+                            csx_lines.append(f'{element_name} = Data.Scripts.ByName("{element_name}");')
+                        else:
+                            csx_lines.append(f'UndertaleScript {element_name} = Data.Scripts.ByName("{element_name}");')
+                            
                     declared_elements.add(element_name)
 
                 mode = config.get("mode", "replace").lower()
@@ -90,7 +102,6 @@ def parse_folder(folder_path, declared_elements=None, current_chapter=0):
             events_order = list(events_config.keys())
 
             def sort_files(filename):
-                """Sort files based on the order defined in config.json."""
                 file_regex = r'^gml_Object_' + re.escape(element_name) + r'_([A-Za-z]+)_(\d+)\.gml$'
                 match = re.match(file_regex, filename)
                 if match:
@@ -106,6 +117,8 @@ def parse_folder(folder_path, declared_elements=None, current_chapter=0):
                 csx_lines.append(f'\n// GameObject {element_name}')
                 
                 if element_name not in declared_elements:
+                    is_ch1_precreated_obj = (current_chapter == 1 and element_name in ["obj_debug_gui"])
+
                     if create_new:
                         visible = str(config.get("visible", True)).lower()
                         persistent = str(config.get("persistent", False)).lower()
@@ -118,7 +131,11 @@ def parse_folder(folder_path, declared_elements=None, current_chapter=0):
                         csx_lines.append(f'{element_name}.Awake = {awake};')
                         csx_lines.append(f'Data.GameObjects.Add({element_name});')
                     else:
-                        csx_lines.append(f'UndertaleGameObject {element_name} = Data.GameObjects.ByName("{element_name}");')
+                        if is_ch1_precreated_obj:
+                            csx_lines.append(f'{element_name} = Data.GameObjects.ByName("{element_name}");')
+                        else:
+                            csx_lines.append(f'UndertaleGameObject {element_name} = Data.GameObjects.ByName("{element_name}");')
+                            
                     declared_elements.add(element_name)
             
             for file in files:
@@ -170,7 +187,7 @@ def compile_utmt_mod(source_folder, template_file):
     template_bottom = template_parts[1].strip()
 
     for i in range(1, 5):
-        element_memory = set() # Reset memory for each chapter
+        element_memory = set() 
         
         output_file = f"Mode Debug (chapitre {i}).csx"
         final_lines = []
@@ -185,6 +202,9 @@ def compile_utmt_mod(source_folder, template_file):
                     parts = ch1_content.split("// BOTTOM")
                     current_top = parts[0].replace("// TOP", "").strip()
                     current_bottom = parts[1].strip()
+
+        if i == 1:
+            element_memory.update(["scr_debug_print", "obj_debug_gui", "scr_debug_fullheal", "scr_turn_skip"])
 
         final_lines.append(current_top)
         

@@ -1,0 +1,9 @@
+{
+    "order": [
+        "obj_overworldc",
+        "obj_darkcontroller",
+        "obj_mainchara",
+        "DEVICE_CONTACT",
+        "scr_turn_skip"
+    ]
+}

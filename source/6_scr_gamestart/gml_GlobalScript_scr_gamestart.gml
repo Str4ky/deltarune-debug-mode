@@ -1,1 +1,0 @@
-global.debug = 0;

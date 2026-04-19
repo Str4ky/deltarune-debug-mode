@@ -3,21 +3,21 @@ function dmenu_state_update()
     switch (dmenu_state)
     {
         case "debug":
-            dmenu_title = "Menu Debug";
+            dmenu_title = scr_dmode_get_text("menu_debug");
             dbutton_options = dbutton_options_original;
             dmenu_box = 0;
             dbutton_layout = 0;
             break;
         
         case "warp":
-            dmenu_title = "Liste des salles";
-            dbutton_options = ["Salle actuelle", "Recherche"];
+            dmenu_title = scr_dmode_get_text("room_list");
+            dbutton_options = [scr_dmode_get_text("btn_current_room"), scr_dmode_get_text("btn_search")];
             dbutton_indices = [-1, -1];
             
             if (global.dreading_custom_flag || dkeyboard_input != "")
-                dbutton_options[1] = "Contient : ";
+                dbutton_options[1] = scr_dmode_get_text("ui_contains");
             else
-                dbutton_options[1] = "Recherche";
+                dbutton_options[1] = scr_dmode_get_text("btn_search");
             
             dbutton_options[1] += dkeyboard_input;
             
@@ -36,31 +36,43 @@ function dmenu_state_update()
             break;
         
         case "warp_options":
-            dmenu_title = "Options du saut";
-            dbutton_options = ["Annuler", "Est un Darkworld : ", "Valeur de plot : ", "Équipier 2 :  ", "Équipier 3 :  ", "Sauter"];
+            dmenu_title = scr_dmode_get_text("warp_options");
+            dbutton_options = [
+                scr_dmode_get_text("btn_cancel"), 
+                scr_dmode_get_text("ui_is_darkworld"), 
+                scr_dmode_get_text("ui_plot_value"), 
+                scr_dmode_get_text("ui_teammate2"), 
+                scr_dmode_get_text("ui_teammate3"), 
+                scr_dmode_get_text("btn_warp")
+            ];
             dbutton_indices = [0, 1, 2, 3, 4, 5];
-            dbutton_options[1] += drooms_options.target_is_darkzone ? "Oui" : "Non";
+            dbutton_options[1] += drooms_options.target_is_darkzone ? scr_dmode_get_text("opt_yes") : scr_dmode_get_text("opt_no");
             
             if (global.dreading_custom_flag)
                 dbutton_options[2] += dkeyboard_input;
             else
                 dbutton_options[2] += string(drooms_options.target_plot);
             
-            teammates = ["Personne", "Kris", "Susie", "Ralsei", "Noëlle"];
+            teammates = [scr_dmode_get_text("ui_nobody"), "Kris", "Susie", "Ralsei", "Noëlle"];
             dbutton_options[3] += teammates[drooms_options.target_member_2];
             dbutton_options[4] += teammates[drooms_options.target_member_3];
             break;
         
         case "give":
-            dmenu_title = "Type d'items";
-            dbutton_options = ["Objets", "Armures", "Armes", "Obj Clés"];
+            dmenu_title = scr_dmode_get_text("item_type");
+            dbutton_options = [
+                scr_dmode_get_text("type_items"), 
+                scr_dmode_get_text("type_armors"), 
+                scr_dmode_get_text("type_weapons"), 
+                scr_dmode_get_text("type_keyitems")
+            ];
             dmenu_box = 0;
             dbutton_layout = 0;
             break;
         
         case "objects":
-            dmenu_title = "Liste d'objets";
-            dbutton_options = ["Chapitre : "];
+            dmenu_title = scr_dmode_get_text("item_list");
+            dbutton_options = [scr_dmode_get_text("ui_chapter")];
             dbutton_indices = [-1];
             dbutton_options[0] += string(ditem_chap);
             var max_len = 33;
@@ -91,7 +103,7 @@ function dmenu_state_update()
                 for (var i = 0; i < array_length(dlight_objects); i++)
                 {
                     scr_litemcheck(dlight_objects[i][0]);
-                    var combined = dlight_objects[i][1] + " - " + string(itemcount) + " held";
+                    var combined = dlight_objects[i][1] + " - " + string(itemcount) + " " + scr_dmode_get_text("ui_held");
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, dlight_objects[i][0]);
                 }
@@ -102,8 +114,8 @@ function dmenu_state_update()
             break;
         
         case "armors":
-            dmenu_title = "Liste d'armures";
-            dbutton_options = ["Chapitre : "];
+            dmenu_title = scr_dmode_get_text("armor_list");
+            dbutton_options = [scr_dmode_get_text("ui_chapter")];
             dbutton_indices = [-1];
             dbutton_options[0] += string(ditem_chap);
             var max_len = 33;
@@ -136,7 +148,7 @@ function dmenu_state_update()
                     var combined = dlight_armors[i][1];
                     
                     if (global.larmor == dlight_armors[i][0])
-                        combined += " (Equiped)";
+                        combined += " (" + scr_dmode_get_text("ui_equipped") + ")";
                     
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
@@ -148,8 +160,8 @@ function dmenu_state_update()
             break;
         
         case "weapons":
-            dmenu_title = "Liste d'armes";
-            dbutton_options = ["Chapitre : "];
+            dmenu_title = scr_dmode_get_text("weapon_list");
+            dbutton_options = [scr_dmode_get_text("ui_chapter")];
             dbutton_indices = [-1];
             dbutton_options[0] += string(ditem_chap);
             var max_len = 33;
@@ -182,7 +194,7 @@ function dmenu_state_update()
                     var combined = dlight_weapons[i][1];
                     
                     if (global.lweapon == dlight_weapons[i][0])
-                        combined += " (Equiped)";
+                        combined += " (" + scr_dmode_get_text("ui_equipped") + ")";
                     
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
@@ -194,8 +206,8 @@ function dmenu_state_update()
             break;
         
         case "keyitems":
-            dmenu_title = "Liste d'objets clés";
-            dbutton_options = ["Chapitre : "];
+            dmenu_title = scr_dmode_get_text("keyitem_list");
+            dbutton_options = [scr_dmode_get_text("ui_chapter")];
             dbutton_indices = [-1];
             dbutton_options[0] += string(ditem_chap);
             var max_len = 33;
@@ -221,16 +233,16 @@ function dmenu_state_update()
             break;
         
         case "givertab":
-            dmenu_title = "Ajouter combien à l'inventaire ?";
+            dmenu_title = scr_dmode_get_text("add_how_many");
             dgiver_amount = 1;
             dmenu_box = 0;
             dbutton_layout = 2;
             break;
         
         case "recruits":
-            dmenu_title = "Liste des recrues";
-            dbutton_options = ["Préréglages"];
-            dbutton_indices = ["Préréglages"];
+            dmenu_title = scr_dmode_get_text("recruit_list");
+            dbutton_options = [scr_dmode_get_text("btn_presets")];
+            dbutton_indices = [scr_dmode_get_text("btn_presets")];
             var max_len = 40;
             
             if (dhorizontal_page != 0)
@@ -266,14 +278,14 @@ function dmenu_state_update()
             break;
         
         case "recruit_presets":
-            dmenu_title = "Préréglages des recrues";
-            dbutton_options = ["Recruter tous", "Perdre tous"];
+            dmenu_title = scr_dmode_get_text("recruit_presets");
+            dbutton_options = [scr_dmode_get_text("btn_recruit_all"), scr_dmode_get_text("btn_lose_all")];
             
             if (dhorizontal_page)
             {
-                dmenu_title += (" (chap " + string(dhorizontal_page) + ")");
-                dbutton_options[0] += " du chapitre " + string(dhorizontal_page);
-                dbutton_options[1] += " du chapitre " + string(dhorizontal_page);
+                dmenu_title += (" (" + scr_dmode_get_text("ui_chap_short") + " " + string(dhorizontal_page) + ")");
+                dbutton_options[0] += " " + scr_dmode_get_text("ui_of_chapter") + " " + string(dhorizontal_page);
+                dbutton_options[1] += " " + scr_dmode_get_text("ui_of_chapter") + " " + string(dhorizontal_page);
             }
             
             dmenu_box = 0;
@@ -281,14 +293,14 @@ function dmenu_state_update()
             break;
         
         case "flag_categories":
-            dmenu_title = "Divers";
+            dmenu_title = scr_dmode_get_text("misc");
             dbutton_options = [];
             dbutton_indices = [-1];
             categories_len = array_length(dother_categories);
             var max_len = 40;
             
             if (!global.dreading_custom_flag)
-                array_push(dbutton_options, "Custom");
+                array_push(dbutton_options, scr_dmode_get_text("ui_custom"));
             else
                 array_push(dbutton_options, "global.flag[" + dcustom_flag_text[0] + "] = |" + dcustom_flag_text[1] + "|");
             
@@ -306,7 +318,7 @@ function dmenu_state_update()
             break;
         
         case "flag_misc":
-            dmenu_title = "Divers";
+            dmenu_title = scr_dmode_get_text("misc");
             dbutton_options = [];
             dbutton_indices = [];
             other_len = array_length(dother_options);
@@ -316,7 +328,7 @@ function dmenu_state_update()
             {
                 cur_option = dother_options[i];
                 flag_number = global.flag[cur_option[2]];
-                var combined = cur_option[1] + " - problem lol";
+                var combined = cur_option[1] + " - " + scr_dmode_get_text("ui_problem");
                 
                 if (i == (dbutton_selected - 1))
                     option_index = dhorizontal_index;
@@ -337,7 +349,7 @@ function dmenu_state_update()
             break;
         
         default:
-            dmenu_title = "Inconnu";
+            dmenu_title = scr_dmode_get_text("menu_unknown");
             dbutton_options = [];
             dmenu_box = 0;
             dbutton_layout = 0;
@@ -548,36 +560,36 @@ function dmenu_state_interact()
         case "givertab":
             if (dgiver_amount == 0)
             {
-				scr_debug_print("Annulé");
-				break;
+                scr_debug_print(scr_dmode_get_text("msg_cancelled"));
+                break;
             }
             if (dgiver_menu_state == "objects")
             {
-				real_index = dbutton_indices[dgiver_button_selected - 1];
-				
-				for (var i = 0; i < abs(dgiver_amount); i++)
-				{
-					if (dgiver_amount < 0)
-					{
-						if (dhorizontal_page == 0)
-							scr_itemremove(real_index);
-						else
-							scr_litemremove(real_index);
-					}
-					else if (dhorizontal_page == 0)
-					{
-						scr_itemget(real_index);
-					}
-					else
-					{
-						scr_litemget(real_index);
-					}
-				}
-				
-				if (dgiver_amount < 0)
-					scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + " retiré de l'inventaire");
-				else
-					scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + " ajouté à l'inventaire");
+                real_index = dbutton_indices[dgiver_button_selected - 1];
+                
+                for (var i = 0; i < abs(dgiver_amount); i++)
+                {
+                    if (dgiver_amount < 0)
+                    {
+                        if (dhorizontal_page == 0)
+                            scr_itemremove(real_index);
+                        else
+                            scr_litemremove(real_index);
+                    }
+                    else if (dhorizontal_page == 0)
+                    {
+                        scr_itemget(real_index);
+                    }
+                    else
+                    {
+                        scr_litemget(real_index);
+                    }
+                }
+                
+                if (dgiver_amount < 0)
+                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + scr_dmode_get_text("msg_removed_inv"));
+                else
+                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + scr_dmode_get_text("msg_added_inv"));
             }
             
             if (dgiver_menu_state == "armors")
@@ -589,7 +601,7 @@ function dmenu_state_interact()
                     for (var i = 0; i < dgiver_amount; i++)
                         scr_armorget(real_index);
                     
-                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + " ajouté à l'inventaire");
+                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + scr_dmode_get_text("msg_added_inv"));
                 }
                 else if (dgiver_amount < 0)
                 {
@@ -598,7 +610,7 @@ function dmenu_state_interact()
                     for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_armorremove(real_index);
                     
-                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + " retiré de l'inventaire");
+                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + scr_dmode_get_text("msg_removed_inv"));
                 }
             }
             
@@ -611,7 +623,7 @@ function dmenu_state_interact()
                     for (var i = 0; i < dgiver_amount; i++)
                         scr_weaponget(real_index);
                     
-                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + " ajouté à l'inventaire");
+                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + scr_dmode_get_text("msg_added_inv"));
                 }
                 else if (dgiver_amount < 0)
                 {
@@ -620,7 +632,7 @@ function dmenu_state_interact()
                     for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_weaponremove(real_index);
                     
-                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + " retiré de l'inventaire");
+                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + scr_dmode_get_text("msg_removed_inv"));
                 }
             }
             
@@ -633,7 +645,7 @@ function dmenu_state_interact()
                     for (var i = 0; i < dgiver_amount; i++)
                         scr_keyitemget(real_index);
                     
-                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + " ajouté à l'inventaire");
+                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + scr_dmode_get_text("msg_added_inv"));
                 }
                 else if (dgiver_amount < 0)
                 {
@@ -642,7 +654,7 @@ function dmenu_state_interact()
                     for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_keyitemremove(real_index);
                     
-                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + " retiré de l'inventaire");
+                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + scr_dmode_get_text("msg_removed_inv"));
                 }
             }
             
@@ -717,6 +729,6 @@ function dmenu_state_interact()
         
         default:
             snd_play(snd_error);
-            scr_debug_print("Sélection invalide !");
+            scr_debug_print(scr_dmode_get_text("msg_invalid"));
     }
 }
