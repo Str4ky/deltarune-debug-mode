@@ -74,6 +74,31 @@ dweapon_gaps = [0, 0, 0, 23, 0];
 dkeyitemcount_all = [1, 7, 8, 4, 2];
 dkeyitem_gaps = [0, 0, 0, 10, 0];
 
+dpop_history = function()
+{
+	dkeyboard_input = "";
+	if (array_length(dmenu_state_history) > 0)
+	{
+		dmenu_state = dmenu_state_history[array_length(dmenu_state_history) - 1];
+		array_resize(dmenu_state_history, array_length(dmenu_state_history) - 1);
+	}
+	else
+	{
+		dmenu_active = !dmenu_active;
+		dmenu_state_history = [];
+		dbutton_selected_history = [];
+		global.interact = 0;
+	}
+	if (array_length(dbutton_selected_history) > 0)
+	{
+		dbutton_selected = dbutton_selected_history[array_length(dbutton_selected_history) - 1];
+		array_resize(dbutton_selected_history, array_length(dbutton_selected_history) - 1);
+	}
+	
+	dmenu_state_update();
+	dmenu_start_index = clamp(dbutton_selected - 1, 0, max(0, array_length(dbutton_options) - dbutton_max_visible));
+}
+
 ditem_index_data = function(arg0)
 {
     var _chap = arg0;
