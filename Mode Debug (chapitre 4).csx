@@ -1242,7 +1242,11 @@ ChangeSelection(obj_debug_windows);
 // Script scr_dmode_init_lang
 UndertaleScript scr_dmode_init_lang = new UndertaleScript();
 scr_dmode_init_lang.Name = Data.Strings.MakeString("scr_dmode_init_lang");
+scr_dmode_init_lang.Code = new UndertaleCode();
+scr_dmode_init_lang.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_dmode_init_lang");
+scr_dmode_init_lang.Code.LocalsCount = 1;
 Data.Scripts.Add(scr_dmode_init_lang);
+Data.Code.Add(scr_dmode_init_lang.Code);
 importGroup.QueueReplace(scr_dmode_init_lang.Code, @"
 global.dmode_lang = ""___DEFAULT_LANG___"";
 
@@ -1258,8 +1262,9 @@ global.dmode_text =
         fps_120: ""FPS to 120"",
         tp_0: ""TP to 0%"",
         tp_250: ""TP to 250%"",
-        fullheal: ""Pary HP fully restored"",
+        fullheal: ""Party HP fully restored"",
         fightwin: ""Fight skipped"",
+        turnskip: ""Enemy's turn skipped"",
         
         // Menus
         debug_menu: ""Debug Menu"",
@@ -1495,6 +1500,7 @@ global.dmode_text =
         tp_250: ""PT à 250 %"",
         fullheal: ""PV de l'équipe restaurés"",
         fightwin: ""Combat passé"",
+        turnskip: ""Tour de l'ennemi passé"",
         
         // Menus
         debug_menu: ""Menu Debug"",
@@ -1719,13 +1725,17 @@ global.dmode_text =
         key_14: ""Clic milieu - Éditeur de salle""
     }
 };
-");
+".Replace("___DEFAULT_LANG___", defaultLang));
 ChangeSelection(scr_dmode_init_lang);
 
 // Script scr_dmode_get_text
 UndertaleScript scr_dmode_get_text = new UndertaleScript();
 scr_dmode_get_text.Name = Data.Strings.MakeString("scr_dmode_get_text");
+scr_dmode_get_text.Code = new UndertaleCode();
+scr_dmode_get_text.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_dmode_get_text");
+scr_dmode_get_text.Code.LocalsCount = 1;
 Data.Scripts.Add(scr_dmode_get_text);
+Data.Code.Add(scr_dmode_get_text.Code);
 importGroup.QueueReplace(scr_dmode_get_text.Code, @"
 function scr_dmode_get_text(arg0)
 {
@@ -4264,7 +4274,7 @@ function scr_turn_skip()
     if (global.turntimer > 0 && instance_exists(obj_growtangle) && scr_isphase(""bullets""))
     {
         global.turntimer = 0;
-        scr_debug_print(""Tour de l'ennemi passé"");
+        scr_debug_print(scr_dmode_get_text(""turnskip""));
     }
 }
 ");

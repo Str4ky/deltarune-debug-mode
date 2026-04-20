@@ -12,8 +12,9 @@ global.dmode_text =
         fps_120: "FPS to 120",
         tp_0: "TP to 0%",
         tp_250: "TP to 250%",
-        fullheal: "Pary HP fully restored",
+        fullheal: "Party HP fully restored",
         fightwin: "Fight skipped",
+        turnskip: "Enemy's turn skipped",
         
         // Menus
         debug_menu: "Debug Menu",
@@ -249,6 +250,7 @@ global.dmode_text =
         tp_250: "PT à 250 %",
         fullheal: "PV de l'équipe restaurés",
         fightwin: "Combat passé",
+        turnskip: "Tour de l'ennemi passé",
         
         // Menus
         debug_menu: "Menu Debug",

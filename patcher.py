@@ -74,7 +74,11 @@ def parse_folder(folder_path, declared_elements=None, current_chapter=0):
                     if create_new:
                         csx_lines.append(f'UndertaleScript {element_name} = new UndertaleScript();')
                         csx_lines.append(f'{element_name}.Name = Data.Strings.MakeString("{element_name}");')
+                        csx_lines.append(f'{element_name}.Code = new UndertaleCode();')
+                        csx_lines.append(f'{element_name}.Code.Name = Data.Strings.MakeString("gml_GlobalScript_{element_name}");')
+                        csx_lines.append(f'{element_name}.Code.LocalsCount = 1;')
                         csx_lines.append(f'Data.Scripts.Add({element_name});')
+                        csx_lines.append(f'Data.Code.Add({element_name}.Code);')
                     else:
                         if is_ch1_precreated:
                             csx_lines.append(f'{element_name} = Data.Scripts.ByName("{element_name}");')
@@ -92,7 +96,12 @@ def parse_folder(folder_path, declared_elements=None, current_chapter=0):
                     csx_lines.append(f'importGroup.QueueFindReplace({target}, @"{f_str}", @"{r_str}");')
 
                 action = "QueueReplace" if mode == "replace" else "QueueAppend"
-                csx_lines.append(f'importGroup.{action}({target}, @"\n{gml_code}\n");')
+                
+                if "___DEFAULT_LANG___" in gml_code:
+                    csx_lines.append(f'importGroup.{action}({target}, @"\n{gml_code}\n".Replace("___DEFAULT_LANG___", defaultLang));')
+                else:
+                    csx_lines.append(f'importGroup.{action}({target}, @"\n{gml_code}\n");')
+                    
                 csx_lines.append(f'ChangeSelection({element_name});')
 
         # --- GAME OBJECT PROCESSING ---
@@ -161,7 +170,12 @@ def parse_folder(folder_path, declared_elements=None, current_chapter=0):
                         gml_code = set_double_quote(f.read())
                     
                     action = "QueueReplace" if mode == "replace" else "QueueAppend"
-                    csx_lines.append(f'importGroup.{action}({target}, @"\n{gml_code}\n");')
+                    
+                    if "___DEFAULT_LANG___" in gml_code:
+                        csx_lines.append(f'importGroup.{action}({target}, @"\n{gml_code}\n".Replace("___DEFAULT_LANG___", defaultLang));')
+                    else:
+                        csx_lines.append(f'importGroup.{action}({target}, @"\n{gml_code}\n");')
+                        
                     events_processed += 1
 
             if events_processed > 0:
