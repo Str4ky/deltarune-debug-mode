@@ -1,18 +1,9 @@
 {
     "create_new": false,
+	"mode": "replace",
     "skip_ch1": true,
-    "events": {
-        "Create_0": {
-            "mode": "replace"
-        },
-        "Step_0": {
-            "mode": "replace"
-        },
-        "Draw_0": {
-            "mode": "replace"
-        },
-        "Draw_74": {
-            "mode": "replace"
-        }
-    }
+	"gml_Object_obj_debug_xy_Create_0.gml": {},
+	"gml_Object_obj_debug_xy_Step_0.gml": {},
+	"gml_Object_obj_debug_xy_Draw_0.gml": {},
+	"gml_Object_obj_debug_xy_Draw_74.gml": {}
 }

@@ -1,8 +1,5 @@
 {
-    "create_new": false,
-    "events": {
-        "Create_0": {
-            "mode": "append"
-        }
-    }
+	"gml_Object_obj_battlecontroller_Create_0.gml": {
+		"mode": "append"
+	}
 }

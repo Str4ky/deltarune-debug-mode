@@ -1,15 +1,11 @@
 {
-    "create_new": false,
-    "skip_ch1": true,
-    "events": {
-        "Step_0": {
-            "mode": "append",
-            "find_replace": [
-                {
-                    "find": "if (scr_debug())",
-                    "replace": "if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))"
-                }
-            ]
+    "gml_Object_obj_overworldc_Step_0.gml": {
+		"skip_ch1": true,
+		"actions": {
+            "find_replace": {
+				"find": "if (scr_debug())",
+				"replace": "if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))"
+			}
         }
     }
 }

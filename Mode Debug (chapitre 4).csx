@@ -33,7 +33,15 @@ UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, globalDecompile
 
 // --- COMMON CODE ---
 
-// Script scr_debug_print
+
+UndertaleScript scr_gamestart = Data.Scripts.ByName("scr_gamestart");
+importGroup.QueueAppend(scr_gamestart.Code, @"
+global.debug = 0;
+global.dgodmode = 0;
+scr_dmode_init_lang();
+");
+
+
 UndertaleScript scr_debug_print = Data.Scripts.ByName("scr_debug_print");
 importGroup.QueueReplace(scr_debug_print.Code, @"
 function scr_debug_print(arg0)
@@ -92,11 +100,9 @@ enum e__VW
     HPort,
     Camera,
     SurfaceID
-}
-");
-ChangeSelection(scr_debug_print);
+}");
 
-// GameObject obj_debug_gui
+
 UndertaleGameObject obj_debug_gui = Data.GameObjects.ByName("obj_debug_gui");
 importGroup.QueueReplace(obj_debug_gui.EventHandlerFor(EventType.Create, (uint)0, Data), @"
 message[0] = """";
@@ -104,8 +110,9 @@ debugmessage = """";
 timer[0] = 90;
 newtext = """";
 messagecount = 0;
-totaltimer = 0;
-");
+totaltimer = 0;");
+
+
 importGroup.QueueReplace(obj_debug_gui.EventHandlerFor(EventType.Step, (uint)0, Data), @"
 if (timer[0] > 0)
 {
@@ -136,8 +143,9 @@ if (timer[0] <= 0)
         for (i = 1; i < messagecount; i++)
             debugmessage += (""#"" + message[i]);
     }
-}
-");
+}");
+
+
 importGroup.QueueReplace(obj_debug_gui.EventHandlerFor(EventType.Draw, (uint)64, Data), @"
 var fnt = draw_get_font();
 draw_set_font(fnt_comicsans);
@@ -150,14 +158,13 @@ draw_text_transformed(7, 9, string_hash_to_newline(debugmessage), 1, 1, 0);
 draw_set_color(c_red);
 draw_text_transformed(8, 8, string_hash_to_newline(debugmessage), 1, 1, 0);
 draw_set_color(col);
-draw_set_font(fnt);
-");
-importGroup.QueueReplace(obj_debug_gui.EventHandlerFor(EventType.CleanUp, (uint)0, Data), @"
-event_inherited();
-");
-ChangeSelection(obj_debug_gui);
+draw_set_font(fnt);");
 
-// GameObject obj_debug_xy
+
+importGroup.QueueReplace(obj_debug_gui.EventHandlerFor(EventType.CleanUp, (uint)0, Data), @"
+event_inherited();");
+
+
 UndertaleGameObject obj_debug_xy = Data.GameObjects.ByName("obj_debug_xy");
 importGroup.QueueReplace(obj_debug_xy.EventHandlerFor(EventType.Create, (uint)0, Data), @"
 if (instance_number(object_index) > 1)
@@ -188,12 +195,14 @@ actor_previously_selected = -1;
 panremx = camerax();
 panremy = cameray();
 enable_mouse_wheel = 0;
-old_right_click = 0;
-");
+old_right_click = 0;");
+
+
 importGroup.QueueReplace(obj_debug_xy.EventHandlerFor(EventType.Step, (uint)0, Data), @"
 
-
 ");
+
+
 importGroup.QueueReplace(obj_debug_xy.EventHandlerFor(EventType.Draw, (uint)0, Data), @"
 x = round(mouse_x);
 y = round(mouse_y);
@@ -753,8 +762,9 @@ enum e__VW
     HPort,
     Camera,
     SurfaceID
-}
-");
+}");
+
+
 importGroup.QueueReplace(obj_debug_xy.EventHandlerFor(EventType.Draw, (uint)74, Data), @"
 _selected_string = ""No object!#MouseL:Choose&Drag#MouseR:Drag From Anchor"";
 
@@ -833,11 +843,9 @@ enum e__VW
     HPort,
     Camera,
     SurfaceID
-}
-");
-ChangeSelection(obj_debug_xy);
+}");
 
-// GameObject obj_debug_windows
+
 UndertaleGameObject obj_debug_windows = Data.GameObjects.ByName("obj_debug_windows");
 importGroup.QueueReplace(obj_debug_windows.EventHandlerFor(EventType.Create, (uint)0, Data), @"
 xx = mouse_x - camerax() - 40;
@@ -857,8 +865,9 @@ for (i = 0; i < button_amount; i++)
 }
 
 remmx = mouse_x - camerax();
-remmy = mouse_y - cameray();
-");
+remmy = mouse_y - cameray();");
+
+
 importGroup.QueueReplace(obj_debug_windows.EventHandlerFor(EventType.Draw, (uint)64, Data), @"
 bspace = 30;
 padding = 5;
@@ -1204,8 +1213,9 @@ xx = clamp(xx, -30, 500);
 yy = clamp(yy, -5, 340);
 remmx = mouse_x - camerax();
 remmy = mouse_y - cameray();
-draw_sprite(spr_maus_cursor, 0, mx, my);
-");
+draw_sprite(spr_maus_cursor, 0, mx, my);");
+
+
 importGroup.QueueReplace(obj_debug_windows.EventHandlerFor(EventType.Other, (uint)25, Data), @"
 if (type == 0)
 {
@@ -1226,11 +1236,9 @@ if (type == 1)
     button_text[3] = ""Watch Flag"";
     button_text[4] = ""Set Flag"";
     button_text[5] = ""Set/Check Global Var"";
-}
-");
-ChangeSelection(obj_debug_windows);
+}");
 
-// Script scr_dmode_init_lang
+
 UndertaleScript scr_dmode_init_lang = new UndertaleScript();
 scr_dmode_init_lang.Name = Data.Strings.MakeString("scr_dmode_init_lang");
 scr_dmode_init_lang.Code = new UndertaleCode();
@@ -1238,6 +1246,7 @@ scr_dmode_init_lang.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_dm
 scr_dmode_init_lang.Code.LocalsCount = 1;
 Data.Scripts.Add(scr_dmode_init_lang);
 Data.Code.Add(scr_dmode_init_lang.Code);
+
 importGroup.QueueReplace(scr_dmode_init_lang.Code, @"
 global.dmode_lang = ""___DEFAULT_LANG___"";
 
@@ -1715,11 +1724,9 @@ global.dmode_text =
         key_13: ""Retour arrière - Passer le segment d'intro (Ch1)"",
         key_14: ""Clic milieu - Éditeur de salle""
     }
-};
-".Replace("___DEFAULT_LANG___", defaultLang));
-ChangeSelection(scr_dmode_init_lang);
+};");
 
-// Script scr_dmode_get_text
+
 UndertaleScript scr_dmode_get_text = new UndertaleScript();
 scr_dmode_get_text.Name = Data.Strings.MakeString("scr_dmode_get_text");
 scr_dmode_get_text.Code = new UndertaleCode();
@@ -1727,6 +1734,7 @@ scr_dmode_get_text.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_dmo
 scr_dmode_get_text.Code.LocalsCount = 1;
 Data.Scripts.Add(scr_dmode_get_text);
 Data.Code.Add(scr_dmode_get_text.Code);
+
 importGroup.QueueReplace(scr_dmode_get_text.Code, @"
 function scr_dmode_get_text(arg0)
 {
@@ -1744,17 +1752,16 @@ function scr_dmode_get_text(arg0)
     }
     
     return arg0;
-}
-");
-ChangeSelection(scr_dmode_get_text);
+}");
 
-// GameObject obj_dmenu_system
+
 UndertaleGameObject obj_dmenu_system = new UndertaleGameObject();
 obj_dmenu_system.Name = Data.Strings.MakeString("obj_dmenu_system");
 obj_dmenu_system.Visible = true;
 obj_dmenu_system.Persistent = true;
 obj_dmenu_system.Awake = true;
 Data.GameObjects.Add(obj_dmenu_system);
+
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Create, (uint)0, Data), @"
 dmenu_active = false;
 dmenu_box = 0;
@@ -2239,8 +2246,9 @@ dkeyboard_input = """";
 
 for (i = 0; i < array_length(drooms_id); i++)
     array_push(drooms, room_get_name(drooms_id[i].room_index));
-
 ");
+
+
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)0, Data), @"
 dmenu_arrow_timer += 1;
 
@@ -2945,8 +2953,9 @@ if ((dmenu_active == 1 && dmenu_state == ""debug"" && global.darkzone == 1) || d
         
         dkeys_helper = !dkeys_helper;
     }
-}
-");
+}");
+
+
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)1, Data), @"
 function dmenu_state_update()
 {
@@ -3681,8 +3690,9 @@ function dmenu_state_interact()
             snd_play(snd_error);
             scr_debug_print(scr_dmode_get_text(""msg_invalid""));
     }
-}
-");
+}");
+
+
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Draw, (uint)0, Data), @"
 xx = __view_get(e__VW.XView, 0);
 yy = __view_get(e__VW.YView, 0);
@@ -4095,30 +4105,31 @@ enum e__VW
     HPort,
     Camera,
     SurfaceID
-}
-");
-ChangeSelection(obj_dmenu_system);
+}");
 
-// Script scr_gamestart
-UndertaleScript scr_gamestart = Data.Scripts.ByName("scr_gamestart");
-importGroup.QueueAppend(scr_gamestart.Code, @"
-global.debug = 0;
-scr_dmode_init_lang();
-");
-ChangeSelection(scr_gamestart);
 
-// Script scr_debug
 UndertaleScript scr_debug = Data.Scripts.ByName("scr_debug");
 importGroup.QueueReplace(scr_debug.Code, @"
 function scr_debug()
 {
     return global.debug;
-}
-");
-ChangeSelection(scr_debug);
+}");
 
-// GameObject obj_time
+
 UndertaleGameObject obj_time = Data.GameObjects.ByName("obj_time");
+importGroup.QueueReplace(obj_time.EventHandlerFor(EventType.Draw, (uint)0, Data), @"
+if (scr_debug())
+{
+    draw_set_font(fnt_main);
+    draw_set_color(c_red);
+    draw_text(__view_get(0, 0), __view_get(1, 0), fps);
+    draw_set_font(fnt_main);
+    draw_set_color(c_green);
+    draw_text((__view_get(0, 0) + __view_get(2, 0)) - string_width(room_get_name(room)), __view_get(1, 0), room_get_name(room));
+    draw_text((__view_get(0, 0) + __view_get(2, 0)) - string_width(""plot "" + string(global.plot)), __view_get(1, 0) + 15, ""plot "" + string(global.plot));
+}");
+
+
 importGroup.QueueAppend(obj_time.EventHandlerFor(EventType.Step, (uint)0, Data), @"
 if (keyboard_check_pressed(vk_f10))
 {
@@ -4164,34 +4175,17 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
             scr_debug_print(scr_dmode_get_text(""fps_60""));
         }
     }
-}
-");
-importGroup.QueueReplace(obj_time.EventHandlerFor(EventType.Draw, (uint)0, Data), @"
-if (scr_debug())
-{
-    draw_set_font(fnt_main);
-    draw_set_color(c_red);
-    draw_text(__view_get(0, 0), __view_get(1, 0), fps);
-    draw_set_font(fnt_main);
-    draw_set_color(c_green);
-    draw_text((__view_get(0, 0) + __view_get(2, 0)) - string_width(room_get_name(room)), __view_get(1, 0), room_get_name(room));
-    draw_text((__view_get(0, 0) + __view_get(2, 0)) - string_width(""plot "" + string(global.plot)), __view_get(1, 0) + 15, ""plot "" + string(global.plot));
-}
-");
-ChangeSelection(obj_time);
+}");
 
-// GameObject obj_overworldc
+
 UndertaleGameObject obj_overworldc = Data.GameObjects.ByName("obj_overworldc");
-importGroup.QueueFindReplace(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, Data), @"if (scr_debug())", @"if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))");
 importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, Data), @"
 if (!instance_exists(obj_dmenu_system))
-    instance_create(0, 0, obj_dmenu_system);
-");
-ChangeSelection(obj_overworldc);
+    instance_create(0, 0, obj_dmenu_system);");
+importGroup.QueueFindReplace("gml_Object_obj_overworldc_Step_0", @"if (scr_debug())", @"if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))");
 
-// GameObject obj_battlecontroller
+
 UndertaleGameObject obj_battlecontroller = Data.GameObjects.ByName("obj_battlecontroller");
-importGroup.QueueFindReplace(obj_battlecontroller.EventHandlerFor(EventType.Step, (uint)0, Data), @"if (scr_debug())", @"if (0)");
 importGroup.QueueAppend(obj_battlecontroller.EventHandlerFor(EventType.Step, (uint)0, Data), @"
 if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
 {
@@ -4223,19 +4217,32 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
         scr_wincombat();
         scr_debug_print(scr_dmode_get_text(""fightwin""));
     }
-}
-");
-ChangeSelection(obj_battlecontroller);
+}");
+importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_Step_0", @"if (scr_debug())", @"if (0)");
 
-// GameObject obj_spritecomparer
+
+UndertaleScript scr_damage_all_overworld = Data.Scripts.ByName("scr_damage_all_overworld");
+importGroup.QueueAppend(scr_damage_all_overworld.Code, @"
+");
+importGroup.QueueFindReplace("gml_GlobalScript_scr_damage_all_overworld", @"    if (global.inv < 0)", @"    if (global.dgodmode)
+        exit;
+    if (global.inv < 0)");
+
+
+UndertaleScript scr_damage = Data.Scripts.ByName("scr_damage");
+importGroup.QueueAppend(scr_damage.Code, @"
+");
+importGroup.QueueFindReplace("gml_GlobalScript_scr_damage", @"    if (global.inv < 0)", @"    if (global.dgodmode)
+        exit;
+    if (global.inv < 0)");
+
+
 UndertaleGameObject obj_spritecomparer = Data.GameObjects.ByName("obj_spritecomparer");
-importGroup.QueueFindReplace(obj_spritecomparer.EventHandlerFor(EventType.Draw, (uint)0, Data), @"if (keyboard_check_pressed(ord(""D"")))", @"if (keyboard_check_pressed(vk_f2))");
 importGroup.QueueAppend(obj_spritecomparer.EventHandlerFor(EventType.Draw, (uint)0, Data), @"
-
 ");
-ChangeSelection(obj_spritecomparer);
+importGroup.QueueFindReplace("gml_Object_obj_spritecomparer_Draw_0", @"if (keyboard_check_pressed(ord(""D"")))", @"if (keyboard_check_pressed(vk_f2))");
 
-// Script scr_debug_fullheal
+
 UndertaleScript scr_debug_fullheal = Data.Scripts.ByName("scr_debug_fullheal");
 importGroup.QueueReplace(scr_debug_fullheal.Code, @"
 function scr_debug_fullheal()
@@ -4253,11 +4260,9 @@ function scr_debug_fullheal()
         with (global.charinstance[i])
             tu--;
     }
-}
-");
-ChangeSelection(scr_debug_fullheal);
+}");
 
-// Script scr_turn_skip
+
 UndertaleScript scr_turn_skip = Data.Scripts.ByName("scr_turn_skip");
 importGroup.QueueReplace(scr_turn_skip.Code, @"
 function scr_turn_skip()
@@ -4267,15 +4272,12 @@ function scr_turn_skip()
         global.turntimer = 0;
         scr_debug_print(scr_dmode_get_text(""turnskip""));
     }
-}
-");
-ChangeSelection(scr_turn_skip);
+}");
 
 // --- EXTRAS CHAPTER 4 ---
 
-// GameObject obj_darkcontroller
+
 UndertaleGameObject obj_darkcontroller = Data.GameObjects.ByName("obj_darkcontroller");
-importGroup.QueueFindReplace(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint)0, Data), @"if (scr_debug())", @"if (0)");
 importGroup.QueueAppend(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint)0, Data), @"
 if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
 {
@@ -4317,11 +4319,10 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
 }
 
 if (!instance_exists(obj_dmenu_system))
-    instance_create(0, 0, obj_dmenu_system);
-");
-ChangeSelection(obj_darkcontroller);
+    instance_create(0, 0, obj_dmenu_system);");
+importGroup.QueueFindReplace("gml_Object_obj_darkcontroller_Step_0", @"if (scr_debug())", @"if (0)");
 
-// Script scr_flag_set
+
 UndertaleScript scr_flag_set = Data.Scripts.ByName("scr_flag_set");
 importGroup.QueueReplace(scr_flag_set.Code, @"
 function scr_flag_set(arg0, arg1)
@@ -4332,9 +4333,7 @@ function scr_flag_set(arg0, arg1)
 function scr_setflag(arg0, arg1)
 {
     scr_flag_set(arg0, arg1);
-}
-");
-ChangeSelection(scr_flag_set);
+}");
 
 importGroup.Import();
 

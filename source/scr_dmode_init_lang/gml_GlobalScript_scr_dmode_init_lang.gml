@@ -1,4 +1,4 @@
-global.dmode_lang = "___DEFAULT_LANG___";
+global.dmode_lang = "fr";//___DEFAULT_LANG___";
 
 global.dmode_text = 
 {

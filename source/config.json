@@ -1,5 +1,6 @@
 {
     "order": [
+        "scr_gamestart",
         "scr_debug_print",
         "obj_debug_gui",
         "obj_debug_xy",
@@ -7,11 +8,11 @@
         "scr_dmode_init_lang",
         "scr_dmode_get_text",
         "obj_dmenu_system",
-        "scr_gamestart",
         "scr_debug",
         "obj_time",
         "obj_overworldc",
         "obj_battlecontroller",
+		"godmode",
         "obj_spritecomparer",
         "scr_debug_fullheal",
         "scr_turn_skip"

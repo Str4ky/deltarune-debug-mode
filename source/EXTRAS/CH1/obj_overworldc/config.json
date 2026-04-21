@@ -1,8 +1,5 @@
 {
-    "create_new": false,
-    "events": {
-        "Step_0": {
-            "mode": "append"
-        }
-    }
+	"gml_Object_obj_overworldc_Step_0.gml": {
+		"mode": "append"
+	}
 }

@@ -1,4 +1,4 @@
 {
-    "create_new": false,
-    "mode": "replace"
+    "mode": "replace",
+	"gml_GlobalScript_scr_debug_fullheal.gml": {}
 }

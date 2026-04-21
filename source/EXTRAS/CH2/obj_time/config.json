@@ -1,14 +1,11 @@
 {
-    "create_new": false,
-    "events": {
-        "Step_1": {
-            "mode": "append",
-            "find_replace": [
-                {
-                    "find": "if (scr_debug())",
-                    "replace": "if (0)"
-                }
-            ]
-        }
-    }
+	"gml_Object_obj_time_Step_1.gml": {
+		"mode": "append",
+		"actions": {
+			"find_replace": {
+				"find": "if (scr_debug())",
+				"replace": "if (0)"
+			}
+		}
+	}
 }

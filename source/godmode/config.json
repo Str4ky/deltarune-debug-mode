@@ -1,0 +1,22 @@
+{
+	"mode": "append",
+	"godmode_overworld": {
+		"gml_name": "gml_GlobalScript_scr_damage_all_overworld.gml",
+		"actions": {
+			"find_replace":{
+				"find": "    if (global.inv < 0)",
+				"replace": "    if (global.dgodmode)\n        exit;\n    if (global.inv < 0)"
+			}
+		}
+	},
+	"godmode_combat": {
+		"skip_ch1": true,
+		"gml_name": "gml_GlobalScript_scr_damage.gml",
+		"actions": {
+			"find_replace":{
+				"find": "    if (global.inv < 0)",
+				"replace": "    if (global.dgodmode)\n        exit;\n    if (global.inv < 0)"
+			}
+		}
+	}
+}
