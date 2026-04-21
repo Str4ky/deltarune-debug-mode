@@ -2,7 +2,7 @@ EnsureDataLoaded();
 
 if (!Data.IsVersionAtLeast(2023, 6))
 {
-    ScriptError("Erreur 0 : Ce script fonctionne uniquement pour la version LTS de la démo et la version payante de Deltarune.");
+    ScriptError("Erreur 0 : Ce script fonctionne uniquement pour la version payante de Deltarune.");
     return;
 }
 
@@ -24,64 +24,12 @@ foreach (var str in Data.Strings)
 }
 string defaultLang = isFrenchPatch ? "fr" : "en";
 
-bool isDemo = false;
-foreach (var str in Data.Strings)
-{
-    if (str.Content == "1.19")
-    {
-        isDemo = true;
-        break;
-    }
-}
-
-string versionInfo = isDemo ? "\r\n[Version détectée : Démo Itch]" : "\r\n[Version détectée : Payante]";
-
 GlobalDecompileContext globalDecompileContext = new(Data);
 Underanalyzer.Decompiler.IDecompileSettings decompilerSettings = new Underanalyzer.Decompiler.DecompileSettings();
 UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, globalDecompileContext, decompilerSettings)
 {
     ThrowOnNoOpFindReplace = false
 };
-
-if (isDemo)
-{
-    // Set scr_debug_print
-    UndertaleScript CREATE_scr_debug_print = new UndertaleScript();
-    CREATE_scr_debug_print.Name = Data.Strings.MakeString("scr_debug_print");
-    CREATE_scr_debug_print.Code = new UndertaleCode();
-    CREATE_scr_debug_print.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_print");
-    CREATE_scr_debug_print.Code.LocalsCount = 1;
-    Data.Scripts.Add(CREATE_scr_debug_print);
-    Data.Code.Add(CREATE_scr_debug_print.Code);
-
-    // Set obj_debug_gui
-    UndertaleGameObject CREATE_obj_debug_gui = new UndertaleGameObject(); 
-    CREATE_obj_debug_gui.Name = Data.Strings.MakeString("obj_debug_gui");
-    CREATE_obj_debug_gui.Visible = true;
-    CREATE_obj_debug_gui.CollisionShape = (CollisionShapeFlags)1;
-    CREATE_obj_debug_gui.Awake = true;
-    Data.GameObjects.Add(CREATE_obj_debug_gui);
-}
-
-// Set scr_debug_fullheal
-UndertaleScript CREATE_scr_debug_fullheal = new UndertaleScript();
-CREATE_scr_debug_fullheal.Name = Data.Strings.MakeString("scr_debug_fullheal");
-CREATE_scr_debug_fullheal.Code = new UndertaleCode();
-CREATE_scr_debug_fullheal.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_fullheal");
-CREATE_scr_debug_fullheal.Code.LocalsCount = 1;
-
-Data.Scripts.Add(CREATE_scr_debug_fullheal);
-Data.Code.Add(CREATE_scr_debug_fullheal.Code);
-
-// Set scr_turn_skip
-UndertaleScript CREATE_scr_turn_skip = new UndertaleScript();
-CREATE_scr_turn_skip.Name = Data.Strings.MakeString("scr_turn_skip");
-CREATE_scr_turn_skip.Code = new UndertaleCode();
-CREATE_scr_turn_skip.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_turn_skip");
-CREATE_scr_turn_skip.Code.LocalsCount = 1;
-
-Data.Scripts.Add(CREATE_scr_turn_skip);
-Data.Code.Add(CREATE_scr_turn_skip.Code);
 
 // --- COMMON CODE ---
 
@@ -94,6 +42,7 @@ scr_dmode_init_lang();
 ");
 
 
+UndertaleScript scr_debug_print = Data.Scripts.ByName("scr_debug_print");
 importGroup.QueueReplace(scr_debug_print.Code, @"
 function scr_debug_print(arg0)
 {
@@ -154,6 +103,7 @@ enum e__VW
 }");
 
 
+UndertaleGameObject obj_debug_gui = Data.GameObjects.ByName("obj_debug_gui");
 importGroup.QueueReplace(obj_debug_gui.EventHandlerFor(EventType.Create, (uint)0, Data), @"
 message[0] = """";
 debugmessage = """";
@@ -238,7 +188,7 @@ Data.Scripts.Add(scr_dmode_init_lang);
 Data.Code.Add(scr_dmode_init_lang.Code);
 
 importGroup.QueueReplace(scr_dmode_init_lang.Code, @"
-global.dmode_lang = ""___DEFAULT_LANG___"";
+global.dmode_lang = ""fr"";//___DEFAULT_LANG___"";
 
 global.dmode_text = 
 {
@@ -714,7 +664,8 @@ global.dmode_text =
         key_13: ""Retour arrière - Passer le segment d'intro (Ch1)"",
         key_14: ""Clic milieu - Éditeur de salle""
     }
-};");
+};
+");
 
 
 UndertaleScript scr_dmode_get_text = new UndertaleScript();
@@ -3218,23 +3169,6 @@ importGroup.QueueFindReplace("gml_GlobalScript_scr_damage_all_overworld", @"    
 
 
 
-importGroup.QueueReplace(scr_debug_fullheal.Code, @"
-function scr_debug_fullheal()
-{
-    with (obj_dmgwriter)
-    {
-        if (delaytimer >= 1)
-            killactive = 1;
-    }
-    
-    scr_healallitemspell(999);
-    
-    for (i = 0; i < 3; i++)
-    {
-        with (global.charinstance[i])
-            tu--;
-    }
-}");
 
 
 
@@ -3329,6 +3263,41 @@ if (global.debug == 1)
     }
 }");
 
+
+UndertaleScript scr_debug_fullheal = new UndertaleScript();
+scr_debug_fullheal.Name = Data.Strings.MakeString("scr_debug_fullheal");
+scr_debug_fullheal.Code = new UndertaleCode();
+scr_debug_fullheal.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_debug_fullheal");
+scr_debug_fullheal.Code.LocalsCount = 1;
+Data.Scripts.Add(scr_debug_fullheal);
+Data.Code.Add(scr_debug_fullheal.Code);
+
+importGroup.QueueReplace(scr_debug_fullheal.Code, @"
+function scr_debug_fullheal()
+{
+    with (obj_dmgwriter)
+    {
+        if (delaytimer >= 1)
+            killactive = 1;
+    }
+    
+    scr_healallitemspell(999);
+    
+    for (i = 0; i < 3; i++)
+    {
+        with (global.charinstance[i])
+            tu--;
+    }
+}");
+
+
+UndertaleScript scr_turn_skip = new UndertaleScript();
+scr_turn_skip.Name = Data.Strings.MakeString("scr_turn_skip");
+scr_turn_skip.Code = new UndertaleCode();
+scr_turn_skip.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_turn_skip");
+scr_turn_skip.Code.LocalsCount = 1;
+Data.Scripts.Add(scr_turn_skip);
+Data.Code.Add(scr_turn_skip.Code);
 
 importGroup.QueueReplace(scr_turn_skip.Code, @"
 function scr_turn_skip()

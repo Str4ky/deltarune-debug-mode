@@ -4,6 +4,7 @@
         "obj_darkcontroller",
         "obj_mainchara",
         "DEVICE_CONTACT",
+		"scr_debug_fullheal",
         "scr_turn_skip"
     ]
 }

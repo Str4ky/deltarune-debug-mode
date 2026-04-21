@@ -1,5 +1,5 @@
 {
     "mode": "replace",
-	"skip_ch1": true,
+	"create_new": true,
 	"gml_GlobalScript_scr_debug_fullheal.gml": {}
 }
