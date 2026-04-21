@@ -1,6 +1,7 @@
 {
     "order": [
         "scr_gamestart",
-        "obj_darkcontroller"
+        "obj_darkcontroller",
+		"obj_time"
     ]
 }

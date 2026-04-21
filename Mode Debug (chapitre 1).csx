@@ -36,12 +36,6 @@ foreach (var str in Data.Strings)
 
 string versionInfo = isDemo ? "\r\n[Version détectée : Démo Itch]" : "\r\n[Version détectée : Payante]";
 
-bool enable = ScriptQuestion(
-"Ajouter le Mode Debug pour le Chapitre 1 ?" + versionInfo
-);
-
-if (!enable) return;
-
 GlobalDecompileContext globalDecompileContext = new(Data);
 Underanalyzer.Decompiler.IDecompileSettings decompilerSettings = new Underanalyzer.Decompiler.DecompileSettings();
 UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, globalDecompileContext, decompilerSettings)
@@ -3338,4 +3332,4 @@ ChangeSelection(scr_turn_skip);
 
 importGroup.Import();
 
-ScriptMessage("Mode Debug du Chapitre 1 " + (enable ? "ajouté" : "désactivé") + ".\r\n" + "Pour activer le Mode Debug en jeu, appuyer sur F10.");
+ScriptMessage("Mode Debug du Chapitre 1 ajouté.\r\n" + "Pour activer le Mode Debug en jeu, appuyer sur F10.");

@@ -25,15 +25,6 @@ foreach (var str in Data.Strings)
 }
 string defaultLang = isFrenchPatch ? "fr" : "en";
 
-bool enable = ScriptQuestion(
-"Ajouter le Mode Debug pour le Chapitre CHAPTER_NUMBER ?"
-);
-
-if (!enable)
-{
-    return;
-}
-
 GlobalDecompileContext globalDecompileContext = new(Data);
 Underanalyzer.Decompiler.IDecompileSettings decompilerSettings = new Underanalyzer.Decompiler.DecompileSettings();
 UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, globalDecompileContext, decompilerSettings)
@@ -44,4 +35,4 @@ UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, globalDecompile
 // BOTTOM
 importGroup.Import();
 
-ScriptMessage("Mode Debug du Chapitre CHAPTER_NUMBER " + (enable ? "ajouté" : "désactivé") + ".\r\n" + "Pour activer le Mode Debug en jeu, appuyer sur F10.");
+ScriptMessage("Mode Debug du Chapitre CHAPTER_NUMBER ajouté.\r\n" + "Pour activer le Mode Debug en jeu, appuyer sur F10.");
