@@ -243,17 +243,6 @@ def compile_utmt_mod(source_folder, template_file):
         current_top = template_top.replace("CHAPTER_NUMBER", str(i))
         current_bottom = template_bottom.replace("CHAPTER_NUMBER", str(i))
 
-        if i == 1 and os.path.exists("template_ch1.csx"):
-            with open("template_ch1.csx", 'r', encoding='utf-8') as fch1:
-                ch1_content = fch1.read()
-                if "// BOTTOM" in ch1_content:
-                    parts = ch1_content.split("// BOTTOM")
-                    current_top = parts[0].replace("// TOP", "").strip()
-                    current_bottom = parts[1].strip()
-
-        if i == 1:
-            element_memory = ["scr_debug_print", "obj_debug_gui", "scr_debug_fullheal", "scr_turn_skip"]
-
         final_lines.append(current_top)
         
         update_cwd(source_folder)

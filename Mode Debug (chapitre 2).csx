@@ -1248,7 +1248,7 @@ Data.Scripts.Add(scr_dmode_init_lang);
 Data.Code.Add(scr_dmode_init_lang.Code);
 
 importGroup.QueueReplace(scr_dmode_init_lang.Code, @"
-global.dmode_lang = ""___DEFAULT_LANG___"";
+global.dmode_lang = ""fr"";//___DEFAULT_LANG___"";
 
 global.dmode_text = 
 {
@@ -1724,7 +1724,8 @@ global.dmode_text =
         key_13: ""Retour arrière - Passer le segment d'intro (Ch1)"",
         key_14: ""Clic milieu - Éditeur de salle""
     }
-};");
+};
+");
 
 
 UndertaleScript scr_dmode_get_text = new UndertaleScript();

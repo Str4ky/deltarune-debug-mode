@@ -1,5 +1,6 @@
 {
     "mode": "replace",
+	"create_new": true,
 	"gml_GlobalScript_scr_turn_skip.gml": {
 		"mode": "replace"
 	}
