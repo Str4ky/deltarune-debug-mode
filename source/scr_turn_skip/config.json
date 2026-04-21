@@ -1,5 +1,6 @@
 {
-    "create_new": false,
-    "skip_ch1": true,
-    "mode": "replace"
+	"gml_GlobalScript_scr_turn_skip.gml": {
+		"skip_ch1": true,
+		"mode": "replace"
+	}
 }

@@ -1,8 +1,6 @@
 {
     "create_new": false,
-    "events": {
-        "Step_0": {
-            "mode": "append"
-        }
-    }
+	"gml_Object_obj_mainchara_Step_0.gml": {
+		"mode": "append"
+	}
 }

@@ -1,20 +1,9 @@
 {
-    "create_new": true,
-    "visible": true,
-    "persistent": true,
-    "awake": true,
-    "events": {
-        "Create_0": {
-            "mode": "replace"
-        },
-        "Step_0": {
-            "mode": "replace"
-        },
-        "Step_1": {
-            "mode": "replace"
-        },
-        "Draw_0": {
-            "mode": "replace"
-        }
-    }
+	"mode": "replace",
+	"gml_Object_obj_dmenu_system_Create_0.gml": {
+		"create_new": true
+	},
+	"gml_Object_obj_dmenu_system_Step_0.gml": {},
+	"gml_Object_obj_dmenu_system_Step_1.gml": {},
+	"gml_Object_obj_dmenu_system_Draw_0.gml": {}
 }

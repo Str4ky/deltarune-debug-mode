@@ -1,5 +1,6 @@
 {
-    "create_new": true,
-    "mode": "replace",
-    "inject_default_lang": true
+	"gml_GlobalScript_scr_dmode_init_lang.gml": {
+		"create_new": true,
+		"mode": "replace"
+	}
 }

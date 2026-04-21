@@ -1,15 +1,8 @@
 {
     "create_new": false,
     "skip_ch1": true,
-    "events": {
-        "Create_0": {
-            "mode": "replace"
-        },
-        "Draw_64": {
-            "mode": "replace"
-        },
-        "Other_25": {
-            "mode": "replace"
-        }
-    }
+	"mode": "replace",
+	"gml_Object_obj_debug_windows_Create_0.gml": {},
+	"gml_Object_obj_debug_windows_Draw_64.gml": {},
+	"gml_Object_obj_debug_windows_Other_25.gml": {}
 }

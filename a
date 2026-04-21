@@ -1,0 +1,40 @@
+Parsing common code for Chapter 1...
+cacasource
+['scr_gamestart', 'scr_debug_print', 'obj_debug_gui', 'obj_debug_xy', 'obj_debug_windows', 'scr_dmode_init_lang', 'scr_dmode_get_text', 'obj_dmenu_system', 'scr_debug', 'obj_time', 'obj_overworldc', 'obj_battlecontroller', 'obj_spritecomparer', 'scr_debug_fullheal', 'scr_turn_skip']
+['scr_gamestart', 'scr_debug_print', 'obj_debug_gui', 'obj_debug_xy', 'obj_debug_windows', 'scr_dmode_init_lang', 'scr_dmode_get_text', 'obj_dmenu_system', 'scr_debug', 'obj_time', 'obj_overworldc', 'obj_battlecontroller', 'obj_spritecomparer', 'scr_debug_fullheal', 'scr_turn_skip', 'EXTRAS']
+Parsing extras for Chapter 1...
+cacasource/EXTRAS/CH1
+['obj_overworldc', 'obj_darkcontroller', 'obj_mainchara', 'DEVICE_CONTACT', 'scr_turn_skip']
+['obj_overworldc', 'obj_darkcontroller', 'obj_mainchara', 'DEVICE_CONTACT', 'scr_turn_skip']
+Success: 'Mode Debug (chapitre 1).csx' generated.
+
+Parsing common code for Chapter 2...
+cacasource
+['scr_gamestart', 'scr_debug_print', 'obj_debug_gui', 'obj_debug_xy', 'obj_debug_windows', 'scr_dmode_init_lang', 'scr_dmode_get_text', 'obj_dmenu_system', 'scr_debug', 'obj_time', 'obj_overworldc', 'obj_battlecontroller', 'obj_spritecomparer', 'scr_debug_fullheal', 'scr_turn_skip']
+['scr_gamestart', 'scr_debug_print', 'obj_debug_gui', 'obj_debug_xy', 'obj_debug_windows', 'scr_dmode_init_lang', 'scr_dmode_get_text', 'obj_dmenu_system', 'scr_debug', 'obj_time', 'obj_overworldc', 'obj_battlecontroller', 'obj_spritecomparer', 'scr_debug_fullheal', 'scr_turn_skip', 'EXTRAS']
+Parsing extras for Chapter 2...
+cacasource/EXTRAS/CH2
+['obj_time', 'obj_darkcontroller', 'obj_overworldc']
+['obj_time', 'obj_darkcontroller', 'obj_overworldc']
+Success: 'Mode Debug (chapitre 2).csx' generated.
+
+Parsing common code for Chapter 3...
+cacasource
+['scr_gamestart', 'scr_debug_print', 'obj_debug_gui', 'obj_debug_xy', 'obj_debug_windows', 'scr_dmode_init_lang', 'scr_dmode_get_text', 'obj_dmenu_system', 'scr_debug', 'obj_time', 'obj_overworldc', 'obj_battlecontroller', 'obj_spritecomparer', 'scr_debug_fullheal', 'scr_turn_skip']
+['scr_gamestart', 'scr_debug_print', 'obj_debug_gui', 'obj_debug_xy', 'obj_debug_windows', 'scr_dmode_init_lang', 'scr_dmode_get_text', 'obj_dmenu_system', 'scr_debug', 'obj_time', 'obj_overworldc', 'obj_battlecontroller', 'obj_spritecomparer', 'scr_debug_fullheal', 'scr_turn_skip', 'EXTRAS']
+Parsing extras for Chapter 3...
+cacasource/EXTRAS/CH3
+['scr_gamestart', 'obj_darkcontroller', 'obj_time']
+['scr_gamestart', 'obj_darkcontroller', 'obj_time', 'obj_battlecontroller']
+Success: 'Mode Debug (chapitre 3).csx' generated.
+
+Parsing common code for Chapter 4...
+cacasource
+['scr_gamestart', 'scr_debug_print', 'obj_debug_gui', 'obj_debug_xy', 'obj_debug_windows', 'scr_dmode_init_lang', 'scr_dmode_get_text', 'obj_dmenu_system', 'scr_debug', 'obj_time', 'obj_overworldc', 'obj_battlecontroller', 'obj_spritecomparer', 'scr_debug_fullheal', 'scr_turn_skip']
+['scr_gamestart', 'scr_debug_print', 'obj_debug_gui', 'obj_debug_xy', 'obj_debug_windows', 'scr_dmode_init_lang', 'scr_dmode_get_text', 'obj_dmenu_system', 'scr_debug', 'obj_time', 'obj_overworldc', 'obj_battlecontroller', 'obj_spritecomparer', 'scr_debug_fullheal', 'scr_turn_skip', 'EXTRAS']
+Parsing extras for Chapter 4...
+cacasource/EXTRAS/CH4
+['obj_darkcontroller', 'scr_flag_set', 'scr_damage_all_overworld']
+['obj_darkcontroller', 'scr_flag_set', 'scr_damage_all_overworld']
+Success: 'Mode Debug (chapitre 4).csx' generated.
+
