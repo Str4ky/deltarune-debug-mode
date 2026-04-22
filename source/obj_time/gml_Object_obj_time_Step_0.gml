@@ -23,6 +23,15 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
             scr_debug_print(scr_dmode_get_text("fps_30"));
         }
     }
+    if (keyboard_check_pressed(ord("G")))
+    {
+		global.dgodmode = !global.dgodmode;
+
+        if (global.dgodmode)
+			scr_debug_print("Godmode enabled");
+		else
+			scr_debug_print("Godmode disabled");
+    }
     
     if (keyboard_check_pressed(ord("O")))
     {

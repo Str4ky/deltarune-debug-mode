@@ -36,4 +36,4 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
     }
 }
 if (!instance_exists(obj_dmenu_system))
-    instance_create(0, 0, obj_dmenu_system)
+    instance_create(0, 0, obj_dmenu_system);

@@ -10,11 +10,16 @@
         "obj_dmenu_system",
         "scr_debug",
         "obj_time",
+		"obj_darkcontroller",
         "obj_overworldc",
         "obj_battlecontroller",
 		"godmode",
-        "obj_spritecomparer",
+		"legend_of_tenna_tp",
+		"chap1_room_changer",
+		"DEVICE_CONTACT",
+		"scr_flag_set_ch4_fix",
         "scr_debug_fullheal",
-        "scr_turn_skip"
+        "scr_turn_skip",
+        "obj_spritecomparer"
     ]
 }

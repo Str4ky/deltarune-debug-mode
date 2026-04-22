@@ -4,9 +4,9 @@ import re
 import json
 import templates
 
+ALL_CHAPTERS = list(range(1, 8))
 OWD = os.path.abspath('.')
 CWD = '.'
-EXTRA_FOLDER = "EXTRAS"
 SRC_FOLDER = "source"
 
 def set_double_quote(gml_code):
@@ -22,6 +22,33 @@ def update_cwd(new_dir):
     else:
         CWD = os.path.normpath(os.path.join(CWD, new_dir))
     os.chdir(new_dir)
+
+def parse_chapter_config(chap_list):
+    chap_list = list(set(chap_list))
+    if (min(chap_list) < 0):
+        if (max(chap_list) >= 0):
+            print(f"Warning: invalid chapter values in `{get_file_pos(json_name)}'. Skipping.")
+            print("Rules: only positive or negative numbers but no mix")
+            return ({})
+        parsed = ALL_CHAPTERS.copy()
+        for chap in chap_list:
+            parsed.remove(-chap)
+        chap_list = parsed
+
+    return (chap_list)
+
+
+def execute_actions(action_list, config, csx_lines):
+    for action in action_list:
+        for method, params in action.items():
+            if (method == "find_replace"):
+                csx_lines.append(f'importGroup.QueueFindReplace("{config["gml_name"]}", @"{set_double_quote(params["find"])}", @"{set_double_quote(params["replace"])}");')
+            elif (method == "append"):
+                csx_lines.append(f'importGroup.QueueAppend("{config["gml_name"]}", @"{set_double_quote(params["content"])}");')
+            elif (method == "replace"):
+                csx_lines.append(f'importGroup.QueueReplace("{config["gml_name"]}", @"{set_double_quote(params["content"])}");')
+
+
 
 def get_command_variable(config):
     elem_type = config['element_type']
@@ -61,25 +88,35 @@ def init_basic_json(foldername, json_name):
     res = {}
     defaults = {
         'mode': 'append',
-        'actions': {},
+        'chapters': ALL_CHAPTERS.copy(),
+        'pre_actions': [],
+        'actions': [],
         'create_new': False,
-        'skip_ch1': False,
         'persistent': True,
         'visible': True,
-        'awake': True
+        'awake': True,
     }
+
     for key, value in defaults.items():
         defaults[key] = data.get(key, value)
 
+    optionals = ["gml_name", "element_type"]
+    for opt in optionals:
+        if (data.get(opt) != None):
+            defaults[opt] = data[opt]
+    
+    defaults['chapters'] = parse_chapter_config(defaults['chapters'])
     for filename, file in data.items():
         if (defaults.get(filename) != None):
             continue
-        if (not os.path.exists(filename)):
+        if (filename[0] != '.' and not os.path.exists(filename)):
             print(f"Error: `{filename}' doesn't exist in {CWD}, skipping", file=sys.stderr)
             continue
 
         for key, value in defaults.items():
             file[key] = file.get(key, value)
+
+        file['chapters'] = parse_chapter_config(file['chapters'])
 
         type_predic = ""
         gml_types = [
@@ -161,24 +198,26 @@ def parse_folder(declared_elements=None, current_chapter=0):
 
     for fold in os.listdir('.'):
         if (fold[0] != '.' and os.path.isdir(fold) and
-            not fold in folders and fold != EXTRA_FOLDER):
+            not fold in folders):
             print(f"Warning: `{fold}' module not used", file=sys.stderr)
 
     for folder in folders:
-        if folder == EXTRA_FOLDER or folder.startswith('.'):
+        if folder.startswith('.'):
             continue
 
         update_cwd(folder)
         folder_config = init_basic_json(folder, master_config_path)
 
         for filename, config in folder_config.items():
-            csx_lines.append("\n")
-            with open(filename, 'r', encoding='utf-8') as f:
-                gml_code = set_double_quote(f.read())
+            if (filename[0] != '.'):
+                with open(filename, 'r', encoding='utf-8') as f:
+                    gml_code = set_double_quote(f.read())
             create_new = config.get("create_new", False)
-            if (config['skip_ch1'] and current_chapter == 1):
+            if (not current_chapter in config['chapters']):
                 continue
+            csx_lines.append("\n")
             create_new = config['create_new']
+            execute_actions(config['pre_actions'], config, csx_lines)
             if (not config['obj_name'] in declared_elements):
                 declared_elements.append(config['obj_name'])
                 if (create_new):
@@ -201,11 +240,11 @@ def parse_folder(declared_elements=None, current_chapter=0):
 
             elem_identifier, queue_op = get_command_variable(config)
 
-            csx_lines.append(f'importGroup.{queue_op}({elem_identifier}, @"\n{gml_code}");')
+            if (filename[0] != '.'):
+                csx_lines.append(f'importGroup.{queue_op}({elem_identifier}, @"\n{gml_code}");')
 
-            for action, params in config['actions'].items():
-                if (action == "find_replace"):
-                    csx_lines.append(f'importGroup.QueueFindReplace("{config["gml_name"]}", @"{set_double_quote(params["find"])}", @"{set_double_quote(params["replace"])}");')
+
+            execute_actions(config['actions'], config, csx_lines)
 
 
 
@@ -253,15 +292,6 @@ def compile_utmt_mod(source_folder, template_file):
             final_lines.append(f"\n// --- COMMON CODE ---")
             final_lines.extend(common_lines)
         
-        extras_path = os.path.join(EXTRA_FOLDER, f"CH{i}")
-        if os.path.exists(extras_path):
-            update_cwd(extras_path)
-            print(f"Parsing extras for Chapter {i}...")
-            specific_lines = parse_folder(element_memory, i) 
-            if specific_lines:
-                final_lines.append(f"\n// --- EXTRAS CHAPTER {i} ---")
-                final_lines.extend(specific_lines)
-
         update_cwd(OWD)
         final_lines.append("\n" + current_bottom)
 

@@ -1,5 +1,11 @@
 {
     "mode": "replace",
-	"skip_ch1": true,
-	"gml_GlobalScript_scr_debug_fullheal.gml": {}
+	"gml_name": "gml_GlobalScript_scr_debug_fullheal",
+	"gml_GlobalScript_scr_debug_fullheal.gml": {
+		"chapters": [-1]
+	},
+	"chap1_scr_debug_fullheal.gml": {
+		"chapters": [1],
+		"create_new": true
+	}
 }

@@ -1,6 +1,11 @@
 {
+	"mode": "replace",
+	"gml_name": "gml_GlobalScript_scr_turn_skip",
 	"gml_GlobalScript_scr_turn_skip.gml": {
-		"skip_ch1": true,
-		"mode": "replace"
+		"chapters": [-1]
+	},
+	"chap1_scr_turn_skip.gml": {
+		"chapters": [1],
+		"create_new": true
 	}
 }

@@ -198,11 +198,6 @@ enable_mouse_wheel = 0;
 old_right_click = 0;");
 
 
-importGroup.QueueReplace(obj_debug_xy.EventHandlerFor(EventType.Step, (uint)0, Data), @"
-
-");
-
-
 importGroup.QueueReplace(obj_debug_xy.EventHandlerFor(EventType.Draw, (uint)0, Data), @"
 x = round(mouse_x);
 y = round(mouse_y);
@@ -4157,6 +4152,15 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
             scr_debug_print(scr_dmode_get_text(""fps_30""));
         }
     }
+    if (keyboard_check_pressed(ord(""G"")))
+    {
+		global.dgodmode = !global.dgodmode;
+
+        if (global.dgodmode)
+			scr_debug_print(""Godmode enabled"");
+		else
+			scr_debug_print(""Godmode disabled"");
+    }
     
     if (keyboard_check_pressed(ord(""O"")))
     {
@@ -4176,106 +4180,11 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
             scr_debug_print(scr_dmode_get_text(""fps_60""));
         }
     }
-}");
-
-
-UndertaleGameObject obj_overworldc = Data.GameObjects.ByName("obj_overworldc");
-importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, Data), @"
-if (!instance_exists(obj_dmenu_system))
-    instance_create(0, 0, obj_dmenu_system);");
-importGroup.QueueFindReplace("gml_Object_obj_overworldc_Step_0", @"if (scr_debug())", @"if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))");
-
-
-UndertaleGameObject obj_battlecontroller = Data.GameObjects.ByName("obj_battlecontroller");
-importGroup.QueueAppend(obj_battlecontroller.EventHandlerFor(EventType.Step, (uint)0, Data), @"
-if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
-{
-    if (keyboard_check_pressed(ord(""T"")))
-    {
-        if (global.tension < 250)
-        {
-            global.tension = 250;
-            scr_debug_print(scr_dmode_get_text(""tp_250""));
-        }
-        else
-        {
-            global.tension = 0;
-            scr_debug_print(scr_dmode_get_text(""tp_0""));
-        }
-    }
-    
-    if (keyboard_check_pressed(ord(""V"")))
-        scr_turn_skip();
-    
-    if (keyboard_check_pressed(ord(""H"")))
-    {
-        scr_debug_fullheal();
-        scr_debug_print(scr_dmode_get_text(""fullheal""));
-    }
-    
-    if (keyboard_check_pressed(ord(""W"")))
-    {
-        scr_wincombat();
-        scr_debug_print(scr_dmode_get_text(""fightwin""));
-    }
-}");
-importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_Step_0", @"if (scr_debug())", @"if (0)");
-
-
-UndertaleScript scr_damage_all_overworld = Data.Scripts.ByName("scr_damage_all_overworld");
-importGroup.QueueAppend(scr_damage_all_overworld.Code, @"
+}
 ");
-importGroup.QueueFindReplace("gml_GlobalScript_scr_damage_all_overworld", @"    if (global.inv < 0)", @"    if (global.dgodmode)
-        exit;
-    if (global.inv < 0)");
 
 
-UndertaleScript scr_damage = Data.Scripts.ByName("scr_damage");
-importGroup.QueueAppend(scr_damage.Code, @"
-");
-importGroup.QueueFindReplace("gml_GlobalScript_scr_damage", @"    if (global.inv < 0)", @"    if (global.dgodmode)
-        exit;
-    if (global.inv < 0)");
-
-
-UndertaleGameObject obj_spritecomparer = Data.GameObjects.ByName("obj_spritecomparer");
-importGroup.QueueAppend(obj_spritecomparer.EventHandlerFor(EventType.Draw, (uint)0, Data), @"
-");
-importGroup.QueueFindReplace("gml_Object_obj_spritecomparer_Draw_0", @"if (keyboard_check_pressed(ord(""D"")))", @"if (keyboard_check_pressed(vk_f2))");
-
-
-UndertaleScript scr_debug_fullheal = Data.Scripts.ByName("scr_debug_fullheal");
-importGroup.QueueReplace(scr_debug_fullheal.Code, @"
-function scr_debug_fullheal()
-{
-    with (obj_dmgwriter)
-    {
-        if (delaytimer >= 1)
-            killactive = 1;
-    }
-    
-    scr_healallitemspell(999);
-    
-    for (i = 0; i < 3; i++)
-    {
-        with (global.charinstance[i])
-            tu--;
-    }
-}");
-
-
-UndertaleScript scr_turn_skip = Data.Scripts.ByName("scr_turn_skip");
-importGroup.QueueReplace(scr_turn_skip.Code, @"
-function scr_turn_skip()
-{
-    if (global.turntimer > 0 && instance_exists(obj_growtangle) && scr_isphase(""bullets""))
-    {
-        global.turntimer = 0;
-        scr_debug_print(scr_dmode_get_text(""turnskip""));
-    }
-}");
-
-// --- EXTRAS CHAPTER 4 ---
+importGroup.QueueReplace("gml_Object_obj_time_Draw_64", @"");
 
 
 UndertaleGameObject obj_darkcontroller = Data.GameObjects.ByName("obj_darkcontroller");
@@ -4324,6 +4233,61 @@ if (!instance_exists(obj_dmenu_system))
 importGroup.QueueFindReplace("gml_Object_obj_darkcontroller_Step_0", @"if (scr_debug())", @"if (0)");
 
 
+UndertaleGameObject obj_overworldc = Data.GameObjects.ByName("obj_overworldc");
+importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, Data), @"
+if (!instance_exists(obj_dmenu_system))
+    instance_create(0, 0, obj_dmenu_system);");
+importGroup.QueueFindReplace("gml_Object_obj_overworldc_Step_0", @"if (scr_debug())", @"if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))");
+
+
+UndertaleGameObject obj_battlecontroller = Data.GameObjects.ByName("obj_battlecontroller");
+importGroup.QueueAppend(obj_battlecontroller.EventHandlerFor(EventType.Step, (uint)0, Data), @"
+if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
+{
+    if (keyboard_check_pressed(ord(""T"")))
+    {
+        if (global.tension < 250)
+        {
+            global.tension = 250;
+            scr_debug_print(scr_dmode_get_text(""tp_250""));
+        }
+        else
+        {
+            global.tension = 0;
+            scr_debug_print(scr_dmode_get_text(""tp_0""));
+        }
+    }
+    
+    if (keyboard_check_pressed(ord(""V"")))
+        scr_turn_skip();
+    
+    if (keyboard_check_pressed(ord(""H"")))
+    {
+        scr_debug_fullheal();
+        scr_debug_print(scr_dmode_get_text(""fullheal""));
+    }
+    
+    if (keyboard_check_pressed(ord(""W"")))
+    {
+        scr_wincombat();
+        scr_debug_print(scr_dmode_get_text(""fightwin""));
+    }
+}");
+importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_Step_0", @"if (scr_debug())", @"if (0)");
+
+
+UndertaleScript scr_damage_all_overworld = Data.Scripts.ByName("scr_damage_all_overworld");
+importGroup.QueueFindReplace("gml_GlobalScript_scr_damage_all_overworld", @"    if (global.inv < 0)", @"    if (global.dgodmode)
+        exit;
+    if (global.inv < 0)");
+
+
+UndertaleScript scr_damage = Data.Scripts.ByName("scr_damage");
+importGroup.QueueFindReplace("gml_GlobalScript_scr_damage", @"    if (global.inv < 0)", @"    if (global.dgodmode)
+        exit;
+    if (global.inv < 0)");
+
+
 UndertaleScript scr_flag_set = Data.Scripts.ByName("scr_flag_set");
 importGroup.QueueReplace(scr_flag_set.Code, @"
 function scr_flag_set(arg0, arg1)
@@ -4335,6 +4299,44 @@ function scr_setflag(arg0, arg1)
 {
     scr_flag_set(arg0, arg1);
 }");
+
+
+UndertaleScript scr_debug_fullheal = Data.Scripts.ByName("scr_debug_fullheal");
+importGroup.QueueReplace(scr_debug_fullheal.Code, @"
+function scr_debug_fullheal()
+{
+    with (obj_dmgwriter)
+    {
+        if (delaytimer >= 1)
+            killactive = 1;
+    }
+    
+    scr_healallitemspell(999);
+    
+    for (i = 0; i < 3; i++)
+    {
+        with (global.charinstance[i])
+            tu--;
+    }
+}");
+
+
+UndertaleScript scr_turn_skip = Data.Scripts.ByName("scr_turn_skip");
+importGroup.QueueReplace(scr_turn_skip.Code, @"
+function scr_turn_skip()
+{
+    if (global.turntimer > 0 && instance_exists(obj_growtangle) && scr_isphase(""bullets""))
+    {
+        global.turntimer = 0;
+        scr_debug_print(scr_dmode_get_text(""turnskip""));
+    }
+}");
+
+
+UndertaleGameObject obj_spritecomparer = Data.GameObjects.ByName("obj_spritecomparer");
+importGroup.QueueAppend(obj_spritecomparer.EventHandlerFor(EventType.Draw, (uint)0, Data), @"
+");
+importGroup.QueueFindReplace("gml_Object_obj_spritecomparer_Draw_0", @"if (keyboard_check_pressed(ord(""D"")))", @"if (keyboard_check_pressed(vk_f2))");
 
 importGroup.Import();
 

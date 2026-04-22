@@ -1,6 +1,6 @@
 {
     "create_new": false,
-    "skip_ch1": true,
+	"chapters": [-1],
 	"mode": "replace",
 	"gml_Object_obj_debug_windows_Create_0.gml": {},
 	"gml_Object_obj_debug_windows_Draw_64.gml": {},
