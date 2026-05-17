@@ -1,0 +1,22 @@
+        if (telescope_count == 1)
+        {
+            msgsetloc(0, "* Vous levez les yeux au ciel et prenez...&* Un télescope !/%", "obj_lanino_rematch_enemy_slash_Step_0_gml_53_0");
+            msgnextloc("* Bloquer les lunes montre votre souci du bulletin météo !/%", "obj_lanino_rematch_enemy_slash_Step_0_gml_54_0");
+            scr_battletext_default();
+            actcon = 1;
+            global.actsimul[myself][1] = 1;
+            scr_spellmenu_setup();
+        }
+        else
+        {
+            msgsetloc(0, "* Télescope anti-lune équipé !", "obj_lanino_rematch_enemy_slash_Step_0_gml_63_0");
+            scr_simultext("kris");
+            if (simulorderkri == 0)
+            {
+                actcon = 20;
+            }
+            else
+            {
+                actcon = -1;
+            }
+        }
