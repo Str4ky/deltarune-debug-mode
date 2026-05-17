@@ -4,6 +4,9 @@
 	"gml_Object_obj_overworldc_Step_0.gml": {
 		"chapters": [1, 2]
 	},
+	"chap2_debug": {
+		"chapters": [2]
+	},
     "dmenu_adder.gml": {},
 	"actions": [
 		{

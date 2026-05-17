@@ -29,7 +29,7 @@ GlobalDecompileContext globalDecompileContext = new(Data);
 Underanalyzer.Decompiler.IDecompileSettings decompilerSettings = new Underanalyzer.Decompiler.DecompileSettings();
 UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, globalDecompileContext, decompilerSettings)
 {
-    ThrowOnNoOpFindReplace = false
+    ThrowOnNoOpFindReplace = true
 };
 
 // BOTTOM

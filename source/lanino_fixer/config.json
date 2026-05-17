@@ -1,0 +1,24 @@
+{
+	"gml_name": "gml_Object_obj_lanino_rematch_enemy_Step_0",
+	"chapters": [4],
+	".sun": {
+		"actions": [
+			{
+				"find_replace": {
+					"find_file": "sun_find",
+					"replace_file": "sun_replace"
+				}
+			}
+		]
+	},
+	".telescope": {
+		"actions": [
+			{
+				"find_replace": {
+					"find_file": "telescope_find",
+					"replace_file": "telescope_replace"
+				}
+			}
+		]
+	}
+}

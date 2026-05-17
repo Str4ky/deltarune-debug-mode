@@ -39,14 +39,22 @@ def parse_chapter_config(chap_list):
 
 
 def execute_actions(action_list, config, csx_lines):
+    file_suffix = "_file"
     for action in action_list:
         for method, params in action.items():
+            params_copy = params.copy()
+            for key, value in params_copy.items():
+                if (key.endswith(file_suffix)):
+                    with open(value, encoding="utf-8") as f:
+                        params[key[:-len(file_suffix)]] = f.read()
             if (method == "find_replace"):
-                csx_lines.append(f'importGroup.QueueFindReplace("{config["gml_name"]}", @"{set_double_quote(params["find"])}", @"{set_double_quote(params["replace"])}");')
+                csx_lines.append(f'importGroup.QueueFindReplace("{config["gml_name"]}",\n@"{set_double_quote(params["find"])}",\n@"{set_double_quote(params["replace"])}");')
+            if (method == "regex_find_replace"):
+                csx_lines.append(f'importGroup.QueueRegexFindReplace("{config["gml_name"]}",\n@"{set_double_quote(params["find"])}",\n@"{set_double_quote(params["replace"])}");')
             elif (method == "append"):
-                csx_lines.append(f'importGroup.QueueAppend("{config["gml_name"]}", @"{set_double_quote(params["content"])}");')
+                csx_lines.append(f'importGroup.QueueAppend("{config["gml_name"]}",\n@"{set_double_quote(params["content"])}");')
             elif (method == "replace"):
-                csx_lines.append(f'importGroup.QueueReplace("{config["gml_name"]}", @"{set_double_quote(params["content"])}");')
+                csx_lines.append(f'importGroup.QueueReplace("{config["gml_name"]}",\n@"{set_double_quote(params["content"])}");')
 
 
 
@@ -241,7 +249,7 @@ def parse_folder(declared_elements=None, current_chapter=0):
             elem_identifier, queue_op = get_command_variable(config)
 
             if (filename[0] != '.'):
-                csx_lines.append(f'importGroup.{queue_op}({elem_identifier}, @"\n{gml_code}");')
+                csx_lines.append(f'importGroup.{queue_op}({elem_identifier},\n@"{gml_code}");')
 
 
             execute_actions(config['actions'], config, csx_lines)
@@ -301,4 +309,7 @@ def compile_utmt_mod(source_folder, template_file):
         print(f"Success: '{output_file}' generated.\n")
 
 # --- Execution ---
-compile_utmt_mod(source_folder="source", template_file="template.csx")
+source_fol = "source"
+if (len(sys.argv) == 2):
+    source_fol = sys.argv[1]
+compile_utmt_mod(source_folder=source_fol, template_file="default_template.csx")
