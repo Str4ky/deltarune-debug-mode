@@ -1,0 +1,2 @@
+    returntxt = stringsetloc(global.debug ? "Create Debug Save" : "Return", "obj_savemenu_slash_Draw_0_gml_48_0");
+    var bo = 0;

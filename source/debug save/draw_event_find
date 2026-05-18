@@ -1,0 +1,16 @@
+if (button1_p() && buffer < 0)
+        {
+            if (mpos == 3)
+            {
+                menuno = 0;
+                buffer = 3;
+                mpos = global.filechoice;
+                snd_play(snd_select);
+            }
+            else if (level_file[mpos] != 0 && mpos != global.filechoice)
+            {
+                overwrite = 0.5;
+                buffer = 3;
+                overcoord = 0;
+            }
+            else
