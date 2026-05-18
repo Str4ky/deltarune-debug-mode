@@ -9,6 +9,20 @@ function dmenu_state_update()
             dbutton_layout = 0;
             break;
         
+        case "debug_save":
+            dmenu_title = "Debug Save";
+            dbutton_options = ["Save", "Cancel", "Enter save name"];
+            
+            if (global.dreading_custom_flag || dkeyboard_input != "")
+                dbutton_options[2] = "";
+            else
+                dbutton_options[2] = "Enter save name";
+            
+            dbutton_options[2] += dkeyboard_input;
+            dmenu_box = 0;
+            dbutton_layout = 3;
+            break;
+        
         case "warp":
             dmenu_title = scr_dmode_get_text("room_list");
             dbutton_options = [scr_dmode_get_text("btn_current_room"), scr_dmode_get_text("btn_search")];
@@ -37,14 +51,7 @@ function dmenu_state_update()
         
         case "warp_options":
             dmenu_title = scr_dmode_get_text("warp_options");
-            dbutton_options = [
-                scr_dmode_get_text("btn_cancel"), 
-                scr_dmode_get_text("ui_is_darkworld"), 
-                scr_dmode_get_text("ui_plot_value"), 
-                scr_dmode_get_text("ui_teammate2"), 
-                scr_dmode_get_text("ui_teammate3"), 
-                scr_dmode_get_text("btn_warp")
-            ];
+            dbutton_options = [scr_dmode_get_text("btn_cancel"), scr_dmode_get_text("ui_is_darkworld"), scr_dmode_get_text("ui_plot_value"), scr_dmode_get_text("ui_teammate2"), scr_dmode_get_text("ui_teammate3"), scr_dmode_get_text("btn_warp")];
             dbutton_indices = [0, 1, 2, 3, 4, 5];
             dbutton_options[1] += drooms_options.target_is_darkzone ? scr_dmode_get_text("opt_yes") : scr_dmode_get_text("opt_no");
             
@@ -60,12 +67,7 @@ function dmenu_state_update()
         
         case "give":
             dmenu_title = scr_dmode_get_text("item_type");
-            dbutton_options = [
-                scr_dmode_get_text("type_items"), 
-                scr_dmode_get_text("type_armors"), 
-                scr_dmode_get_text("type_weapons"), 
-                scr_dmode_get_text("type_keyitems")
-            ];
+            dbutton_options = [scr_dmode_get_text("type_items"), scr_dmode_get_text("type_armors"), scr_dmode_get_text("type_weapons"), scr_dmode_get_text("type_keyitems")];
             dmenu_box = 0;
             dbutton_layout = 0;
             break;
@@ -148,7 +150,7 @@ function dmenu_state_update()
                     var combined = dlight_armors[i][1];
                     
                     if (global.larmor == dlight_armors[i][0])
-                        combined += " (" + scr_dmode_get_text("ui_equipped") + ")";
+                        combined += (" (" + scr_dmode_get_text("ui_equipped") + ")");
                     
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
@@ -194,7 +196,7 @@ function dmenu_state_update()
                     var combined = dlight_weapons[i][1];
                     
                     if (global.lweapon == dlight_weapons[i][0])
-                        combined += " (" + scr_dmode_get_text("ui_equipped") + ")";
+                        combined += (" (" + scr_dmode_get_text("ui_equipped") + ")");
                     
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
@@ -396,6 +398,43 @@ function dmenu_state_interact()
             
             break;
         
+        case "debug_save":
+            if (dbutton_selected == 3)
+            {
+                global.dreading_custom_flag = 1;
+                keyboard_string = "";
+                dkeyboard_input = "";
+                dmenu_state_update();
+            }
+            else if (dbutton_selected == 1)
+            {
+                global.debug_save_name = dkeyboard_input;
+                global.debug_saving = 1;
+                scr_debug_save();
+                dmenu_popup_launch = 0;
+                dmenu_state = "debug";
+                dbutton_options = dbutton_options_original;
+                dmenu_state_history = [];
+                dbutton_selected_history = [];
+                dbutton_selected = 1;
+                dmenu_active = false;
+                global.interact = 0;
+                snd_play(snd_save);
+            }
+            else
+            {
+                dmenu_popup_launch = 0;
+                dmenu_state = "debug";
+                dbutton_options = dbutton_options_original;
+                dmenu_state_history = [];
+                dbutton_selected_history = [];
+                dbutton_selected = 1;
+                dmenu_active = false;
+                global.interact = 0;
+            }
+            
+            break;
+        
         case "warp":
             if (dbutton_selected == 2)
             {
@@ -563,6 +602,7 @@ function dmenu_state_interact()
                 scr_debug_print(scr_dmode_get_text("msg_cancelled"));
                 break;
             }
+            
             if (dgiver_menu_state == "objects")
             {
                 real_index = dbutton_indices[dgiver_button_selected - 1];

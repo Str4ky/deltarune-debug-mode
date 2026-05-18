@@ -1,0 +1,57 @@
+{
+  "chapters": [-1],
+  ".savemenu_step_append": {
+    "gml_name": "gml_Object_obj_savemenu_Step_0",
+    "actions": [
+      {
+        "append": {
+          "content_file": "step_event"
+        }
+      }
+    ]
+  },
+  ".save_debug_button": {
+    "gml_name": "gml_Object_obj_savemenu_Draw_0",
+    "actions": [
+      {
+        "find_replace": {
+          "find_file": "save_debug_button_find",
+          "replace_file": "save_debug_button_replace"
+        }
+      }
+    ]
+  },
+  ".savemenu_draw_findreplace": {
+    "gml_name": "gml_Object_obj_savemenu_Draw_0",
+    "actions": [
+      {
+        "find_replace": {
+          "find_file": "draw_event_find",
+          "replace_file": "draw_event_replace"
+        }
+      }
+    ]
+  },
+  ".saveprocess": {
+    "gml_name": "gml_GlobalScript_scr_saveprocess",
+    "actions": [
+      {
+        "find_replace": {
+          "find_file": "saveprocess_find",
+          "replace_file": "saveprocess_replace"
+        }
+      }
+    ]
+  },
+  ".debug_save": {
+    "create_new": true,
+    "gml_name": "gml_GlobalScript_scr_debug_save",
+    "actions": [
+      {
+        "replace": {
+          "content_file": "debug_save"
+        }
+      }
+    ]
+  }
+}
