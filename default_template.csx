@@ -18,6 +18,18 @@ foreach (var str in Data.Strings)
 }
 string defaultLang = isFrenchPatch ? "fr" : "en";
 
+UndertaleFunction DefineFunc(string name)
+{
+    UndertaleString str = Data.Strings.MakeString(name, out int id);
+    UndertaleFunction func = new()
+    {
+        Name = str,
+        NameStringID = id
+    };
+    Data.Functions.Add(func);
+    return func;
+}
+
 GlobalDecompileContext globalDecompileContext = new(Data);
 Underanalyzer.Decompiler.IDecompileSettings decompilerSettings = new Underanalyzer.Decompiler.DecompileSettings();
 UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, globalDecompileContext, decompilerSettings)

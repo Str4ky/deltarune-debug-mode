@@ -1,0 +1,27 @@
+{
+    "order": [
+        "scr_gamestart",
+        "scr_debug_print",
+        "scr_dmode_init_lang",
+        "obj_debug_gui",
+        "obj_debug_xy",
+        "obj_debug_windows",
+		"scr_read_keyboard",
+        "scr_dmode_get_text",
+		"scr_str_respect_type",
+        "obj_dmenu_system",
+        "scr_debug",
+        "obj_time",
+		"obj_darkcontroller",
+        "obj_overworldc",
+        "obj_battlecontroller",
+		"godmode",
+		"legend_of_tenna_tp",
+		"chap1_room_changer",
+		"DEVICE_CONTACT",
+		"scr_flag_set_ch4_fix",
+        "scr_debug_fullheal",
+        "scr_turn_skip",
+        "obj_spritecomparer"
+    ]
+}

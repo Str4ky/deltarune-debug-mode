@@ -1,0 +1,18 @@
+{
+	"mode": "append",
+	"gml_name": "gml_Object_obj_darkcontroller_Step_0",
+	"chap1-2": {
+		"chapters": [1, 2]
+	},
+	"chap3+": {
+		"chapters": [-1, -2]
+	},
+	"actions": [
+		{
+			"find_replace": {
+				"find": "if (scr_debug())",
+				"replace": "if (0)"
+			}
+		}
+	]
+}

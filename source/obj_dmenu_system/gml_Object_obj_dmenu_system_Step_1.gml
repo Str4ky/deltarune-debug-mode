@@ -37,14 +37,7 @@ function dmenu_state_update()
         
         case "warp_options":
             dmenu_title = scr_dmode_get_text("warp_options");
-            dbutton_options = [
-                scr_dmode_get_text("btn_cancel"), 
-                scr_dmode_get_text("ui_is_darkworld"), 
-                scr_dmode_get_text("ui_plot_value"), 
-                scr_dmode_get_text("ui_teammate2"), 
-                scr_dmode_get_text("ui_teammate3"), 
-                scr_dmode_get_text("btn_warp")
-            ];
+            dbutton_options = [scr_dmode_get_text("btn_cancel"), scr_dmode_get_text("ui_is_darkworld"), scr_dmode_get_text("ui_plot_value"), scr_dmode_get_text("ui_teammate2"), scr_dmode_get_text("ui_teammate3"), scr_dmode_get_text("btn_warp")];
             dbutton_indices = [0, 1, 2, 3, 4, 5];
             dbutton_options[1] += drooms_options.target_is_darkzone ? scr_dmode_get_text("opt_yes") : scr_dmode_get_text("opt_no");
             
@@ -60,12 +53,7 @@ function dmenu_state_update()
         
         case "give":
             dmenu_title = scr_dmode_get_text("item_type");
-            dbutton_options = [
-                scr_dmode_get_text("type_items"), 
-                scr_dmode_get_text("type_armors"), 
-                scr_dmode_get_text("type_weapons"), 
-                scr_dmode_get_text("type_keyitems")
-            ];
+            dbutton_options_2d = [[scr_dmode_get_text("type_items"), scr_dmode_get_text("type_armors"), scr_dmode_get_text("type_weapons"), scr_dmode_get_text("type_keyitems")]];
             dmenu_box = 0;
             dbutton_layout = 0;
             break;
@@ -148,7 +136,7 @@ function dmenu_state_update()
                     var combined = dlight_armors[i][1];
                     
                     if (global.larmor == dlight_armors[i][0])
-                        combined += " (" + scr_dmode_get_text("ui_equipped") + ")";
+                        combined += (" (" + scr_dmode_get_text("ui_equipped") + ")");
                     
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
@@ -194,7 +182,7 @@ function dmenu_state_update()
                     var combined = dlight_weapons[i][1];
                     
                     if (global.lweapon == dlight_weapons[i][0])
-                        combined += " (" + scr_dmode_get_text("ui_equipped") + ")";
+                        combined += (" (" + scr_dmode_get_text("ui_equipped") + ")");
                     
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
@@ -330,7 +318,7 @@ function dmenu_state_update()
                 flag_number = global.flag[cur_option[2]];
                 var combined = cur_option[1] + " - " + scr_dmode_get_text("ui_problem");
                 
-                if (i == (dbutton_selected - 1))
+                if (i == dvertical_index)
                     option_index = dhorizontal_index;
                 else
                     option_index = find_subarray_index(cur_option[2], cur_option[3]);
@@ -348,56 +336,113 @@ function dmenu_state_update()
             dbutton_layout = 1;
             break;
         
-        default:
-            dmenu_title = scr_dmode_get_text("menu_unknown");
+        case "globals_changer":
+            dmenu_title = "Global changer";
             dbutton_options = [];
+            dmenu_box = 1;
+            dbutton_layout = 1;
+            reading_double_flag = dvertical_index == 0 && global.dreading_custom_flag;
+            
+            for (var i = 0; i < array_length(dglobal_changer_options); i++)
+            {
+                name = dglobal_changer_options[i][0];
+                
+                if (i == 0 && reading_double_flag)
+                    name = dcustom_flag_text[0];
+                
+                text = name;
+                
+                if (i == 0 && reading_double_flag)
+                {
+                    scr_debug_print(string(dcustom_flag_text));
+                    text = "global." + dcustom_flag_text[0];
+                }
+                
+                cur_global_value = "";
+                var_exist = variable_global_exists(name);
+                
+                if (var_exist)
+                    cur_global_value = variable_global_get(name);
+                
+                array_push(dbutton_indices, i);
+                limit = dglobal_changer_options[i][2];
+                
+                if (limit > 1)
+                {
+                    lookup_index = 0;
+                    
+                    if (i == dvertical_index)
+                        lookup_index = dhorizontal_index;
+                    
+                    text += ("[" + string(lookup_index) + "]");
+                    cur_global_value = cur_global_value[lookup_index];
+                }
+                
+                if (global.dreading_custom_flag && i == dvertical_index)
+                {
+                    if (i != 0 || dcustom_flag_text[1] != "" || !var_exist)
+                        cur_global_value = dcustom_flag_text[reading_double_flag];
+                }
+                
+                if (!(i == 0 && dvertical_index == 0 && !global.dreading_custom_flag))
+                    text += (" = |" + string(cur_global_value) + "|");
+                
+                array_push(dbutton_options, text);
+            }
+            
+            break;
+        
+        default:
             dmenu_box = 0;
             dbutton_layout = 0;
+            dbutton_options = [];
     }
 }
 
 function dmenu_state_interact()
 {
+    selected_name = "";
+    
+    if (dbutton_layout != 0)
+        selected_name = string(dbutton_options[dvertical_index]);
+    else
+        selected_name = string(dbutton_options_2d[dvertical_index][dhorizontal_index]);
+    
     switch (dmenu_state)
     {
         case "debug":
-            if (dbutton_selected == 1)
+            dvertical_index = 0;
+            
+            if (selected_name == scr_dmode_get_text("warps"))
             {
                 dmenu_state = "warp";
                 dhorizontal_index = 0;
                 dkeyboard_input = "";
                 drooms_options.target_plot = global.plot;
                 drooms_options.target_is_darkzone = global.darkzone;
-                dbutton_selected = 1;
             }
-            
-            if (dbutton_selected == 2)
+            else if (selected_name == scr_dmode_get_text("items"))
             {
                 dmenu_state = "give";
-                dbutton_selected = 1;
             }
-            
-            if (dbutton_selected == 3)
+            else if (selected_name == scr_dmode_get_text("recruits"))
             {
-                if (global.chapter >= 3)
-                    dmenu_state = "recruits";
-                else
-                    dmenu_state = "flag_categories";
-                
+                dmenu_state = "recruits";
                 dhorizontal_page = 0;
-                dbutton_selected = 1;
             }
-            
-            if (dbutton_selected == 4)
+            else if (selected_name == scr_dmode_get_text("misc"))
             {
                 dmenu_state = "flag_categories";
-                dbutton_selected = 1;
+            }
+            else if (selected_name == "Globals")
+            {
+                dmenu_state = "globals_changer";
             }
             
             break;
         
         case "warp":
-            if (dbutton_selected == 2)
+            if (dvertical_index == 1)
             {
                 global.dreading_custom_flag = 1;
                 keyboard_string = "";
@@ -408,8 +453,8 @@ function dmenu_state_interact()
             {
                 drooms_options.target_room = -1;
                 
-                if (dbutton_selected != 1)
-                    drooms_options.target_room = dbutton_indices[dbutton_selected - 1];
+                if (dvertical_index != 0)
+                    drooms_options.target_room = dbutton_indices[dvertical_index];
                 
                 drooms_options.target_plot = global.plot;
                 drooms_options.target_is_darkzone = global.darkzone;
@@ -422,21 +467,21 @@ function dmenu_state_interact()
             break;
         
         case "warp_options":
-            if (dbutton_selected == 1)
+            if (dvertical_index == 0)
             {
                 dkeyboard_input = "";
                 dmenu_state = "warp";
             }
-            else if (dbutton_selected == 2)
+            else if (dvertical_index == 1)
             {
                 drooms_options.target_is_darkzone ^= 1;
             }
-            else if (dbutton_selected == 3)
+            else if (dvertical_index == 4)
             {
                 global.dreading_custom_flag = 1;
                 keyboard_string = "";
             }
-            else if (dbutton_selected == 6)
+            else if (dvertical_index == 5)
             {
                 new_room = drooms_options.target_room;
                 
@@ -455,25 +500,25 @@ function dmenu_state_interact()
             break;
         
         case "give":
-            if (dbutton_selected == 1)
+            if (dvertical_index == 0)
                 dmenu_state = "objects";
-            else if (dbutton_selected == 2)
+            else if (dvertical_index == 1)
                 dmenu_state = "armors";
-            else if (dbutton_selected == 3)
+            else if (dvertical_index == 2)
                 dmenu_state = "weapons";
-            else if (dbutton_selected == 4)
+            else if (dvertical_index == 3)
                 dmenu_state = "keyitems";
             
             dhorizontal_page = !global.darkzone;
             
-            if (dbutton_selected == 4)
+            if (dvertical_index == 3)
                 dhorizontal_page = 0;
             
-            dbutton_selected = 1;
+            dvertical_index = 0;
             break;
         
         case "objects":
-            if (dhorizontal_page == 0 && dbutton_selected == 1)
+            if (dhorizontal_page == 0 && dvertical_index == 0)
             {
                 ditem_chap += 1;
                 
@@ -483,10 +528,10 @@ function dmenu_state_interact()
             else
             {
                 dgiver_menu_state = dmenu_state;
-                dbutton_selected = clamp(dbutton_selected, 0, array_length(dbutton_options));
-                dgiver_button_selected = dbutton_selected;
+                dvertical_index = clamp(dvertical_index, 0, array_length(dbutton_options));
+                dgiver_button_selected = dvertical_index;
                 dmenu_state = "givertab";
-                dbutton_selected = 1;
+                dvertical_index = 0;
             }
             
             break;
@@ -494,11 +539,11 @@ function dmenu_state_interact()
         case "armors":
             if (dhorizontal_page == 1)
             {
-                global.larmor = dlight_armors[dbutton_selected - 1][0];
+                global.larmor = dlight_armors[dvertical_index][0];
                 break;
             }
             
-            if (dhorizontal_page == 0 && dbutton_selected == 1)
+            if (dhorizontal_page == 0 && dvertical_index == 0)
             {
                 ditem_chap += 1;
                 
@@ -508,9 +553,9 @@ function dmenu_state_interact()
             else
             {
                 dgiver_menu_state = dmenu_state;
-                dgiver_button_selected = dbutton_selected;
+                dgiver_button_selected = dvertical_index;
                 dmenu_state = "givertab";
-                dbutton_selected = 1;
+                dvertical_index = 0;
             }
             
             break;
@@ -518,11 +563,11 @@ function dmenu_state_interact()
         case "weapons":
             if (dhorizontal_page == 1)
             {
-                global.lweapon = dlight_weapons[dbutton_selected - 1][0];
+                global.lweapon = dlight_weapons[dvertical_index][0];
                 break;
             }
             
-            if (dhorizontal_page == 0 && dbutton_selected == 1)
+            if (dhorizontal_page == 0 && dvertical_index == 0)
             {
                 ditem_chap += 1;
                 
@@ -532,15 +577,15 @@ function dmenu_state_interact()
             else
             {
                 dgiver_menu_state = dmenu_state;
-                dgiver_button_selected = dbutton_selected;
+                dgiver_button_selected = dvertical_index;
                 dmenu_state = "givertab";
-                dbutton_selected = 1;
+                dvertical_index = 0;
             }
             
             break;
         
         case "keyitems":
-            if (dbutton_selected == 1)
+            if (dvertical_index == 0)
             {
                 ditem_chap += 1;
                 
@@ -550,9 +595,9 @@ function dmenu_state_interact()
             else
             {
                 dgiver_menu_state = dmenu_state;
-                dgiver_button_selected = dbutton_selected;
+                dgiver_button_selected = dvertical_index;
                 dmenu_state = "givertab";
-                dbutton_selected = 1;
+                dvertical_index = 0;
             }
             
             break;
@@ -563,6 +608,7 @@ function dmenu_state_interact()
                 scr_debug_print(scr_dmode_get_text("msg_cancelled"));
                 break;
             }
+            
             if (dgiver_menu_state == "objects")
             {
                 real_index = dbutton_indices[dgiver_button_selected - 1];
@@ -664,10 +710,10 @@ function dmenu_state_interact()
             break;
         
         case "flag_categories":
-            if (dbutton_selected > 1)
+            if (dvertical_index > 0)
             {
                 dother_options = [];
-                real_index = dbutton_indices[dbutton_selected - 1];
+                real_index = dbutton_indices[dvertical_index];
                 
                 for (var i = 0; i < array_length(dother_all_options); i++)
                 {
@@ -679,7 +725,7 @@ function dmenu_state_interact()
                 
                 dhorizontal_index = find_subarray_index(dother_options[0][2], dother_options[0][3]);
                 dmenu_state = "flag_misc";
-                dbutton_selected = 1;
+                dvertical_index = 0;
             }
             
             break;
@@ -688,11 +734,8 @@ function dmenu_state_interact()
             break;
         
         case "recruits":
-            if (dbutton_selected == 1)
-            {
+            if (dvertical_index == 0)
                 dmenu_state = "recruit_presets";
-                dbutton_selected = 1;
-            }
             
             break;
         
@@ -709,7 +752,7 @@ function dmenu_state_interact()
                     var enemy_id = test_lst[i];
                     scr_recruit_info(enemy_id);
                     
-                    if (dbutton_selected == 1)
+                    if (dvertical_index == 0)
                         global.flag[enemy_id + 600] = 1;
                     else
                         global.flag[enemy_id + 600] = -1;
@@ -719,12 +762,55 @@ function dmenu_state_interact()
                     break;
             }
             
-            if (dbutton_selected == 1)
+            if (dvertical_index == 0)
                 snd_play(snd_pirouette);
             else
                 snd_play(snd_weirdeffect);
             
             dpop_history();
+            break;
+        
+        case "globals_changer":
+            if (global.dreading_custom_flag)
+            {
+                var value = 0;
+                cur_global_array = dglobal_changer_options[dvertical_index];
+                reading_double_flag = dvertical_index == 0;
+                glob_name = cur_global_array[0];
+                
+                if (reading_double_flag)
+                    glob_name = dcustom_flag_text[0];
+                
+                scr_debug_print(string(cur_global_array));
+                
+                switch (cur_global_array[1])
+                {
+                    case "string":
+                        value = string(dcustom_flag_text[reading_double_flag]);
+                        break;
+                    
+                    case "int":
+                    case "uint":
+                    case "real":
+                        value = real(dcustom_flag_text[reading_double_flag]);
+                        break;
+                    
+                    default:
+                        scr_debug_print("Unrecognized type |" + string(cur_global_array[1]) + "|");
+                }
+                
+                if (cur_global_array[2] > 1)
+                {
+                    base = variable_global_get(glob_name);
+                    base[dhorizontal_index] = value;
+                    value = base;
+                }
+                
+                variable_global_set(glob_name, value);
+                scr_debug_print("Changed global." + string(glob_name) + " to |" + string(value) + "|");
+            }
+            
+            set_keyboard_reader(global.dreading_custom_flag ^ 1);
             break;
         
         default:
