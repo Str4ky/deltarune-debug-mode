@@ -283,10 +283,10 @@ for (i = 0; i < array_length(dother_categories); i++)
 for (i = 0; i < array_length(dother_all_options); i++)
     dflag_categories_len[dother_all_options[i][0]] += 1;
 
-dglobal_changer_options = [["Custom", "string", 0]];
-array_push(dglobal_changer_options, ["truename", "string", 1]);
+dglobal_changer_options = [["Custom", "string", -1]];
+array_push(dglobal_changer_options, ["truename", "string", -1]);
 array_push(dglobal_changer_options, ["othername", "string", 6]);
-array_push(dglobal_changer_options, ["gold", "int", 1]);
+array_push(dglobal_changer_options, ["gold", "int", -1]);
 array_push(dglobal_changer_options, ["maxhp", "uint", 5]);
 array_push(dglobal_changer_options, ["hp", "int", 5]);
 array_push(dglobal_changer_options, ["at", "int", 5]);
@@ -357,4 +357,30 @@ function scr_array_contains(arg0, arg1)
     }
     
     return false;
+}
+
+function parse_var_str(arg0, arg1)
+{
+    str = arg0;
+    check_error = arg1;
+    is_good = scr_string_respect_type(str, "variable", 1, check_error);
+    dtemp_text = "";
+    dtemp_num = 0;
+    
+    if (!is_good)
+        return 0;
+    
+	brack_start = string_pos("[", str);
+    if (brack_start == 0)
+    {
+        dtemp_text = str;
+        dtemp_num = -1;
+    }
+    else
+    {
+        dtemp_text = string_copy(str, 1, brack_start - 1);
+        dtemp_num = real(string_copy(str, brack_start + 1, string_length(str) - brack_start - 1));
+    }
+    
+    return 1;
 }

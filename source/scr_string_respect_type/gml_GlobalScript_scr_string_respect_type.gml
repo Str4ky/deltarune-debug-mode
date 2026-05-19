@@ -17,7 +17,7 @@ function scr_string_respect_type(arg0, arg1, arg2, arg3)
     is_good = 1;
     saw_dot = 0;
     saw_neg = 0;
-    is_var_step = 0;
+    var is_var_step = 0;
     
     for (c = 1; c <= string_length(str); c++)
     {

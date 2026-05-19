@@ -153,6 +153,8 @@ if (dmenu_active && global.dreading_custom_flag)
         {
             check_type = "uint";
             
+			if (dmenu_state == "warp_options")
+				check_type = "real";
             if (dmenu_state == "globals_changer")
             {
                 if (dvertical_index == 0)

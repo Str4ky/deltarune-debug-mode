@@ -345,18 +345,26 @@ function dmenu_state_update()
             
             for (var i = 0; i < array_length(dglobal_changer_options); i++)
             {
+                array_push(dbutton_indices, i);
                 name = dglobal_changer_options[i][0];
+                limit = dglobal_changer_options[i][2];
                 
                 if (i == 0 && reading_double_flag)
+                {
                     name = dcustom_flag_text[0];
+                    is_good = parse_var_str(name, 0);
+                    
+                    if (is_good)
+                    {
+                        name = dtemp_text;
+                        limit = dtemp_num;
+                    }
+                }
                 
                 text = name;
                 
                 if (i == 0 && reading_double_flag)
-                {
-                    scr_debug_print(string(dcustom_flag_text));
-                    text = "global." + dcustom_flag_text[0];
-                }
+                    text = "global." + name;
                 
                 cur_global_value = "";
                 var_exist = variable_global_exists(name);
@@ -364,18 +372,23 @@ function dmenu_state_update()
                 if (var_exist)
                     cur_global_value = variable_global_get(name);
                 
-                array_push(dbutton_indices, i);
-                limit = dglobal_changer_options[i][2];
-                
-                if (limit > 1)
+                if (limit != -1)
                 {
                     lookup_index = 0;
                     
-                    if (i == dvertical_index)
+                    if (i == dvertical_index && i == 0)
+                        lookup_index = limit;
+                    else if (i == dvertical_index)
                         lookup_index = dhorizontal_index;
                     
                     text += ("[" + string(lookup_index) + "]");
-                    cur_global_value = cur_global_value[lookup_index];
+                    
+                    if (typeof(cur_global_value) != "array")
+                        cur_global_value = "(Not an array)";
+                    else if (lookup_index >= array_length(cur_global_value))
+                        cur_global_value = "(Index too high)";
+                    else
+                        cur_global_value = cur_global_value[lookup_index];
                 }
                 
                 if (global.dreading_custom_flag && i == dvertical_index)
@@ -476,7 +489,7 @@ function dmenu_state_interact()
             {
                 drooms_options.target_is_darkzone ^= 1;
             }
-            else if (dvertical_index == 4)
+            else if (dvertical_index == 2)
             {
                 global.dreading_custom_flag = 1;
                 keyboard_string = "";
@@ -777,9 +790,18 @@ function dmenu_state_interact()
                 cur_global_array = dglobal_changer_options[dvertical_index];
                 reading_double_flag = dvertical_index == 0;
                 glob_name = cur_global_array[0];
+                glob_index = -1;
                 
                 if (reading_double_flag)
-                    glob_name = dcustom_flag_text[0];
+                {
+                    parse_var_str(dcustom_flag_text[0], 1);
+                    glob_name = dtemp_text;
+                    glob_index = dtemp_num;
+                }
+                else if (cur_global_array[2] != -1)
+                {
+                    glob_index = dhorizontal_index;
+                }
                 
                 scr_debug_print(string(cur_global_array));
                 
@@ -799,15 +821,19 @@ function dmenu_state_interact()
                         scr_debug_print("Unrecognized type |" + string(cur_global_array[1]) + "|");
                 }
                 
-                if (cur_global_array[2] > 1)
+                if (glob_index != -1)
                 {
                     base = variable_global_get(glob_name);
-                    base[dhorizontal_index] = value;
+                    base[glob_index] = value;
                     value = base;
                 }
                 
                 variable_global_set(glob_name, value);
                 scr_debug_print("Changed global." + string(glob_name) + " to |" + string(value) + "|");
+            }
+            else if (dvertical_index == 0)
+            {
+                dhorizontal_index = 0;
             }
             
             set_keyboard_reader(global.dreading_custom_flag ^ 1);

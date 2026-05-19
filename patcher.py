@@ -40,6 +40,7 @@ def parse_chapter_config(chap_list):
 
 def execute_actions(action_list, config, csx_lines):
     file_suffix = "_file"
+    gml_name = config['gml_name']
     for action in action_list:
         for method, params in action.items():
             params_copy = params.copy()
@@ -67,7 +68,7 @@ def get_command_variable(config):
     elem_identifier = ""
     queue_op = ""
     if (elem_type == 'scr'):
-        elem_identifier = f"{obj_name}.Code"
+        elem_identifier = f'"{gml_name}"'
     elif (elem_type == 'obj'):
         obj_methods = gml_name.split("_")[-2:]
         elem_identifier = f"{obj_name}.EventHandlerFor(EventType.{obj_methods[0]}, (uint){obj_methods[1]}, Data)"
