@@ -1,6 +1,13 @@
 {
 	"mode": "append",
-	"gml_Object_obj_battlecontroller_Step_0.gml": {
+	"gml_name": "gml_Object_obj_battlecontroller_Step_0",
+	"gml_Object_obj_battlecontroller_Step_0.gml": {},
+	"chap3_fix": {
+		"chapters": [3],
+		"gml_name": "gml_Object_obj_battlecontroller_Create_0"
+	},
+	".replace_scr_debug": {
+		"chapters": [-1],
 		"actions": [
 			{
 				"find_replace": {
@@ -9,9 +16,5 @@
 				}
 			}
 		]
-	},
-	"chap3_fix": {
-		"chapters": [3],
-		"gml_name": "gml_Object_obj_battlecontroller_Create_0"
 	}
 }

@@ -14,7 +14,7 @@
     "gml_name": "gml_Object_obj_savemenu_Draw_0",
     "actions": [
       {
-        "find_replace": {
+        "regex_find_replace": {
           "find_file": "save_debug_button_find",
           "replace_file": "save_debug_button_replace"
         }
