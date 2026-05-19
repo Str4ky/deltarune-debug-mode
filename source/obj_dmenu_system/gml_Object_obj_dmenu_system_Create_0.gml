@@ -10,44 +10,19 @@ dscroll_delay = 15;
 dscroll_speed = 5;
 dbackspace_timer = 0;
 dmenu_title = scr_dmode_get_text("debug_menu");
-dbutton_options_original = [
-    scr_dmode_get_text("warps"),
-    scr_dmode_get_text("items"),
-    scr_dmode_get_text("recruits"),
-    scr_dmode_get_text("misc")
-];
+dbutton_options_original = [[scr_dmode_get_text("warps"), scr_dmode_get_text("items"), scr_dmode_get_text("recruits"), scr_dmode_get_text("misc")], ["Globals"]];
 dnumber_litems = [0, 11, 14, 14, 18];
 dlight_weapons = [];
-dlight_armors = [
-    [3, scr_dmode_get_text("bandage")],
-    [14, scr_dmode_get_text("wristwatch")]
-];
-dlight_objects = [
-    [1,  scr_dmode_get_text("hot_chocolate")],
-    [2,  scr_dmode_get_text("pencil")],
-    [3,  scr_dmode_get_text("bandage")],
-    [4,  scr_dmode_get_text("bouquet")],
-    [5,  scr_dmode_get_text("ball_junk")],
-    [6,  scr_dmode_get_text("halloween_pencil")],
-    [7,  scr_dmode_get_text("lucky_pencil")],
-    [8,  scr_dmode_get_text("egg")],
-    [9,  scr_dmode_get_text("cards")],
-    [10, scr_dmode_get_text("heart_candy")],
-    [11, scr_dmode_get_text("glass")],
-    [12, scr_dmode_get_text("eraser")],
-    [13, scr_dmode_get_text("mech_pencil")],
-    [14, scr_dmode_get_text("wristwatch")],
-    [15, scr_dmode_get_text("holiday_pencil")],
-    [16, scr_dmode_get_text("cactus_needle")],
-    [17, scr_dmode_get_text("black_shard")],
-    [18, scr_dmode_get_text("quill_pen")]
-];
+dlight_armors = [[3, scr_dmode_get_text("bandage")], [14, scr_dmode_get_text("wristwatch")]];
+dlight_objects = [[1, scr_dmode_get_text("hot_chocolate")], [2, scr_dmode_get_text("pencil")], [3, scr_dmode_get_text("bandage")], [4, scr_dmode_get_text("bouquet")], [5, scr_dmode_get_text("ball_junk")], [6, scr_dmode_get_text("halloween_pencil")], [7, scr_dmode_get_text("lucky_pencil")], [8, scr_dmode_get_text("egg")], [9, scr_dmode_get_text("cards")], [10, scr_dmode_get_text("heart_candy")], [11, scr_dmode_get_text("glass")], [12, scr_dmode_get_text("eraser")], [13, scr_dmode_get_text("mech_pencil")], [14, scr_dmode_get_text("wristwatch")], [15, scr_dmode_get_text("holiday_pencil")], [16, scr_dmode_get_text("cactus_needle")], [17, scr_dmode_get_text("black_shard")], [18, scr_dmode_get_text("quill_pen")]];
 dhinter_active = false;
 itemdescb = "";
 armordesctemp = "";
 weapondesctemp = "";
 tempkeyitemdesc = "";
 dhinter_text = "";
+dtemp_text = "";
+dtemp_num = 0;
 
 if (global.chapter >= 4)
 {
@@ -58,13 +33,7 @@ if (global.chapter >= 4)
 }
 else
 {
-    dlight_weapons = [
-    [2,  scr_dmode_get_text("pencil")],
-    [6,  scr_dmode_get_text("halloween_pencil")],
-    [7,  scr_dmode_get_text("lucky_pencil")],
-    [12, scr_dmode_get_text("eraser")],
-    [13, scr_dmode_get_text("mech_pencil")]
-];
+    dlight_weapons = [[2, scr_dmode_get_text("pencil")], [6, scr_dmode_get_text("halloween_pencil")], [7, scr_dmode_get_text("lucky_pencil")], [12, scr_dmode_get_text("eraser")], [13, scr_dmode_get_text("mech_pencil")]];
 }
 
 for (i = 0; i < array_length(dlight_objects); i++)
@@ -84,9 +53,10 @@ if (global.chapter == 1)
 if (global.chapter < 3)
     array_delete(dbutton_options_original, 2, 1);
 
-dbutton_options = dbutton_options_original;
+dbutton_options = [];
+dbutton_options_2d = dbutton_options_original;
 dmenu_state = "debug";
-dbutton_selected = 1;
+dvertical_index = 0;
 dhorizontal_page = 0;
 dhorizontal_index = 0;
 dmenu_state_history = [];
@@ -109,28 +79,30 @@ dkeyitem_gaps = [0, 0, 0, 10, 0];
 
 dpop_history = function()
 {
-	dkeyboard_input = "";
-	if (array_length(dmenu_state_history) > 0)
-	{
-		dmenu_state = dmenu_state_history[array_length(dmenu_state_history) - 1];
-		array_resize(dmenu_state_history, array_length(dmenu_state_history) - 1);
-	}
-	else
-	{
-		dmenu_active = !dmenu_active;
-		dmenu_state_history = [];
-		dbutton_selected_history = [];
-		global.interact = 0;
-	}
-	if (array_length(dbutton_selected_history) > 0)
-	{
-		dbutton_selected = dbutton_selected_history[array_length(dbutton_selected_history) - 1];
-		array_resize(dbutton_selected_history, array_length(dbutton_selected_history) - 1);
-	}
-	
-	dmenu_state_update();
-	dmenu_start_index = clamp(dbutton_selected - 1, 0, max(0, array_length(dbutton_options) - dbutton_max_visible));
-}
+    dkeyboard_input = "";
+    
+    if (array_length(dmenu_state_history) > 0)
+    {
+        dmenu_state = dmenu_state_history[array_length(dmenu_state_history) - 1];
+        array_resize(dmenu_state_history, array_length(dmenu_state_history) - 1);
+    }
+    else
+    {
+        dmenu_active = !dmenu_active;
+        dmenu_state_history = [];
+        dbutton_selected_history = [];
+        global.interact = 0;
+    }
+    
+    if (array_length(dbutton_selected_history) > 0)
+    {
+        dvertical_index = dbutton_selected_history[array_length(dbutton_selected_history) - 1];
+        array_resize(dbutton_selected_history, array_length(dbutton_selected_history) - 1);
+    }
+    
+    dmenu_state_update();
+    dmenu_start_index = clamp(dvertical_index, 0, max(0, array_length(dbutton_options) - dbutton_max_visible));
+};
 
 ditem_index_data = function(arg0)
 {
@@ -192,6 +164,10 @@ dkeyitem_index_data = function(arg0)
     };
 };
 
+extract_global_infos = function(arg0)
+{
+};
+
 cate_enum = 0;
 GONER = cate_enum++;
 SUPERBOSS = cate_enum++;
@@ -207,77 +183,26 @@ MISC3 = cate_enum++;
 MISC4 = cate_enum++;
 MOUSSE = cate_enum++;
 ROBOTEUR = cate_enum++;
-dother_categories = [
-    scr_dmode_get_text("cat_vessel"),
-    scr_dmode_get_text("cat_superboss"),
-    scr_dmode_get_text("cat_weird"),
-    scr_dmode_get_text("cat_seam"),
-    scr_dmode_get_text("cat_eggs"),
-    scr_dmode_get_text("cat_onion"),
-    scr_dmode_get_text("cat_misc1"),
-    scr_dmode_get_text("cat_misc2"),
-    scr_dmode_get_text("cat_tenna"),
-    scr_dmode_get_text("cat_sword"),
-    scr_dmode_get_text("cat_misc3"),
-    scr_dmode_get_text("cat_misc4"),
-    scr_dmode_get_text("cat_moss"),
-    scr_dmode_get_text("cat_thrash")
-];
+dother_categories = [scr_dmode_get_text("cat_vessel"), scr_dmode_get_text("cat_superboss"), scr_dmode_get_text("cat_weird"), scr_dmode_get_text("cat_seam"), scr_dmode_get_text("cat_eggs"), scr_dmode_get_text("cat_onion"), scr_dmode_get_text("cat_misc1"), scr_dmode_get_text("cat_misc2"), scr_dmode_get_text("cat_tenna"), scr_dmode_get_text("cat_sword"), scr_dmode_get_text("cat_misc3"), scr_dmode_get_text("cat_misc4"), scr_dmode_get_text("cat_moss"), scr_dmode_get_text("cat_thrash")];
 dother_all_options = [];
 dother_options = [];
 
 if (global.chapter >= 0)
 {
-    // FOOD
-    array_push(dother_all_options, [GONER, scr_dmode_get_text("g_food"), 903, [
-        [scr_dmode_get_text("opt_sweet"), 0], [scr_dmode_get_text("opt_soft"), 1], 
-        [scr_dmode_get_text("opt_bitter"), 2], [scr_dmode_get_text("opt_salty"), 3], 
-        [scr_dmode_get_text("opt_pain"), 4], [scr_dmode_get_text("opt_cold"), 5]
-    ]]);
-
-    // BLOOD TYPE
-    array_push(dother_all_options, [GONER, scr_dmode_get_text("g_blood"), 904, [
-        ["A", 0], ["AB", 1], ["B", 2], ["C", 3], ["D", 4]
-    ]]);
-
-    // COLOR
-    array_push(dother_all_options, [GONER, scr_dmode_get_text("g_color"), 905, [
-        [scr_dmode_get_text("opt_red"), 0], [scr_dmode_get_text("opt_blue"), 1], 
-        [scr_dmode_get_text("opt_green"), 2], [scr_dmode_get_text("opt_cyan"), 3]
-    ]]);
-
-    // GIFT
-    array_push(dother_all_options, [GONER, scr_dmode_get_text("g_gift"), 909, [
-        [scr_dmode_get_text("opt_kindness"), -1], [scr_dmode_get_text("opt_mind"), 0], 
-        [scr_dmode_get_text("opt_ambition"), 1], [scr_dmode_get_text("opt_bravery"), 2], 
-        [scr_dmode_get_text("opt_voice"), 3]
-    ]]);
-
-    // OPINION
-    array_push(dother_all_options, [GONER, scr_dmode_get_text("g_feeling"), 906, [
-        [scr_dmode_get_text("opt_love"), 0], [scr_dmode_get_text("opt_hope"), 1], 
-        [scr_dmode_get_text("opt_disgust"), 2], [scr_dmode_get_text("opt_fear"), 3]
-    ]]);
-
-    // HONEST
-    array_push(dother_all_options, [GONER, scr_dmode_get_text("g_honest"), 907, [
-        [scr_dmode_get_text("opt_yes"), 0], [scr_dmode_get_text("opt_no"), 1]
-    ]]);
-
-    // CONSENT
-    array_push(dother_all_options, [GONER, scr_dmode_get_text("g_crises"), 908, [
-        [scr_dmode_get_text("opt_yes"), 0], [scr_dmode_get_text("opt_no"), 1]
-    ]]);
+    array_push(dother_all_options, [GONER, scr_dmode_get_text("g_food"), 903, [[scr_dmode_get_text("opt_sweet"), 0], [scr_dmode_get_text("opt_soft"), 1], [scr_dmode_get_text("opt_bitter"), 2], [scr_dmode_get_text("opt_salty"), 3], [scr_dmode_get_text("opt_pain"), 4], [scr_dmode_get_text("opt_cold"), 5]]]);
+    array_push(dother_all_options, [GONER, scr_dmode_get_text("g_blood"), 904, [["A", 0], ["AB", 1], ["B", 2], ["C", 3], ["D", 4]]]);
+    array_push(dother_all_options, [GONER, scr_dmode_get_text("g_color"), 905, [[scr_dmode_get_text("opt_red"), 0], [scr_dmode_get_text("opt_blue"), 1], [scr_dmode_get_text("opt_green"), 2], [scr_dmode_get_text("opt_cyan"), 3]]]);
+    array_push(dother_all_options, [GONER, scr_dmode_get_text("g_gift"), 909, [[scr_dmode_get_text("opt_kindness"), -1], [scr_dmode_get_text("opt_mind"), 0], [scr_dmode_get_text("opt_ambition"), 1], [scr_dmode_get_text("opt_bravery"), 2], [scr_dmode_get_text("opt_voice"), 3]]]);
+    array_push(dother_all_options, [GONER, scr_dmode_get_text("g_feeling"), 906, [[scr_dmode_get_text("opt_love"), 0], [scr_dmode_get_text("opt_hope"), 1], [scr_dmode_get_text("opt_disgust"), 2], [scr_dmode_get_text("opt_fear"), 3]]]);
+    array_push(dother_all_options, [GONER, scr_dmode_get_text("g_honest"), 907, [[scr_dmode_get_text("opt_yes"), 0], [scr_dmode_get_text("opt_no"), 1]]]);
+    array_push(dother_all_options, [GONER, scr_dmode_get_text("g_crises"), 908, [[scr_dmode_get_text("opt_yes"), 0], [scr_dmode_get_text("opt_no"), 1]]]);
 }
 
 if (global.chapter >= 1)
 {
-    // TRASH MACHINE
     array_push(dother_all_options, [ROBOTEUR, scr_dmode_get_text("thrash_head"), 220, [[scr_dmode_get_text("opt_laser"), 0], [scr_dmode_get_text("opt_sword"), 1], [scr_dmode_get_text("opt_flame"), 2], [scr_dmode_get_text("opt_duck"), 3]]]);
     array_push(dother_all_options, [ROBOTEUR, scr_dmode_get_text("thrash_body"), 221, [[scr_dmode_get_text("opt_simple"), 0], [scr_dmode_get_text("opt_wheel"), 1], [scr_dmode_get_text("opt_tank"), 2], [scr_dmode_get_text("opt_duck"), 3]]]);
     array_push(dother_all_options, [ROBOTEUR, scr_dmode_get_text("thrash_legs"), 222, [[scr_dmode_get_text("opt_sneakers"), 0], [scr_dmode_get_text("opt_tires"), 1], [scr_dmode_get_text("opt_tracks"), 2], [scr_dmode_get_text("opt_duck"), 3]]]);
-    
-    // MISC 1
     array_push(dother_all_options, [MISC1, scr_dmode_get_text("label_gang"), 214, [[scr_dmode_get_text("gang_guys"), 0], [scr_dmode_get_text("gang_squad"), 1], [scr_dmode_get_text("gang_fanclub"), 2], [scr_dmode_get_text("gang_fungang"), 3]]]);
     array_push(dother_all_options, [MISC1, scr_dmode_get_text("label_prophecy"), 203, [[scr_dmode_get_text("opt_no"), 1], [scr_dmode_get_text("opt_yes"), 0]]]);
     array_push(dother_all_options, [MISC1, scr_dmode_get_text("label_manual"), 207, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_tried"), 1], [scr_dmode_get_text("opt_thrown"), 2]]]);
@@ -287,23 +212,16 @@ if (global.chapter >= 1)
     array_push(dother_all_options, [MISC1, scr_dmode_get_text("label_asgore_flowers"), 262, [[scr_dmode_get_text("opt_notseen"), 0], [scr_dmode_get_text("opt_no"), 2], [scr_dmode_get_text("opt_given"), 4]]]);
     array_push(dother_all_options, [MISC1, scr_dmode_get_text("label_noelle_out"), 276, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_no"), 1], [scr_dmode_get_text("opt_talked_susie"), 2]]]);
     array_push(dother_all_options, [MISC1, scr_dmode_get_text("label_sink"), 278, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
-    
-    // EGGS & SUPERBOSSES
     array_push(dother_all_options, [ZOEUFS, scr_dmode_get_text("label_egg1"), 911, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
     array_push(dother_all_options, [SUPERBOSS, scr_dmode_get_text("label_jevil"), 241, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_violence"), 6], [scr_dmode_get_text("opt_mercy"), 7]]]);
-    
-    // ONION SAN
     array_push(dother_all_options, [ONION_SAN, scr_dmode_get_text("label_onion_rel"), 258, [[scr_dmode_get_text("opt_notseen"), 0], [scr_dmode_get_text("opt_friends"), 2], [scr_dmode_get_text("opt_notfriends"), 3]]]);
     array_push(dother_all_options, [ONION_SAN, scr_dmode_get_text("label_kris_name"), 259, [[scr_dmode_get_text("opt_no"), 0], ["Kris", 1], [scr_dmode_get_text("opt_hippo"), 2]]]);
     array_push(dother_all_options, [ONION_SAN, scr_dmode_get_text("label_onion_name"), 260, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_onyx"), 1], [scr_dmode_get_text("opt_beauty"), 2], [scr_dmode_get_text("opt_asriel2"), 3], [scr_dmode_get_text("opt_stinky"), 4]]]);
-    
-    // MOSS
     array_push(dother_all_options, [MOUSSE, scr_dmode_get_text("label_moss1"), 106, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
 }
 
 if (global.chapter >= 2)
 {
-    // MISC 2
     array_push(dother_all_options, [MISC2, scr_dmode_get_text("label_plush"), 307, [[scr_dmode_get_text("opt_notgiven"), 0], ["Ralsei", 1], ["Susie", 2], ["Noëlle", 3], ["Berdly", 4]]]);
     array_push(dother_all_options, [MISC2, scr_dmode_get_text("label_hacker"), 659, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
     array_push(dother_all_options, [MISC2, scr_dmode_get_text("label_berdly_arm"), 457, [[scr_dmode_get_text("opt_burnt"), 0], [scr_dmode_get_text("opt_ok"), 1]]]);
@@ -312,24 +230,14 @@ if (global.chapter >= 2)
     array_push(dother_all_options, [MISC2, scr_dmode_get_text("label_icee_statue"), 394, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
     array_push(dother_all_options, [MISC2, scr_dmode_get_text("label_sink2"), 461, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
     array_push(dother_all_options, [MISC2, scr_dmode_get_text("label_shelter"), 315, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
-
-    // WEIRD ROUTE
     array_push(dother_all_options, [WEIRD2, scr_dmode_get_text("label_weird_prog"), 915, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_viri_killed"), 3], [scr_dmode_get_text("opt_frozen"), 6], [scr_dmode_get_text("opt_talked_susie"), 9], [scr_dmode_get_text("opt_hospital"), 20]]]);
     array_push(dother_all_options, [WEIRD2, scr_dmode_get_text("label_weird_cancel"), 916, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
-    
-    // Eggs & Superbosses
     array_push(dother_all_options, [ZOEUFS, scr_dmode_get_text("label_egg2"), 918, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
     array_push(dother_all_options, [SUPERBOSS, scr_dmode_get_text("label_spamton"), 309, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 9]]]);
-    
-    // ONION SAN
     array_push(dother_all_options, [ONION_SAN, scr_dmode_get_text("label_onion_rel2"), 425, [[scr_dmode_get_text("opt_notseen"), 0], [scr_dmode_get_text("opt_friends"), 1], [scr_dmode_get_text("opt_notfriends_anymore"), 2]]]);
-    
-    // MOSS
     array_push(dother_all_options, [MOUSSE, scr_dmode_get_text("label_moss2"), 920, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
     array_push(dother_all_options, [MOUSSE, scr_dmode_get_text("label_moss_noelle"), 921, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
     array_push(dother_all_options, [MOUSSE, scr_dmode_get_text("label_moss_susie"), 922, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
-    
-    // SEAM
     array_push(dother_all_options, [SEAM, scr_dmode_get_text("label_seam_gaveup"), 961, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
     array_push(dother_all_options, [SEAM, scr_dmode_get_text("label_crystal_jevil"), 954, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
     array_push(dother_all_options, [SEAM, scr_dmode_get_text("label_crystal_spamton"), 353, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
@@ -338,75 +246,29 @@ if (global.chapter >= 2)
 
 if (global.chapter >= 3)
 {
-    // LOT
     array_push(dother_all_options, [LOT, scr_dmode_get_text("label_lot_rank1"), 1173, [["Z", 0], ["C", 1], ["B", 2], ["A", 3], ["S", 4], ["T", 5]]]);
     array_push(dother_all_options, [LOT, scr_dmode_get_text("label_lot_rank2"), 1174, [["Z", 0], ["C", 1], ["B", 2], ["A", 3], ["S", 4], ["T", 5]]]);
-    
-    // SWORD ROUTE
-    array_push(dother_all_options, [SWORD3, scr_dmode_get_text("label_sword_prog"), 1055, [
-        [scr_dmode_get_text("opt_notseen"), 0], 
-        [scr_dmode_get_text("opt_ice_key"), 1], 
-        [scr_dmode_get_text("opt_dungeon2"), 1.5], 
-        [scr_dmode_get_text("opt_key_used"), 2], 
-        [scr_dmode_get_text("opt_shelter_key"), 3], 
-        [scr_dmode_get_text("opt_dungeon3"), 4], 
-        [scr_dmode_get_text("opt_shelter_used"), 5], 
-        [scr_dmode_get_text("opt_eram"), 6]
-    ]]);
+    array_push(dother_all_options, [SWORD3, scr_dmode_get_text("label_sword_prog"), 1055, [[scr_dmode_get_text("opt_notseen"), 0], [scr_dmode_get_text("opt_ice_key"), 1], [scr_dmode_get_text("opt_dungeon2"), 1.5], [scr_dmode_get_text("opt_key_used"), 2], [scr_dmode_get_text("opt_shelter_key"), 3], [scr_dmode_get_text("opt_dungeon3"), 4], [scr_dmode_get_text("opt_shelter_used"), 5], [scr_dmode_get_text("opt_eram"), 6]]]);
     array_push(dother_all_options, [SWORD3, scr_dmode_get_text("label_susie_attacked"), 1268, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
-    
-    // Eggs & Superbosses
     array_push(dother_all_options, [ZOEUFS, scr_dmode_get_text("label_egg3"), 930, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
     array_push(dother_all_options, [SUPERBOSS, scr_dmode_get_text("label_knight"), 1047, [[scr_dmode_get_text("opt_no"), 2], [scr_dmode_get_text("opt_yes"), 1]]]);
-    
-    // MISC 3
-    array_push(dother_all_options, [MISC3, scr_dmode_get_text("label_fountain"), 1144, [
-        [scr_dmode_get_text("opt_notseen"), 0], 
-        [scr_dmode_get_text("opt_flirt_no_curtain"), 1], 
-        [scr_dmode_get_text("opt_no_flirt"), 2], 
-        [scr_dmode_get_text("opt_flirt_curtain"), 3]
-    ]]);
+    array_push(dother_all_options, [MISC3, scr_dmode_get_text("label_fountain"), 1144, [[scr_dmode_get_text("opt_notseen"), 0], [scr_dmode_get_text("opt_flirt_no_curtain"), 1], [scr_dmode_get_text("opt_no_flirt"), 2], [scr_dmode_get_text("opt_flirt_curtain"), 3]]]);
     array_push(dother_all_options, [MISC3, scr_dmode_get_text("label_tenna_statue"), 1222, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
-    
-    // MOSS
     array_push(dother_all_options, [MOUSSE, scr_dmode_get_text("label_moss3"), 1078, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
-    
-    // SEAM
     array_push(dother_all_options, [SEAM, scr_dmode_get_text("label_crystal_knight"), 856, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
 }
 
 if (global.chapter >= 4)
 {
-    // Eggs & Superbosses
     array_push(dother_all_options, [ZOEUFS, scr_dmode_get_text("label_egg4"), 931, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
     array_push(dother_all_options, [SUPERBOSS, scr_dmode_get_text("label_gerson"), 1629, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
-    
-    // MOSS
     array_push(dother_all_options, [MOUSSE, scr_dmode_get_text("label_moss4"), 1592, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1], [scr_dmode_get_text("opt_refused"), 2]]]);
-    
-    // MISC 4
     array_push(dother_all_options, [MISC4, scr_dmode_get_text("label_ralsei_room"), 710, [[scr_dmode_get_text("opt_notseen"), 0], [scr_dmode_get_text("opt_seen"), 2]]]);
     array_push(dother_all_options, [MISC4, scr_dmode_get_text("label_qcs_susie"), 701, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_visited"), 1]]]);
     array_push(dother_all_options, [MISC4, scr_dmode_get_text("label_tea_ralsei"), 1514, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
-    
-    // Pray
-    array_push(dother_all_options, [MISC4, scr_dmode_get_text("label_prayer"), 1507, [
-        [scr_dmode_get_text("opt_no"), 0], 
-        [scr_dmode_get_text("opt_for_susie"), 1], 
-        [scr_dmode_get_text("opt_for_noelle"), 2], 
-        [scr_dmode_get_text("opt_for_asriel"), 3]
-    ]]);
-    
+    array_push(dother_all_options, [MISC4, scr_dmode_get_text("label_prayer"), 1507, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_for_susie"), 1], [scr_dmode_get_text("opt_for_noelle"), 2], [scr_dmode_get_text("opt_for_asriel"), 3]]]);
     array_push(dother_all_options, [MISC4, scr_dmode_get_text("label_tenna_given"), 779, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 2]]]);
-    
-    // Noelle's phone
-    array_push(dother_all_options, [MISC4, scr_dmode_get_text("label_noelle_phone"), 714, [
-        [scr_dmode_get_text("opt_not_inspected"), 0], 
-        [scr_dmode_get_text("opt_no_answer"), 1], 
-        [scr_dmode_get_text("opt_festival"), 2], 
-        [scr_dmode_get_text("opt_wrong_number"), 3]
-    ]]);
-    
+    array_push(dother_all_options, [MISC4, scr_dmode_get_text("label_noelle_phone"), 714, [[scr_dmode_get_text("opt_not_inspected"), 0], [scr_dmode_get_text("opt_no_answer"), 1], [scr_dmode_get_text("opt_festival"), 2], [scr_dmode_get_text("opt_wrong_number"), 3]]]);
     array_push(dother_all_options, [MISC4, scr_dmode_get_text("label_susie_prize"), 747, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
     array_push(dother_all_options, [MISC4, scr_dmode_get_text("label_stain"), 748, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
     array_push(dother_all_options, [MISC4, scr_dmode_get_text("label_ladder"), 864, [[scr_dmode_get_text("opt_no"), 0], [scr_dmode_get_text("opt_yes"), 1]]]);
@@ -421,8 +283,33 @@ for (i = 0; i < array_length(dother_categories); i++)
 for (i = 0; i < array_length(dother_all_options); i++)
     dflag_categories_len[dother_all_options[i][0]] += 1;
 
+dglobal_changer_options = [["Custom", "string", -1]];
+array_push(dglobal_changer_options, ["truename", "string", -1]);
+array_push(dglobal_changer_options, ["othername", "string", 6]);
+array_push(dglobal_changer_options, ["gold", "int", -1]);
+array_push(dglobal_changer_options, ["maxhp", "uint", 5]);
+array_push(dglobal_changer_options, ["hp", "int", 5]);
+array_push(dglobal_changer_options, ["at", "int", 5]);
+array_push(dglobal_changer_options, ["df", "int", 5]);
+array_push(dglobal_changer_options, ["mag", "int", 5]);
 global.dreading_custom_flag = 0;
 dcustom_flag_text = ["", ""];
+dkeys_helper = 0;
+dkeys_data = [];
+drooms_id = scr_get_room_list();
+drooms = [];
+drooms_options = 
+{
+    target_room: ROOM_INITIALIZE,
+    target_plot: global.plot,
+    target_is_darkzone: global.darkzone,
+    target_member_2: global.char[1],
+    target_member_3: global.char[2]
+};
+dkeyboard_input = "";
+
+for (i = 0; i < array_length(drooms_id); i++)
+    array_push(drooms, room_get_name(drooms_id[i].room_index));
 
 find_subarray_index = function(arg0, arg1)
 {
@@ -453,6 +340,14 @@ draw_monospace = function(arg0, arg1, arg2)
     }
 };
 
+set_keyboard_reader = function(arg0)
+{
+    global.dreading_custom_flag = arg0;
+    keyboard_string = "";
+    dcustom_flag_text = ["", ""];
+    global.dkeyboard_text = "";
+};
+
 function scr_array_contains(arg0, arg1)
 {
     for (var i = 0; i < array_length(arg0); i++)
@@ -464,20 +359,28 @@ function scr_array_contains(arg0, arg1)
     return false;
 }
 
-dkeys_helper = 0;
-dkeys_data = [];
-drooms_id = scr_get_room_list();
-drooms = [];
-drooms_options = 
+function parse_var_str(arg0, arg1)
 {
-    target_room: ROOM_INITIALIZE,
-    target_room: ROOM_INITIALIZE,
-    target_plot: global.plot,
-    target_is_darkzone: global.darkzone,
-    target_member_2: global.char[1],
-    target_member_3: global.char[2]
-};
-dkeyboard_input = "";
-
-for (i = 0; i < array_length(drooms_id); i++)
-    array_push(drooms, room_get_name(drooms_id[i].room_index));
+    str = arg0;
+    check_error = arg1;
+    is_good = scr_string_respect_type(str, "variable", 1, check_error);
+    dtemp_text = "";
+    dtemp_num = 0;
+    
+    if (!is_good)
+        return 0;
+    
+	brack_start = string_pos("[", str);
+    if (brack_start == 0)
+    {
+        dtemp_text = str;
+        dtemp_num = -1;
+    }
+    else
+    {
+        dtemp_text = string_copy(str, 1, brack_start - 1);
+        dtemp_num = real(string_copy(str, brack_start + 1, string_length(str) - brack_start - 1));
+    }
+    
+    return 1;
+}

@@ -2,23 +2,6 @@ xx = __view_get(e__VW.XView, 0);
 yy = __view_get(e__VW.YView, 0);
 d = global.darkzone + 1;
 
-if (!global.dreading_custom_flag && keyboard_check_pressed(ord("D")))
-{
-    dmenu_active = !dmenu_active;
-    
-    if (dmenu_active)
-    {
-        dmenu_previous_interact = global.interact;
-        snd_play(snd_egg);
-        global.interact = 1;
-    }
-    else
-    {
-        snd_play(snd_smallswing);
-        global.interact = dmenu_previous_interact;
-    }
-}
-
 if (dmenu_box == 0)
 {
     menu_width = 214;
@@ -174,13 +157,22 @@ if (dmenu_active)
     
     if (dbutton_layout == 0)
     {
-        for (var i = 0; i < button_count; i++)
+        var draw_y = (100 * d) + yy;
+        
+        for (var j = 0; j < array_length(dbutton_options_2d); j++)
         {
-            var cur_btn = string(dbutton_options[i]);
-            var text_width = string_width(cur_btn);
-            draw_set_color((dbutton_selected == (i + 1)) ? c_yellow : c_white);
-            draw_text(x_start + xx, (100 * d) + yy, cur_btn);
-            x_start += (text_width + x_spacing);
+            var draw_x = x_start + xx;
+            
+            for (var i = 0; i < array_length(dbutton_options_2d[j]); i++)
+            {
+                var cur_btn = string(dbutton_options_2d[j][i]);
+                var text_width = string_width(cur_btn);
+                draw_set_color((dvertical_index == j && dhorizontal_index == i) ? c_yellow : c_white);
+                draw_text(draw_x, draw_y, cur_btn);
+                draw_x += (text_width + x_spacing);
+            }
+            
+            draw_y += 30;
         }
     }
     
@@ -200,10 +192,9 @@ if (dmenu_active)
             
             if (button_index < array_length(dbutton_options))
             {
-                is_cur_line = dbutton_selected == (button_index + 1);
+                is_cur_line = dvertical_index == button_index;
                 var text_color = is_cur_line ? c_yellow : c_white;
                 draw_set_color(text_color);
-                
                 var cur_btn = string(dbutton_options[button_index]);
                 draw_monospace(x_start + xx, y_start + yy + (i * y_spacing), cur_btn);
                 var mono_spacing = (global.darkzone == 1) ? 15 : 8;
@@ -222,7 +213,7 @@ if (dmenu_active)
                         draw_sprite_ext(spr_morearrow, 0, x_start + xx + ((dash_pos * mono_spacing) + floor(mono_spacing / 2)) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[0], darrow_scale, -darrow_scale, 90, c_white, 1);
                     }
                     
-                    if ((dmenu_state == "flag_misc" && dhorizontal_index < (array_length(dother_options[dbutton_selected - 1][3]) - 1)) || (dmenu_state == "warp_options" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != (4 - (global.chapter == 1))))
+                    if ((dmenu_state == "flag_misc" && dhorizontal_index < (array_length(dother_options[dvertical_index][3]) - 1)) || (dmenu_state == "warp_options" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != (4 - (global.chapter == 1))))
                         draw_sprite_ext(spr_morearrow, 0, (x_start + xx + ((string_length(cur_btn) + 1) * mono_spacing)) - floor(mono_spacing / 2) - dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[1], darrow_scale, -darrow_scale, 270, c_white, 1);
                 }
                 else if (dmenu_state == "recruits" && button_index == 0)
@@ -340,23 +331,7 @@ if (dmenu_active)
 
 if (dkeys_helper == 1)
 {
-    dkeys_data = [
-        string(scr_dmode_get_text("key_0")),
-        string(scr_dmode_get_text("key_1")),
-        string(scr_dmode_get_text("key_2")),
-        string(scr_dmode_get_text("key_3")),
-        string(scr_dmode_get_text("key_4")),
-        string(scr_dmode_get_text("key_5")),
-        string(scr_dmode_get_text("key_6")),
-        string(scr_dmode_get_text("key_7")),
-        string(scr_dmode_get_text("key_8")),
-        string(scr_dmode_get_text("key_9")),
-        string(scr_dmode_get_text("key_10")),
-        string(scr_dmode_get_text("key_11")),
-        string(scr_dmode_get_text("key_12")),
-        string(scr_dmode_get_text("key_13")),
-        string(scr_dmode_get_text("key_14"))
-    ];
+    dkeys_data = [string(scr_dmode_get_text("key_0")), string(scr_dmode_get_text("key_1")), string(scr_dmode_get_text("key_2")), string(scr_dmode_get_text("key_3")), string(scr_dmode_get_text("key_4")), string(scr_dmode_get_text("key_5")), string(scr_dmode_get_text("key_6")), string(scr_dmode_get_text("key_7")), string(scr_dmode_get_text("key_8")), string(scr_dmode_get_text("key_9")), string(scr_dmode_get_text("key_10")), string(scr_dmode_get_text("key_11")), string(scr_dmode_get_text("key_12")), string(scr_dmode_get_text("key_13")), string(scr_dmode_get_text("key_14"))];
     x_padding = 7;
     y_start = 50 * d;
     x_spacing = 10 * d;

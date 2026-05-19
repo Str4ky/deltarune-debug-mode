@@ -8,12 +8,14 @@
 		"chapters": [2]
 	},
     "dmenu_adder.gml": {},
-	"actions": [
-		{
-			"find_replace": {
-				"find": "if (scr_debug())",
-				"replace": "if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))"
+	".replace_debug": {
+		"actions": [
+			{
+				"find_replace": {
+					"find": "if (scr_debug())",
+					"replace": "if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))"
+				}
 			}
-		}
-	]
+		]
+	}
 }

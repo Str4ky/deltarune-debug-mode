@@ -17,6 +17,18 @@ foreach (var str in Data.Strings)
 }
 string defaultLang = isFrenchPatch ? "fr" : "en";
 
+UndertaleFunction DefineFunc(string name)
+{
+    UndertaleString str = Data.Strings.MakeString(name, out int id);
+    UndertaleFunction func = new()
+    {
+        Name = str,
+        NameStringID = id
+    };
+    Data.Functions.Add(func);
+    return func;
+}
+
 GlobalDecompileContext globalDecompileContext = new(Data);
 Underanalyzer.Decompiler.IDecompileSettings decompilerSettings = new Underanalyzer.Decompiler.DecompileSettings();
 UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, globalDecompileContext, decompilerSettings)
@@ -28,15 +40,16 @@ UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data, globalDecompile
 
 
 UndertaleScript scr_gamestart = Data.Scripts.ByName("scr_gamestart");
-importGroup.QueueAppend(scr_gamestart.Code,
+importGroup.QueueAppend("gml_GlobalScript_scr_gamestart",
 @"global.debug = 0;
 global.dgodmode = 0;
+global.dkeyboard_text = """";
 scr_dmode_init_lang();
 ");
 
 
 UndertaleScript scr_debug_print = Data.Scripts.ByName("scr_debug_print");
-importGroup.QueueReplace(scr_debug_print.Code,
+importGroup.QueueReplace("gml_GlobalScript_scr_debug_print",
 @"function scr_debug_print(arg0)
 {
     if (!instance_exists(obj_debug_gui))
@@ -94,6 +107,491 @@ enum e__VW
     Camera,
     SurfaceID
 }");
+
+
+
+importGroup.QueueReplace("gml_GlobalScript_scr_dmode_init_lang",
+@"function scr_dmode_init_lang()
+{
+	global.dmode_lang = ""fr"";//___DEFAULT_LANG___"";
+
+	global.dmode_text = 
+	{
+		en: 
+		{
+			dmode_activated: ""Debug Mode activated!"",
+			dmode_desactivated: ""Debug Mode deactivated!"",
+			fps_1: ""FPS to 1"",
+			fps_30: ""FPS to 30"",
+			fps_60: ""FPS to 60"",
+			fps_120: ""FPS to 120"",
+			tp_0: ""TP to 0%"",
+			tp_250: ""TP to 250%"",
+			fullheal: ""Party HP fully restored"",
+			fightwin: ""Fight skipped"",
+			turnskip: ""Enemy's turn skipped"",
+			
+			// Menus
+			debug_menu: ""Debug Menu"",
+			warps: ""Warps"",
+			items: ""Items"",
+			recruits: ""Recruits"",
+			misc: ""Misc"",
+
+			// Light Objects
+			hot_chocolate: ""Hot Chocolate"",
+			pencil: ""Pencil"",
+			bandage: ""Bandage"",
+			bouquet: ""Bouquet"",
+			ball_junk: ""Ball of Junk"",
+			halloween_pencil: ""Halloween Pencil"",
+			lucky_pencil: ""Lucky Pencil"",
+			egg: ""Egg"",
+			cards: ""Cards"",
+			heart_candy: ""Box of Heart Candy"",
+			glass: ""Glass"",
+			eraser: ""Eraser"",
+			mech_pencil: ""Mech. Pencil"",
+			wristwatch: ""Wristwatch"",
+			holiday_pencil: ""Holiday Pencil"",
+			cactus_needle: ""CactusNeedle"",
+			black_shard: ""BlackShard"",
+			quill_pen: ""QuillPen"",
+
+			// Categories
+			cat_vessel: ""Vessel Sequence"",
+			cat_superboss: ""Superbosses"",
+			cat_weird: ""Weird Route"",
+			cat_seam: ""Seam"",
+			cat_eggs: ""Eggs"",
+			cat_onion: ""Onion San"",
+			cat_misc1: ""Misc Chap 1"",
+			cat_misc2: ""Misc Chap 2"",
+			cat_tenna: ""Legend of Tenna"",
+			cat_sword: ""Sword Route"",
+			cat_misc3: ""Misc Chap 3"",
+			cat_misc4: ""Misc Chap 4"",
+			cat_moss: ""Moss"",
+			cat_thrash: ""Thrash Machine"",
+
+			// Goner Maker
+			g_food: ""FAVORITE FOOD"",
+			g_blood: ""BLOOD TYPE"",
+			g_color: ""FAVORITE COLOR"",
+			g_gift: ""GIFT"",
+			g_feeling: ""OPINION"",
+			g_honest: ""ANSWERED HONESTLY"",
+			g_crises: ""CONSENT TO CRISES"",
+			opt_sweet: ""SWEET"", opt_soft: ""SOFT"", opt_bitter: ""BITTER"", opt_salty: ""SALTY"", opt_pain: ""PAIN"", opt_cold: ""COLD"",
+			opt_red: ""RED"", opt_blue: ""BLUE"", opt_green: ""GREEN"", opt_cyan: ""CYAN"",
+			opt_kindness: ""KINDNESS"", opt_mind: ""MIND"", opt_ambition: ""AMBITION"", opt_bravery: ""BRAVERY"", opt_voice: ""VOICE"",
+			opt_love: ""LOVE"", opt_hope: ""HOPE"", opt_disgust: ""DISGUST"", opt_fear: ""FEAR"",
+			g_yes: ""YES"", g_no: ""NO"",
+
+			// General
+			opt_no: ""No"", opt_yes: ""Yes"", opt_seen: ""Seen"", opt_notseen: ""Not seen"",
+			
+			// Thrash Machine
+			thrash_head: ""Thrash Head"", thrash_body: ""Thrash Body"", thrash_legs: ""Thrash Legs"",
+			opt_laser: ""Laser"", opt_sword: ""Sword"", opt_flame: ""Flame"", opt_duck: ""Duck"",
+			opt_simple: ""Simple"", opt_wheel: ""Wheel"", opt_tank: ""Tank"",
+			opt_sneakers: ""Sneakers"", opt_tires: ""Tires"", opt_tracks: ""Tracks"",
+
+			// Misc Chap 1
+			label_gang: ""Gang Name"", 
+			gang_guys: ""The Guys (unused)"", gang_squad: ""The $!$! Squad"", gang_fanclub: ""Lancer Fan Club"", gang_fungang: ""The Fun Gang"",
+			label_prophecy: ""Prophecy heard"", label_manual: ""Manual thrown"",
+			opt_tried: ""Tried"", opt_thrown: ""Thrown"",
+			label_cake: ""Cake returned"", label_donation: ""Donation Goal"", opt_reached: ""Reached"",
+			label_starwalker: ""Starwalker"", label_asgore_flowers: ""Asgore's Flowers"", opt_given: ""Given"",
+			label_noelle_out: ""Noelle outside"", opt_talked_susie: ""Talked about Susie"",
+			label_sink: ""Sink inspected (ch 1)"", label_egg1: ""Egg obtained (ch 1)"",
+			label_jevil: ""Jevil defeated"", opt_violence: ""Via violence"", opt_mercy: ""Via mercy"",
+			
+			// Onion San
+			label_onion_rel: ""Relation (ch 1)"", opt_friends: ""Friends"", opt_notfriends: ""Not friends"",
+			label_kris_name: ""Kris's Name"", opt_hippo: ""Hippo"",
+			label_onion_name: ""Onion's Name"", opt_onyx: ""Onyx"", opt_beauty: ""Beauty"", opt_asriel2: ""Asriel II"", opt_stinky: ""Stinky"",
+			
+			// Moss
+			label_moss1: ""Moss eaten (ch 1)"",
+
+			// Misc Chap 2
+			label_plush: ""Plushie"", opt_notgiven: ""Not given"",
+			label_hacker: ""Hacker recruited"",
+			label_berdly_arm: ""Berdly's Arm"", opt_burnt: ""Burnt"", opt_ok: ""Ok"",
+			label_mt_fan: ""Mettaton 'Fan'"",
+			label_susie_statue: ""Susie Statue collected"",
+			label_icee_statue: ""ICE-E collected"",
+			label_sink2: ""Sink inspected (ch 2)"",
+			label_shelter: ""Shelter scene seen"",
+			label_weird_prog: ""Progress"",
+			opt_viri_killed: ""Addison killed"", opt_frozen: ""Berdly frozen"", 
+			opt_talked_susie: ""Talked to Susie"", opt_hospital: ""Noelle at hospital"",
+			label_weird_cancel: ""Canceled Weird Route"",
+			label_egg2: ""Egg obtained (ch 2)"",
+			label_spamton: ""Spamton defeated"",
+			label_onion_rel2: ""Relation (ch 2)"", opt_notfriends_anymore: ""Not friends anymore"",
+			label_moss2: ""Moss eaten (ch 2)"",
+			label_moss_noelle: ""... with Noelle"",
+			label_moss_susie: ""... with Susie"",
+			label_seam_gaveup: ""Seam gave up quest"",
+			label_crystal_jevil: ""Jevil's Crystal given"",
+			label_crystal_spamton: ""Spamton's Crystal given"",
+			label_seam_talk: ""Talked to Seam"",
+
+			// Chap 3
+			label_lot_rank1: ""LOT Board 1 Rank"",
+			label_lot_rank2: ""LOT Board 2 Rank"",
+			label_sword_prog: ""Sword Route Progress"",
+			opt_ice_key: ""Ice Key obtained"", opt_dungeon2: ""Dungeon (Floor 2)"", opt_key_used: ""Key used"",
+			opt_shelter_key: ""Shelter Key obtained"", opt_dungeon3: ""Dungeon (Floor 3)"", opt_shelter_used: ""Shelter Key used"",
+			opt_eram: ""ERAM defeated"",
+			label_susie_attacked: ""Susie attacked"",
+			label_egg3: ""Egg obtained (ch 3)"",
+			label_knight: ""Knight defeated"",
+			label_fountain: ""Fountain"",
+			opt_flirt_no_curtain: ""Flirted (no curtain)"", opt_no_flirt: ""No flirt"", opt_flirt_curtain: ""Flirted (talked to curtain)"",
+			label_tenna_statue: ""Tenna Statue collected"",
+			label_moss3: ""Moss eaten (ch 3)"",
+			label_crystal_knight: ""Knight's Crystal given"",
+
+			// Chap 4
+			label_egg4: ""Egg obtained (ch 4)"",
+			label_gerson: ""Gerson defeated"",
+			label_moss4: ""Moss eaten (ch 4)"", opt_refused: ""Refused"",
+			label_ralsei_room: ""Ralsei's Room"",
+			label_qcs_susie: ""QC's with Susie"", opt_visited: ""Visited"",
+			label_tea_ralsei: ""Tea with Ralsei"",
+			label_prayer: ""Prayer"", opt_for_susie: ""For Susie"", opt_for_noelle: ""For Noelle"", opt_for_asriel: ""For Asriel"",
+			label_tenna_given: ""Tenna given"",
+			label_noelle_phone: ""Noelle's Phone"", opt_not_inspected: ""Not inspected"", opt_no_answer: ""Didn't answer"", opt_festival: ""Go to festival"", opt_wrong_number: ""Wrong number song"",
+			label_susie_prize: ""Susie's Prize collected"",
+			label_stain: ""Stain removed"",
+			label_ladder: ""Ladder collected"",
+			label_pillow: ""Pillow collected"",
+
+			// UI Draw Menu
+			menu_debug: ""Debug Menu"",
+			room_list: ""Room List"",
+			warp_options: ""Warp Options"",
+			item_type: ""Item Type"",
+			item_list: ""Item List"",
+			armor_list: ""Armor List"",
+			weapon_list: ""Weapon List"",
+			keyitem_list: ""Key Item List"",
+			add_how_many: ""Add how many to inventory?"",
+			recruit_list: ""Recruit List"",
+			recruit_presets: ""Recruit Presets"",
+			ui_misc: ""Misc"",
+			menu_unknown: ""Unknown"",
+			btn_current_room: ""Current Room"",
+			btn_search: ""Search"",
+			ui_contains: ""Contains: "",
+			btn_cancel: ""Cancel"",
+			ui_is_darkworld: ""Is Darkworld: "",
+			ui_plot_value: ""Plot Value: "",
+			ui_teammate2: ""Teammate 2:  "",
+			ui_teammate3: ""Teammate 3:  "",
+			btn_warp: ""Warp"",
+			ui_nobody: ""Nobody"",
+			type_items: ""Items"",
+			type_armors: ""Armors"",
+			type_weapons: ""Weapons"",
+			type_keyitems: ""Key Items"",
+			ui_chapter: ""Chapter: "",
+			ui_held: ""held"",
+			ui_equipped: ""Equipped"",
+			btn_presets: ""Presets"",
+			btn_recruit_all: ""Recruit All"",
+			btn_lose_all: ""Lose All"",
+			ui_chap_short: ""chap"",
+			ui_of_chapter: ""of chapter"",
+			ui_custom: ""Custom"",
+			ui_problem: ""problem lol"",
+			msg_cancelled: ""Cancelled"",
+			msg_removed_inv: "" removed from inventory"",
+			msg_added_inv: "" added to inventory"",
+			msg_invalid_sel: ""Invalid selection!"",
+			msg_selected: "" selected!"",
+			msg_search_selected: ""Search selected!"",
+			hint_room: ""Selected room: "",
+			hint_press: ""Press "",
+			hint_change_chap: "" to change chapter"",
+			dbg_inv_flag: ""Invalid flag "",
+			dbg_because: "" because of "",
+			dbg_empty_flag: ""Empty flag"",
+			dbg_inv_val: ""Invalid value "",
+			dbg_empty_val: ""Empty value"",
+			dbg_updated: ""Updated "",
+			dbg_from: "" from "",
+			dbg_to: "" to "",
+			ui_esc_cancel: ""Esc - Cancel"",
+			ui_m_keys: ""M - Keys"",
+			ui_m_close: ""M - Close"",
+			ui_inv_items: ""ITEMs: "",
+			ui_inv_armors: ""ARMORs: "",
+			ui_inv_weapons: ""WEAPONs: "",
+			ui_inv_keyitems: ""KEY ITEMs: "",
+			ui_chap_all: ""(all chap)"",
+			ui_world_dark: ""(Darkworld)"",
+			ui_world_light: ""(Lightworld)"",
+			ui_keys_title: ""Debug Mode Keys"",
+			key_0: ""F10 - Toggle debug mode"",
+			key_1: ""S - Save game"",
+			key_2: ""L - Load last save"",
+			key_3: ""R - Reload room | Backspace+R - Restart game"",
+			key_4: ""P - Pause/resume game"",
+			key_5: ""M+1 | M+2 - Add/remove 100 D$"",
+			key_6: ""Delete - Go to previous room"",
+			key_7: ""Insert - Go to next room"",
+			key_8: ""W - Instantly win battle"",
+			key_9: ""V - Skip enemy turn"",
+			key_10: ""H - Restore party HP"",
+			key_11: ""T - Fill/empty TP bar"",
+			key_12: ""O - Toggle 30, 60, 120 FPS"",
+			key_13: ""Backspace - Skip intro sequence (Ch1)"",
+			key_14: ""Middle Click - Room Editor""
+		},
+		fr: 
+		{
+			dmode_activated: ""Mode Debug activé !"",
+			dmode_desactivated: ""Mode Debug désactivé !"",
+			fps_1: ""FPS à 1"",
+			fps_30: ""FPS à 30"",
+			fps_60: ""FPS à 60"",
+			fps_120: ""FPS à 120"",
+			tp_0: ""PT à 0 %"",
+			tp_250: ""PT à 250 %"",
+			fullheal: ""PV de l'équipe restaurés"",
+			fightwin: ""Combat passé"",
+			turnskip: ""Tour de l'ennemi passé"",
+			
+			// Menus
+			debug_menu: ""Menu Debug"",
+			warps: ""Sauts"",
+			items: ""Items"",
+			recruits: ""Recrues"",
+			misc: ""Divers"",
+
+			// Light Objects
+			hot_chocolate: ""Chocolat Chaud"",
+			pencil: ""Crayon"",
+			bandage: ""Pansement"",
+			bouquet: ""Bouquet"",
+			ball_junk: ""Boule de Trucs"",
+			halloween_pencil: ""Crayon Halloween"",
+			lucky_pencil: ""Crayon Fétiche"",
+			egg: ""Œuf"",
+			cards: ""Cartes"",
+			heart_candy: ""Boîte de ChocoCœurs"",
+			glass: ""Verre"",
+			eraser: ""Gomme"",
+			mech_pencil: ""Critérium"",
+			wristwatch: ""Montre"",
+			holiday_pencil: ""Crayon de Noël"",
+			cactus_needle: ""Épine de Cactus"",
+			black_shard: ""ÉclatNoir"",
+			quill_pen: ""Stylo-Plume"",
+
+			// Categories
+			cat_vessel: ""Séquence Vaisseau"",
+			cat_superboss: ""Superbosses"",
+			cat_weird: ""Weird Route"",
+			cat_seam: ""Seam"",
+			cat_eggs: ""Œufs"",
+			cat_onion: ""Onion San"",
+			cat_misc1: ""Divers chap 1"",
+			cat_misc2: ""Divers chap 2"",
+			cat_tenna: ""Legend of Tenna"",
+			cat_sword: ""Sword Route"",
+			cat_misc3: ""Divers chap 3"",
+			cat_misc4: ""Divers chap 4"",
+			cat_moss: ""Mousse"",
+			cat_thrash: ""Roboteur"",
+
+			// Goner Maker
+			g_food: ""NOURRITURE"",
+			g_blood: ""GROUPE SANGUIN"",
+			g_color: ""COULEUR"",
+			g_gift: ""PRÉSENT"",
+			g_feeling: ""SENTIMENT ÉPROUVÉ"",
+			g_honest: ""RÉPONDU HONNÊTEMENT"",
+			g_crises: ""CONSENTIR AUX CRISES"",
+			opt_sweet: ""SUCRÉE"", opt_soft: ""TENDRE"", opt_bitter: ""AMÈRE"", opt_salty: ""SALÉE"", opt_pain: ""DOULEUR"", opt_cold: ""FROIDE"",
+			opt_red: ""ROUGE"", opt_blue: ""BLEU"", opt_green: ""VERT"", opt_cyan: ""CYAN"",
+			opt_kindness: ""GENTILLESSE"", opt_mind: ""ESPRIT"", opt_ambition: ""AMBITION"", opt_bravery: ""BRAVOURE"", opt_voice: ""VOIX"",
+			opt_love: ""AMOUR"", opt_hope: ""ESPOIR"", opt_disgust: ""DÉGOÛT"", opt_fear: ""PEUR"",
+			g_yes: ""OUI"", g_no: ""NON"",
+
+			// General
+			opt_no: ""Non"", opt_yes: ""Oui"", opt_seen: ""Vu"", opt_notseen: ""Pas vu"",
+			
+			// Thrash Machine
+			thrash_head: ""Tête Roboteur"", thrash_body: ""Corps Roboteur"", thrash_legs: ""Jambes Roboteur"",
+			opt_laser: ""Laser"", opt_sword: ""Épée"", opt_flame: ""Flamme"", opt_duck: ""Canard"",
+			opt_simple: ""Sobre"", opt_wheel: ""Roue"", opt_tank: ""Tank"",
+			opt_sneakers: ""Baskets"", opt_tires: ""Pneus"", opt_tracks: ""Chaînes"",
+
+			// Misc Chap 1
+			label_gang: ""Nom du gang"",
+			gang_guys: ""Les Types (unused)"", gang_squad: ""L'Escouade $?$!$"", gang_fanclub: ""Le Fan Club Lancer"", gang_fungang: ""Le Fun Gang"",
+			label_prophecy: ""Prophétie entendu"", label_manual: ""Manuel jeté"",
+			opt_tried: ""A tenté"", opt_thrown: ""L'a jeté"",
+			label_cake: ""Gâteau rendu"", label_donation: ""Objectif de Donation"", opt_reached: ""Atteint"",
+			label_starwalker: ""Starwalker"", label_asgore_flowers: ""Fleurs d'Asgore"", opt_given: ""Données"",
+			label_noelle_out: ""Noelle dehors"", opt_talked_susie: ""A parlé de Susie"",
+			label_sink: ""Évier inspecté (chap 1)"", label_egg1: ""Œuf obtenu (chap 1)"",
+			label_jevil: ""Jevil vaincu"", opt_violence: ""Via violence"", opt_mercy: ""Via clémence"",
+			
+			// Onion San
+			label_onion_rel: ""Relation (chap 1)"", opt_friends: ""Amis"", opt_notfriends: ""Pas amis"",
+			label_kris_name: ""Nom de Kris"", opt_hippo: ""Hippopotame"",
+			label_onion_name: ""Nom d'Onion"", opt_onyx: ""Oignon"", opt_beauty: ""Beauté"", opt_asriel2: ""Asriel II"", opt_stinky: ""Dégoûtant"",
+			
+			// Moss
+			label_moss1: ""Mousse mangée (chap 1)"",
+
+			// Misc Chap 2
+			label_plush: ""Peluche"", opt_notgiven: ""Pas donnée"",
+			label_hacker: ""Hacker recruté"",
+			label_berdly_arm: ""Bras de Berdly"", opt_burnt: ""Brûlé"", opt_ok: ""Ok"",
+			label_mt_fan: ""\""Fan\"" de Mettaton"",
+			label_susie_statue: ""Statue de Susie récupérée"",
+			label_icee_statue: ""ICE-E récupéré"",
+			label_sink2: ""Évier inspecté (chap 2)"",
+			label_shelter: ""Scène de l'abri vue"",
+			label_weird_prog: ""Avancée"",
+			opt_viri_killed: ""Nikomercant tué"", opt_frozen: ""Berdly gelé"", 
+			opt_talked_susie: ""A parlé à Susie"", opt_hospital: ""Noëlle à l'hôpital"",
+			label_weird_cancel: ""A annulé la weird route"",
+			label_egg2: ""Œuf obtenu (chap 2)"",
+			label_spamton: ""Spamton vaincu"",
+			label_onion_rel2: ""Relation (chap 2)"", opt_notfriends_anymore: ""Plus amis"",
+			label_moss2: ""Mousse mangée (chap 2)"",
+			label_moss_noelle: ""... avec Noëlle"",
+			label_moss_susie: ""... avec Susie"",
+			label_seam_gaveup: ""Seam a abandonné la quête"",
+			label_crystal_jevil: ""Cristal de Jevil donné"",
+			label_crystal_spamton: ""Cristal de Spamton donné"",
+			label_seam_talk: ""A parlé à Seam tout court"",
+
+			// Chap 3
+			label_lot_rank1: ""LOT Rang Board 1"",
+			label_lot_rank2: ""LOT Rang Board 2"",
+			label_sword_prog: ""Avancée Sword Route"",
+			opt_ice_key: ""Clé de glace obtenue"", opt_dungeon2: ""Donjon (plateau 2)"", opt_key_used: ""Clé utilisée"",
+			opt_shelter_key: ""Clé de l'abri obtenue"", opt_dungeon3: ""Donjon (plateau 3)"", opt_shelter_used: ""Clé de l'abri utilisée"",
+			opt_eram: ""ERAM vaincu"",
+			label_susie_attacked: ""Susie attaquée"",
+			label_egg3: ""Œuf obtenu (chap 3)"",
+			label_knight: ""Chevalier vaincu"",
+			label_fountain: ""Fontaine"",
+			opt_flirt_no_curtain: ""A flirté (pas au rideau)"", opt_no_flirt: ""Pas flirté"", opt_flirt_curtain: ""A flirté (au rideau)"",
+			label_tenna_statue: ""Statue de Tenna récupérée"",
+			label_moss3: ""Mousse mangée (chap 3)"",
+			label_crystal_knight: ""Cristal du Chevalier donné"",
+
+			// Chap 4
+			label_egg4: ""Œuf obtenu (chap 4)"",
+			label_gerson: ""Gerson vaincu"",
+			label_moss4: ""Mousse mangée (chap 4)"", opt_refused: ""Refusée"",
+			label_ralsei_room: ""Chambre de Ralsei"",
+			label_qcs_susie: ""QC avec Susie"", opt_visited: ""Y est allé"",
+			label_tea_ralsei: ""Thé avec Ralsei"",
+			label_prayer: ""Prière"", opt_for_susie: ""Pour Susie"", opt_for_noelle: ""Pour Noëlle"", opt_for_asriel: ""Pour Asriel"",
+			label_tenna_given: ""Tenna donné"",
+			label_noelle_phone: ""Tel. de Noëlle"", opt_not_inspected: ""Pas inspecté"", opt_no_answer: ""Pas répondu"", opt_festival: ""Allez au festival"", opt_wrong_number: ""Wrong number song"",
+			label_susie_prize: ""Prix Susie récupéré"",
+			label_stain: ""Tache retirée"",
+			label_ladder: ""Échelle récupérée"",
+			label_pillow: ""Oreiller récupéré"",
+
+			// UI Draw Menu
+			menu_debug: ""Menu Debug"",
+			room_list: ""Liste des salles"",
+			warp_options: ""Options du saut"",
+			item_type: ""Type d'items"",
+			item_list: ""Liste d'objets"",
+			armor_list: ""Liste d'armures"",
+			weapon_list: ""Liste d'armes"",
+			keyitem_list: ""Liste d'objets clés"",
+			add_how_many: ""Ajouter combien à l'inventaire ?"",
+			recruit_list: ""Liste des recrues"",
+			recruit_presets: ""Préréglages des recrues"",
+			ui_misc: ""Divers"",
+			menu_unknown: ""Inconnu"",
+			btn_current_room: ""Salle actuelle"",
+			btn_search: ""Recherche"",
+			ui_contains: ""Contient : "",
+			btn_cancel: ""Annuler"",
+			ui_is_darkworld: ""Est un Darkworld : "",
+			ui_plot_value: ""Valeur de plot : "",
+			ui_teammate2: ""Équipier 2 :  "",
+			ui_teammate3: ""Équipier 3 :  "",
+			btn_warp: ""Sauter"",
+			ui_nobody: ""Personne"",
+			type_items: ""Objets"",
+			type_armors: ""Armures"",
+			type_weapons: ""Armes"",
+			type_keyitems: ""Obj Clés"",
+			ui_chapter: ""Chapitre : "",
+			ui_held: ""possédé(s)"",
+			ui_equipped: ""Équipé"",
+			btn_presets: ""Préréglages"",
+			btn_recruit_all: ""Recruter tous"",
+			btn_lose_all: ""Perdre tous"",
+			ui_chap_short: ""chap"",
+			ui_of_chapter: ""du chapitre"",
+			ui_custom: ""Custom"",
+			ui_problem: ""problem lol"",
+			msg_cancelled: ""Annulé"",
+			msg_removed_inv: "" retiré de l'inventaire"",
+			msg_added_inv: "" ajouté à l'inventaire"",
+			msg_invalid_sel: ""Sélection invalide !"",
+			msg_selected: "" sélectionné !"",
+			msg_search_selected: ""Recherche sélectionné !"",
+			hint_room: ""Salle sélectionnée : "",
+			hint_press: ""Appuyez sur "",
+			hint_change_chap: "" pour changer de chapitre"",
+			dbg_inv_flag: ""Flag invalide "",
+			dbg_because: "" à cause de "",
+			dbg_empty_flag: ""Flag vide"",
+			dbg_inv_val: ""Valeur invalide "",
+			dbg_empty_val: ""Valeur vide"",
+			dbg_updated: ""Mise à jour de "",
+			dbg_from: "" de "",
+			dbg_to: "" à "",
+			ui_esc_cancel: ""Esc - Annuler"",
+			ui_m_keys: ""M - Touches"",
+			ui_m_close: ""M - Fermer"",
+			ui_inv_items: ""OBJETs : "",
+			ui_inv_armors: ""ARMUREs : "",
+			ui_inv_weapons: ""ARMEs : "",
+			ui_inv_keyitems: ""OBJETs CLÉs : "",
+			ui_chap_all: ""(tout chap)"",
+			ui_world_dark: ""(Darkworld)"",
+			ui_world_light: ""(Lightworld)"",
+			ui_keys_title: ""Touches du debug mode"",
+			key_0: ""F10 - Activer/désactiver le debug mode"",
+			key_1: ""S - Sauvegarder la partie"",
+			key_2: ""L - Charger la dernière sauvegarde"",
+			key_3: ""R - Charger la salle | Retour arrière+R - Redémarrer le jeu"",
+			key_4: ""P - Mettre en pause/reprendre le jeu"",
+			key_5: ""M+1 | M+2 - Ajouter/retirer 100 D$"",
+			key_6: ""Suppr - Se rendre à la salle précédente"",
+			key_7: ""Insert - Se rendre à la salle suivante"",
+			key_8: ""W - Gagner instantanément un combat"",
+			key_9: ""V - Passer le tour de l'ennemi"",
+			key_10: ""H - Restaurer les HP du party"",
+			key_11: ""T - Remplir/vider la barre de TP"",
+			key_12: ""O - Basculer entre 30, 60 et 120 FPS"",
+			key_13: ""Retour arrière - Passer le segment d'intro (Ch1)"",
+			key_14: ""Clic milieu - Éditeur de salle""
+		}
+	};
+}
+");
 
 
 UndertaleGameObject obj_debug_gui = Data.GameObjects.ByName("obj_debug_gui");
@@ -1227,504 +1725,38 @@ if (type == 1)
 }");
 
 
-UndertaleScript scr_dmode_init_lang = new UndertaleScript();
-scr_dmode_init_lang.Name = Data.Strings.MakeString("scr_dmode_init_lang");
-scr_dmode_init_lang.Code = new UndertaleCode();
-scr_dmode_init_lang.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_dmode_init_lang");
-scr_dmode_init_lang.Code.LocalsCount = 1;
-Data.Scripts.Add(scr_dmode_init_lang);
-Data.Code.Add(scr_dmode_init_lang.Code);
 
-importGroup.QueueReplace(scr_dmode_init_lang.Code,
-@"global.dmode_lang = ""fr"";//___DEFAULT_LANG___"";
-
-global.dmode_text = 
+importGroup.QueueReplace("gml_GlobalScript_scr_read_keyboard",
+@"function scr_read_keyboard()
 {
-    en: 
+    var cur_text = global.dkeyboard_text;
+    text_changed = 0;
+    
+    if (keyboard_check(vk_backspace))
     {
-        dmode_activated: ""Debug Mode activated!"",
-        dmode_desactivated: ""Debug Mode deactivated!"",
-        fps_1: ""FPS to 1"",
-        fps_30: ""FPS to 30"",
-        fps_60: ""FPS to 60"",
-        fps_120: ""FPS to 120"",
-        tp_0: ""TP to 0%"",
-        tp_250: ""TP to 250%"",
-        fullheal: ""Party HP fully restored"",
-        fightwin: ""Fight skipped"",
-        turnskip: ""Enemy's turn skipped"",
+        if (keyboard_check_pressed(vk_backspace))
+        {
+            cur_text = string_delete(cur_text, string_length(cur_text), 1);
+            keyboard_string = """";
+        }
         
-        // Menus
-        debug_menu: ""Debug Menu"",
-        warps: ""Warps"",
-        items: ""Items"",
-        recruits: ""Recruits"",
-        misc: ""Misc"",
-
-        // Light Objects
-        hot_chocolate: ""Hot Chocolate"",
-        pencil: ""Pencil"",
-        bandage: ""Bandage"",
-        bouquet: ""Bouquet"",
-        ball_junk: ""Ball of Junk"",
-        halloween_pencil: ""Halloween Pencil"",
-        lucky_pencil: ""Lucky Pencil"",
-        egg: ""Egg"",
-        cards: ""Cards"",
-        heart_candy: ""Box of Heart Candy"",
-        glass: ""Glass"",
-        eraser: ""Eraser"",
-        mech_pencil: ""Mech. Pencil"",
-        wristwatch: ""Wristwatch"",
-        holiday_pencil: ""Holiday Pencil"",
-        cactus_needle: ""CactusNeedle"",
-        black_shard: ""BlackShard"",
-        quill_pen: ""QuillPen"",
-
-        // Categories
-        cat_vessel: ""Vessel Sequence"",
-        cat_superboss: ""Superbosses"",
-        cat_weird: ""Weird Route"",
-        cat_seam: ""Seam"",
-        cat_eggs: ""Eggs"",
-        cat_onion: ""Onion San"",
-        cat_misc1: ""Misc Chap 1"",
-        cat_misc2: ""Misc Chap 2"",
-        cat_tenna: ""Legend of Tenna"",
-        cat_sword: ""Sword Route"",
-        cat_misc3: ""Misc Chap 3"",
-        cat_misc4: ""Misc Chap 4"",
-        cat_moss: ""Moss"",
-        cat_thrash: ""Thrash Machine"",
-
-        // Goner Maker
-        g_food: ""FAVORITE FOOD"",
-        g_blood: ""BLOOD TYPE"",
-        g_color: ""FAVORITE COLOR"",
-        g_gift: ""GIFT"",
-        g_feeling: ""OPINION"",
-        g_honest: ""ANSWERED HONESTLY"",
-        g_crises: ""CONSENT TO CRISES"",
-        opt_sweet: ""SWEET"", opt_soft: ""SOFT"", opt_bitter: ""BITTER"", opt_salty: ""SALTY"", opt_pain: ""PAIN"", opt_cold: ""COLD"",
-        opt_red: ""RED"", opt_blue: ""BLUE"", opt_green: ""GREEN"", opt_cyan: ""CYAN"",
-        opt_kindness: ""KINDNESS"", opt_mind: ""MIND"", opt_ambition: ""AMBITION"", opt_bravery: ""BRAVERY"", opt_voice: ""VOICE"",
-        opt_love: ""LOVE"", opt_hope: ""HOPE"", opt_disgust: ""DISGUST"", opt_fear: ""FEAR"",
-        g_yes: ""YES"", g_no: ""NO"",
-
-        // General
-        opt_no: ""No"", opt_yes: ""Yes"", opt_seen: ""Seen"", opt_notseen: ""Not seen"",
-        
-        // Thrash Machine
-        thrash_head: ""Thrash Head"", thrash_body: ""Thrash Body"", thrash_legs: ""Thrash Legs"",
-        opt_laser: ""Laser"", opt_sword: ""Sword"", opt_flame: ""Flame"", opt_duck: ""Duck"",
-        opt_simple: ""Simple"", opt_wheel: ""Wheel"", opt_tank: ""Tank"",
-        opt_sneakers: ""Sneakers"", opt_tires: ""Tires"", opt_tracks: ""Tracks"",
-
-        // Misc Chap 1
-        label_gang: ""Gang Name"", 
-        gang_guys: ""The Guys (unused)"", gang_squad: ""The $!$! Squad"", gang_fanclub: ""Lancer Fan Club"", gang_fungang: ""The Fun Gang"",
-        label_prophecy: ""Prophecy heard"", label_manual: ""Manual thrown"",
-        opt_tried: ""Tried"", opt_thrown: ""Thrown"",
-        label_cake: ""Cake returned"", label_donation: ""Donation Goal"", opt_reached: ""Reached"",
-        label_starwalker: ""Starwalker"", label_asgore_flowers: ""Asgore's Flowers"", opt_given: ""Given"",
-        label_noelle_out: ""Noelle outside"", opt_talked_susie: ""Talked about Susie"",
-        label_sink: ""Sink inspected (ch 1)"", label_egg1: ""Egg obtained (ch 1)"",
-        label_jevil: ""Jevil defeated"", opt_violence: ""Via violence"", opt_mercy: ""Via mercy"",
-        
-        // Onion San
-        label_onion_rel: ""Relation (ch 1)"", opt_friends: ""Friends"", opt_notfriends: ""Not friends"",
-        label_kris_name: ""Kris's Name"", opt_hippo: ""Hippo"",
-        label_onion_name: ""Onion's Name"", opt_onyx: ""Onyx"", opt_beauty: ""Beauty"", opt_asriel2: ""Asriel II"", opt_stinky: ""Stinky"",
-        
-        // Moss
-        label_moss1: ""Moss eaten (ch 1)"",
-
-        // Misc Chap 2
-        label_plush: ""Plushie"", opt_notgiven: ""Not given"",
-        label_hacker: ""Hacker recruited"",
-        label_berdly_arm: ""Berdly's Arm"", opt_burnt: ""Burnt"", opt_ok: ""Ok"",
-        label_mt_fan: ""Mettaton 'Fan'"",
-        label_susie_statue: ""Susie Statue collected"",
-        label_icee_statue: ""ICE-E collected"",
-        label_sink2: ""Sink inspected (ch 2)"",
-        label_shelter: ""Shelter scene seen"",
-        label_weird_prog: ""Progress"",
-        opt_viri_killed: ""Addison killed"", opt_frozen: ""Berdly frozen"", 
-        opt_talked_susie: ""Talked to Susie"", opt_hospital: ""Noelle at hospital"",
-        label_weird_cancel: ""Canceled Weird Route"",
-        label_egg2: ""Egg obtained (ch 2)"",
-        label_spamton: ""Spamton defeated"",
-        label_onion_rel2: ""Relation (ch 2)"", opt_notfriends_anymore: ""Not friends anymore"",
-        label_moss2: ""Moss eaten (ch 2)"",
-        label_moss_noelle: ""... with Noelle"",
-        label_moss_susie: ""... with Susie"",
-        label_seam_gaveup: ""Seam gave up quest"",
-        label_crystal_jevil: ""Jevil's Crystal given"",
-        label_crystal_spamton: ""Spamton's Crystal given"",
-        label_seam_talk: ""Talked to Seam"",
-
-        // Chap 3
-        label_lot_rank1: ""LOT Board 1 Rank"",
-        label_lot_rank2: ""LOT Board 2 Rank"",
-        label_sword_prog: ""Sword Route Progress"",
-        opt_ice_key: ""Ice Key obtained"", opt_dungeon2: ""Dungeon (Floor 2)"", opt_key_used: ""Key used"",
-        opt_shelter_key: ""Shelter Key obtained"", opt_dungeon3: ""Dungeon (Floor 3)"", opt_shelter_used: ""Shelter Key used"",
-        opt_eram: ""ERAM defeated"",
-        label_susie_attacked: ""Susie attacked"",
-        label_egg3: ""Egg obtained (ch 3)"",
-        label_knight: ""Knight defeated"",
-        label_fountain: ""Fountain"",
-        opt_flirt_no_curtain: ""Flirted (no curtain)"", opt_no_flirt: ""No flirt"", opt_flirt_curtain: ""Flirted (talked to curtain)"",
-        label_tenna_statue: ""Tenna Statue collected"",
-        label_moss3: ""Moss eaten (ch 3)"",
-        label_crystal_knight: ""Knight's Crystal given"",
-
-        // Chap 4
-        label_egg4: ""Egg obtained (ch 4)"",
-        label_gerson: ""Gerson defeated"",
-        label_moss4: ""Moss eaten (ch 4)"", opt_refused: ""Refused"",
-        label_ralsei_room: ""Ralsei's Room"",
-        label_qcs_susie: ""QC's with Susie"", opt_visited: ""Visited"",
-        label_tea_ralsei: ""Tea with Ralsei"",
-        label_prayer: ""Prayer"", opt_for_susie: ""For Susie"", opt_for_noelle: ""For Noelle"", opt_for_asriel: ""For Asriel"",
-        label_tenna_given: ""Tenna given"",
-        label_noelle_phone: ""Noelle's Phone"", opt_not_inspected: ""Not inspected"", opt_no_answer: ""Didn't answer"", opt_festival: ""Go to festival"", opt_wrong_number: ""Wrong number song"",
-        label_susie_prize: ""Susie's Prize collected"",
-        label_stain: ""Stain removed"",
-        label_ladder: ""Ladder collected"",
-        label_pillow: ""Pillow collected"",
-
-        // UI Draw Menu
-        menu_debug: ""Debug Menu"",
-        room_list: ""Room List"",
-        warp_options: ""Warp Options"",
-        item_type: ""Item Type"",
-        item_list: ""Item List"",
-        armor_list: ""Armor List"",
-        weapon_list: ""Weapon List"",
-        keyitem_list: ""Key Item List"",
-        add_how_many: ""Add how many to inventory?"",
-        recruit_list: ""Recruit List"",
-        recruit_presets: ""Recruit Presets"",
-        ui_misc: ""Misc"",
-        menu_unknown: ""Unknown"",
-        btn_current_room: ""Current Room"",
-        btn_search: ""Search"",
-        ui_contains: ""Contains: "",
-        btn_cancel: ""Cancel"",
-        ui_is_darkworld: ""Is Darkworld: "",
-        ui_plot_value: ""Plot Value: "",
-        ui_teammate2: ""Teammate 2:  "",
-        ui_teammate3: ""Teammate 3:  "",
-        btn_warp: ""Warp"",
-        ui_nobody: ""Nobody"",
-        type_items: ""Items"",
-        type_armors: ""Armors"",
-        type_weapons: ""Weapons"",
-        type_keyitems: ""Key Items"",
-        ui_chapter: ""Chapter: "",
-        ui_held: ""held"",
-        ui_equipped: ""Equipped"",
-        btn_presets: ""Presets"",
-        btn_recruit_all: ""Recruit All"",
-        btn_lose_all: ""Lose All"",
-        ui_chap_short: ""chap"",
-        ui_of_chapter: ""of chapter"",
-        ui_custom: ""Custom"",
-        ui_problem: ""problem lol"",
-        msg_cancelled: ""Cancelled"",
-        msg_removed_inv: "" removed from inventory"",
-        msg_added_inv: "" added to inventory"",
-        msg_invalid_sel: ""Invalid selection!"",
-        msg_selected: "" selected!"",
-        msg_search_selected: ""Search selected!"",
-        hint_room: ""Selected room: "",
-        hint_press: ""Press "",
-        hint_change_chap: "" to change chapter"",
-        dbg_inv_flag: ""Invalid flag "",
-        dbg_because: "" because of "",
-        dbg_empty_flag: ""Empty flag"",
-        dbg_inv_val: ""Invalid value "",
-        dbg_empty_val: ""Empty value"",
-        dbg_updated: ""Updated "",
-        dbg_from: "" from "",
-        dbg_to: "" to "",
-        ui_esc_cancel: ""Esc - Cancel"",
-        ui_m_keys: ""M - Keys"",
-        ui_m_close: ""M - Close"",
-        ui_inv_items: ""ITEMs: "",
-        ui_inv_armors: ""ARMORs: "",
-        ui_inv_weapons: ""WEAPONs: "",
-        ui_inv_keyitems: ""KEY ITEMs: "",
-        ui_chap_all: ""(all chap)"",
-        ui_world_dark: ""(Darkworld)"",
-        ui_world_light: ""(Lightworld)"",
-        ui_keys_title: ""Debug Mode Keys"",
-        key_0: ""F10 - Toggle debug mode"",
-        key_1: ""S - Save game"",
-        key_2: ""L - Load last save"",
-        key_3: ""R - Reload room | Backspace+R - Restart game"",
-        key_4: ""P - Pause/resume game"",
-        key_5: ""M+1 | M+2 - Add/remove 100 D$"",
-        key_6: ""Delete - Go to previous room"",
-        key_7: ""Insert - Go to next room"",
-        key_8: ""W - Instantly win battle"",
-        key_9: ""V - Skip enemy turn"",
-        key_10: ""H - Restore party HP"",
-        key_11: ""T - Fill/empty TP bar"",
-        key_12: ""O - Toggle 30, 60, 120 FPS"",
-        key_13: ""Backspace - Skip intro sequence (Ch1)"",
-        key_14: ""Middle Click - Room Editor""
-    },
-    fr: 
-    {
-        dmode_activated: ""Mode Debug activé !"",
-        dmode_desactivated: ""Mode Debug désactivé !"",
-        fps_1: ""FPS à 1"",
-        fps_30: ""FPS à 30"",
-        fps_60: ""FPS à 60"",
-        fps_120: ""FPS à 120"",
-        tp_0: ""PT à 0 %"",
-        tp_250: ""PT à 250 %"",
-        fullheal: ""PV de l'équipe restaurés"",
-        fightwin: ""Combat passé"",
-        turnskip: ""Tour de l'ennemi passé"",
-        
-        // Menus
-        debug_menu: ""Menu Debug"",
-        warps: ""Sauts"",
-        items: ""Items"",
-        recruits: ""Recrues"",
-        misc: ""Divers"",
-
-        // Light Objects
-        hot_chocolate: ""Chocolat Chaud"",
-        pencil: ""Crayon"",
-        bandage: ""Pansement"",
-        bouquet: ""Bouquet"",
-        ball_junk: ""Boule de Trucs"",
-        halloween_pencil: ""Crayon Halloween"",
-        lucky_pencil: ""Crayon Fétiche"",
-        egg: ""Œuf"",
-        cards: ""Cartes"",
-        heart_candy: ""Boîte de ChocoCœurs"",
-        glass: ""Verre"",
-        eraser: ""Gomme"",
-        mech_pencil: ""Critérium"",
-        wristwatch: ""Montre"",
-        holiday_pencil: ""Crayon de Noël"",
-        cactus_needle: ""Épine de Cactus"",
-        black_shard: ""ÉclatNoir"",
-        quill_pen: ""Stylo-Plume"",
-
-        // Categories
-        cat_vessel: ""Séquence Vaisseau"",
-        cat_superboss: ""Superbosses"",
-        cat_weird: ""Weird Route"",
-        cat_seam: ""Seam"",
-        cat_eggs: ""Œufs"",
-        cat_onion: ""Onion San"",
-        cat_misc1: ""Divers chap 1"",
-        cat_misc2: ""Divers chap 2"",
-        cat_tenna: ""Legend of Tenna"",
-        cat_sword: ""Sword Route"",
-        cat_misc3: ""Divers chap 3"",
-        cat_misc4: ""Divers chap 4"",
-        cat_moss: ""Mousse"",
-        cat_thrash: ""Roboteur"",
-
-        // Goner Maker
-        g_food: ""NOURRITURE"",
-        g_blood: ""GROUPE SANGUIN"",
-        g_color: ""COULEUR"",
-        g_gift: ""PRÉSENT"",
-        g_feeling: ""SENTIMENT ÉPROUVÉ"",
-        g_honest: ""RÉPONDU HONNÊTEMENT"",
-        g_crises: ""CONSENTIR AUX CRISES"",
-        opt_sweet: ""SUCRÉE"", opt_soft: ""TENDRE"", opt_bitter: ""AMÈRE"", opt_salty: ""SALÉE"", opt_pain: ""DOULEUR"", opt_cold: ""FROIDE"",
-        opt_red: ""ROUGE"", opt_blue: ""BLEU"", opt_green: ""VERT"", opt_cyan: ""CYAN"",
-        opt_kindness: ""GENTILLESSE"", opt_mind: ""ESPRIT"", opt_ambition: ""AMBITION"", opt_bravery: ""BRAVOURE"", opt_voice: ""VOIX"",
-        opt_love: ""AMOUR"", opt_hope: ""ESPOIR"", opt_disgust: ""DÉGOÛT"", opt_fear: ""PEUR"",
-        g_yes: ""OUI"", g_no: ""NON"",
-
-        // General
-        opt_no: ""Non"", opt_yes: ""Oui"", opt_seen: ""Vu"", opt_notseen: ""Pas vu"",
-        
-        // Thrash Machine
-        thrash_head: ""Tête Roboteur"", thrash_body: ""Corps Roboteur"", thrash_legs: ""Jambes Roboteur"",
-        opt_laser: ""Laser"", opt_sword: ""Épée"", opt_flame: ""Flamme"", opt_duck: ""Canard"",
-        opt_simple: ""Sobre"", opt_wheel: ""Roue"", opt_tank: ""Tank"",
-        opt_sneakers: ""Baskets"", opt_tires: ""Pneus"", opt_tracks: ""Chaînes"",
-
-        // Misc Chap 1
-        label_gang: ""Nom du gang"",
-        gang_guys: ""Les Types (unused)"", gang_squad: ""L'Escouade $?$!$"", gang_fanclub: ""Le Fan Club Lancer"", gang_fungang: ""Le Fun Gang"",
-        label_prophecy: ""Prophétie entendu"", label_manual: ""Manuel jeté"",
-        opt_tried: ""A tenté"", opt_thrown: ""L'a jeté"",
-        label_cake: ""Gâteau rendu"", label_donation: ""Objectif de Donation"", opt_reached: ""Atteint"",
-        label_starwalker: ""Starwalker"", label_asgore_flowers: ""Fleurs d'Asgore"", opt_given: ""Données"",
-        label_noelle_out: ""Noelle dehors"", opt_talked_susie: ""A parlé de Susie"",
-        label_sink: ""Évier inspecté (chap 1)"", label_egg1: ""Œuf obtenu (chap 1)"",
-        label_jevil: ""Jevil vaincu"", opt_violence: ""Via violence"", opt_mercy: ""Via clémence"",
-        
-        // Onion San
-        label_onion_rel: ""Relation (chap 1)"", opt_friends: ""Amis"", opt_notfriends: ""Pas amis"",
-        label_kris_name: ""Nom de Kris"", opt_hippo: ""Hippopotame"",
-        label_onion_name: ""Nom d'Onion"", opt_onyx: ""Oignon"", opt_beauty: ""Beauté"", opt_asriel2: ""Asriel II"", opt_stinky: ""Dégoûtant"",
-        
-        // Moss
-        label_moss1: ""Mousse mangée (chap 1)"",
-
-        // Misc Chap 2
-        label_plush: ""Peluche"", opt_notgiven: ""Pas donnée"",
-        label_hacker: ""Hacker recruté"",
-        label_berdly_arm: ""Bras de Berdly"", opt_burnt: ""Brûlé"", opt_ok: ""Ok"",
-        label_mt_fan: ""\""Fan\"" de Mettaton"",
-        label_susie_statue: ""Statue de Susie récupérée"",
-        label_icee_statue: ""ICE-E récupéré"",
-        label_sink2: ""Évier inspecté (chap 2)"",
-        label_shelter: ""Scène de l'abri vue"",
-        label_weird_prog: ""Avancée"",
-        opt_viri_killed: ""Nikomercant tué"", opt_frozen: ""Berdly gelé"", 
-        opt_talked_susie: ""A parlé à Susie"", opt_hospital: ""Noëlle à l'hôpital"",
-        label_weird_cancel: ""A annulé la weird route"",
-        label_egg2: ""Œuf obtenu (chap 2)"",
-        label_spamton: ""Spamton vaincu"",
-        label_onion_rel2: ""Relation (chap 2)"", opt_notfriends_anymore: ""Plus amis"",
-        label_moss2: ""Mousse mangée (chap 2)"",
-        label_moss_noelle: ""... avec Noëlle"",
-        label_moss_susie: ""... avec Susie"",
-        label_seam_gaveup: ""Seam a abandonné la quête"",
-        label_crystal_jevil: ""Cristal de Jevil donné"",
-        label_crystal_spamton: ""Cristal de Spamton donné"",
-        label_seam_talk: ""A parlé à Seam tout court"",
-
-        // Chap 3
-        label_lot_rank1: ""LOT Rang Board 1"",
-        label_lot_rank2: ""LOT Rang Board 2"",
-        label_sword_prog: ""Avancée Sword Route"",
-        opt_ice_key: ""Clé de glace obtenue"", opt_dungeon2: ""Donjon (plateau 2)"", opt_key_used: ""Clé utilisée"",
-        opt_shelter_key: ""Clé de l'abri obtenue"", opt_dungeon3: ""Donjon (plateau 3)"", opt_shelter_used: ""Clé de l'abri utilisée"",
-        opt_eram: ""ERAM vaincu"",
-        label_susie_attacked: ""Susie attaquée"",
-        label_egg3: ""Œuf obtenu (chap 3)"",
-        label_knight: ""Chevalier vaincu"",
-        label_fountain: ""Fontaine"",
-        opt_flirt_no_curtain: ""A flirté (pas au rideau)"", opt_no_flirt: ""Pas flirté"", opt_flirt_curtain: ""A flirté (au rideau)"",
-        label_tenna_statue: ""Statue de Tenna récupérée"",
-        label_moss3: ""Mousse mangée (chap 3)"",
-        label_crystal_knight: ""Cristal du Chevalier donné"",
-
-        // Chap 4
-        label_egg4: ""Œuf obtenu (chap 4)"",
-        label_gerson: ""Gerson vaincu"",
-        label_moss4: ""Mousse mangée (chap 4)"", opt_refused: ""Refusée"",
-        label_ralsei_room: ""Chambre de Ralsei"",
-        label_qcs_susie: ""QC avec Susie"", opt_visited: ""Y est allé"",
-        label_tea_ralsei: ""Thé avec Ralsei"",
-        label_prayer: ""Prière"", opt_for_susie: ""Pour Susie"", opt_for_noelle: ""Pour Noëlle"", opt_for_asriel: ""Pour Asriel"",
-        label_tenna_given: ""Tenna donné"",
-        label_noelle_phone: ""Tel. de Noëlle"", opt_not_inspected: ""Pas inspecté"", opt_no_answer: ""Pas répondu"", opt_festival: ""Allez au festival"", opt_wrong_number: ""Wrong number song"",
-        label_susie_prize: ""Prix Susie récupéré"",
-        label_stain: ""Tache retirée"",
-        label_ladder: ""Échelle récupérée"",
-        label_pillow: ""Oreiller récupéré"",
-
-        // UI Draw Menu
-        menu_debug: ""Menu Debug"",
-        room_list: ""Liste des salles"",
-        warp_options: ""Options du saut"",
-        item_type: ""Type d'items"",
-        item_list: ""Liste d'objets"",
-        armor_list: ""Liste d'armures"",
-        weapon_list: ""Liste d'armes"",
-        keyitem_list: ""Liste d'objets clés"",
-        add_how_many: ""Ajouter combien à l'inventaire ?"",
-        recruit_list: ""Liste des recrues"",
-        recruit_presets: ""Préréglages des recrues"",
-        ui_misc: ""Divers"",
-        menu_unknown: ""Inconnu"",
-        btn_current_room: ""Salle actuelle"",
-        btn_search: ""Recherche"",
-        ui_contains: ""Contient : "",
-        btn_cancel: ""Annuler"",
-        ui_is_darkworld: ""Est un Darkworld : "",
-        ui_plot_value: ""Valeur de plot : "",
-        ui_teammate2: ""Équipier 2 :  "",
-        ui_teammate3: ""Équipier 3 :  "",
-        btn_warp: ""Sauter"",
-        ui_nobody: ""Personne"",
-        type_items: ""Objets"",
-        type_armors: ""Armures"",
-        type_weapons: ""Armes"",
-        type_keyitems: ""Obj Clés"",
-        ui_chapter: ""Chapitre : "",
-        ui_held: ""possédé(s)"",
-        ui_equipped: ""Équipé"",
-        btn_presets: ""Préréglages"",
-        btn_recruit_all: ""Recruter tous"",
-        btn_lose_all: ""Perdre tous"",
-        ui_chap_short: ""chap"",
-        ui_of_chapter: ""du chapitre"",
-        ui_custom: ""Custom"",
-        ui_problem: ""problem lol"",
-        msg_cancelled: ""Annulé"",
-        msg_removed_inv: "" retiré de l'inventaire"",
-        msg_added_inv: "" ajouté à l'inventaire"",
-        msg_invalid_sel: ""Sélection invalide !"",
-        msg_selected: "" sélectionné !"",
-        msg_search_selected: ""Recherche sélectionné !"",
-        hint_room: ""Salle sélectionnée : "",
-        hint_press: ""Appuyez sur "",
-        hint_change_chap: "" pour changer de chapitre"",
-        dbg_inv_flag: ""Flag invalide "",
-        dbg_because: "" à cause de "",
-        dbg_empty_flag: ""Flag vide"",
-        dbg_inv_val: ""Valeur invalide "",
-        dbg_empty_val: ""Valeur vide"",
-        dbg_updated: ""Mise à jour de "",
-        dbg_from: "" de "",
-        dbg_to: "" à "",
-        ui_esc_cancel: ""Esc - Annuler"",
-        ui_m_keys: ""M - Touches"",
-        ui_m_close: ""M - Fermer"",
-        ui_inv_items: ""OBJETs : "",
-        ui_inv_armors: ""ARMUREs : "",
-        ui_inv_weapons: ""ARMEs : "",
-        ui_inv_keyitems: ""OBJETs CLÉs : "",
-        ui_chap_all: ""(tout chap)"",
-        ui_world_dark: ""(Darkworld)"",
-        ui_world_light: ""(Lightworld)"",
-        ui_keys_title: ""Touches du debug mode"",
-        key_0: ""F10 - Activer/désactiver le debug mode"",
-        key_1: ""S - Sauvegarder la partie"",
-        key_2: ""L - Charger la dernière sauvegarde"",
-        key_3: ""R - Charger la salle | Retour arrière+R - Redémarrer le jeu"",
-        key_4: ""P - Mettre en pause/reprendre le jeu"",
-        key_5: ""M+1 | M+2 - Ajouter/retirer 100 D$"",
-        key_6: ""Suppr - Se rendre à la salle précédente"",
-        key_7: ""Insert - Se rendre à la salle suivante"",
-        key_8: ""W - Gagner instantanément un combat"",
-        key_9: ""V - Passer le tour de l'ennemi"",
-        key_10: ""H - Restaurer les HP du party"",
-        key_11: ""T - Remplir/vider la barre de TP"",
-        key_12: ""O - Basculer entre 30, 60 et 120 FPS"",
-        key_13: ""Retour arrière - Passer le segment d'intro (Ch1)"",
-        key_14: ""Clic milieu - Éditeur de salle""
+        text_changed = 1;
     }
-};
+    else if (keyboard_string != """")
+    {
+        cur_text += keyboard_string;
+        keyboard_string = """";
+        text_changed = 1;
+    }
+    
+    global.dkeyboard_text = cur_text;
+    return text_changed;
+}
 ");
 
 
-UndertaleScript scr_dmode_get_text = new UndertaleScript();
-scr_dmode_get_text.Name = Data.Strings.MakeString("scr_dmode_get_text");
-scr_dmode_get_text.Code = new UndertaleCode();
-scr_dmode_get_text.Code.Name = Data.Strings.MakeString("gml_GlobalScript_scr_dmode_get_text");
-scr_dmode_get_text.Code.LocalsCount = 1;
-Data.Scripts.Add(scr_dmode_get_text);
-Data.Code.Add(scr_dmode_get_text.Code);
 
-importGroup.QueueReplace(scr_dmode_get_text.Code,
+importGroup.QueueReplace("gml_GlobalScript_scr_dmode_get_text",
 @"function scr_dmode_get_text(arg0)
 {
     var _lang = global.dmode_lang;
@@ -1742,6 +1774,93 @@ importGroup.QueueReplace(scr_dmode_get_text.Code,
     
     return arg0;
 }");
+
+
+
+importGroup.QueueAppend("gml_GlobalScript_scr_string_respect_type",
+@"function scr_string_respect_type(arg0, arg1, arg2, arg3)
+{
+    str = arg0;
+    type = arg1;
+    check_empty = arg2;
+    print_error = arg3;
+    
+    if (string_length(str) == 0 && check_empty)
+    {
+        scr_debug_print(scr_dmode_get_text(""dbg_empty_flag""));
+        return 0;
+    }
+    
+    if (type == ""string"")
+        return 1;
+    
+    is_good = 1;
+    saw_dot = 0;
+    saw_neg = 0;
+    var is_var_step = 0;
+    
+    for (c = 1; c <= string_length(str); c++)
+    {
+        cur_char = string_char_at(str, c);
+        char_is_digit = scr_84_is_digit(cur_char);
+        char_is_letter = (cur_char >= ""a"" && cur_char <= ""z"") || (cur_char >= ""A"" && cur_char <= ""Z"");
+        
+        if (type != ""variable"")
+        {
+            if (!saw_dot && type == ""real"" && cur_char == ""."")
+            {
+                saw_dot = 1;
+            }
+            else if (!saw_neg && type != ""uint"" && cur_char == ""-"")
+            {
+                saw_neg = 1;
+            }
+            else if (!char_is_digit)
+            {
+                if (print_error)
+                    scr_debug_print(scr_dmode_get_text(""dbg_inv_flag"") + ""|"" + string(str) + ""|"" + scr_dmode_get_text(""dbg_because"") + ""|"" + cur_char + ""|"");
+                
+                is_good = 0;
+                break;
+            }
+        }
+        else if ((is_var_step == 0 || is_var_step == 1) && (char_is_letter || cur_char == ""_""))
+        {
+            is_var_step = 1;
+        }
+        else if (is_var_step == 1 && cur_char == ""["")
+        {
+            is_var_step = 2;
+        }
+        else if ((is_var_step == 2 || is_var_step == 3) && char_is_digit)
+        {
+            is_var_step = 3;
+        }
+        else if (is_var_step == 3 && cur_char == ""]"")
+        {
+            is_var_step = 4;
+        }
+        else
+        {
+            if (print_error)
+                scr_debug_print(""Error reading variable |"" + string(str) + ""| at |"" + string(cur_char) + ""|"");
+            
+            is_good = 0;
+            break;
+        }
+    }
+    
+    if (type == ""variable"" && is_good && (is_var_step != 4 && is_var_step != 1))
+    {
+        if (print_error)
+            scr_debug_print(""Invalid variable name |"" + string(str) + ""|"");
+        
+        is_good = 0;
+    }
+    
+    return is_good;
+}
+");
 
 
 UndertaleGameObject obj_dmenu_system = new UndertaleGameObject();
@@ -1764,44 +1883,19 @@ dscroll_delay = 15;
 dscroll_speed = 5;
 dbackspace_timer = 0;
 dmenu_title = scr_dmode_get_text(""debug_menu"");
-dbutton_options_original = [
-    scr_dmode_get_text(""warps""),
-    scr_dmode_get_text(""items""),
-    scr_dmode_get_text(""recruits""),
-    scr_dmode_get_text(""misc"")
-];
+dbutton_options_original = [[scr_dmode_get_text(""warps""), scr_dmode_get_text(""items""), scr_dmode_get_text(""recruits""), scr_dmode_get_text(""misc"")], [""Globals""]];
 dnumber_litems = [0, 11, 14, 14, 18];
 dlight_weapons = [];
-dlight_armors = [
-    [3, scr_dmode_get_text(""bandage"")],
-    [14, scr_dmode_get_text(""wristwatch"")]
-];
-dlight_objects = [
-    [1,  scr_dmode_get_text(""hot_chocolate"")],
-    [2,  scr_dmode_get_text(""pencil"")],
-    [3,  scr_dmode_get_text(""bandage"")],
-    [4,  scr_dmode_get_text(""bouquet"")],
-    [5,  scr_dmode_get_text(""ball_junk"")],
-    [6,  scr_dmode_get_text(""halloween_pencil"")],
-    [7,  scr_dmode_get_text(""lucky_pencil"")],
-    [8,  scr_dmode_get_text(""egg"")],
-    [9,  scr_dmode_get_text(""cards"")],
-    [10, scr_dmode_get_text(""heart_candy"")],
-    [11, scr_dmode_get_text(""glass"")],
-    [12, scr_dmode_get_text(""eraser"")],
-    [13, scr_dmode_get_text(""mech_pencil"")],
-    [14, scr_dmode_get_text(""wristwatch"")],
-    [15, scr_dmode_get_text(""holiday_pencil"")],
-    [16, scr_dmode_get_text(""cactus_needle"")],
-    [17, scr_dmode_get_text(""black_shard"")],
-    [18, scr_dmode_get_text(""quill_pen"")]
-];
+dlight_armors = [[3, scr_dmode_get_text(""bandage"")], [14, scr_dmode_get_text(""wristwatch"")]];
+dlight_objects = [[1, scr_dmode_get_text(""hot_chocolate"")], [2, scr_dmode_get_text(""pencil"")], [3, scr_dmode_get_text(""bandage"")], [4, scr_dmode_get_text(""bouquet"")], [5, scr_dmode_get_text(""ball_junk"")], [6, scr_dmode_get_text(""halloween_pencil"")], [7, scr_dmode_get_text(""lucky_pencil"")], [8, scr_dmode_get_text(""egg"")], [9, scr_dmode_get_text(""cards"")], [10, scr_dmode_get_text(""heart_candy"")], [11, scr_dmode_get_text(""glass"")], [12, scr_dmode_get_text(""eraser"")], [13, scr_dmode_get_text(""mech_pencil"")], [14, scr_dmode_get_text(""wristwatch"")], [15, scr_dmode_get_text(""holiday_pencil"")], [16, scr_dmode_get_text(""cactus_needle"")], [17, scr_dmode_get_text(""black_shard"")], [18, scr_dmode_get_text(""quill_pen"")]];
 dhinter_active = false;
 itemdescb = """";
 armordesctemp = """";
 weapondesctemp = """";
 tempkeyitemdesc = """";
 dhinter_text = """";
+dtemp_text = """";
+dtemp_num = 0;
 
 if (global.chapter >= 4)
 {
@@ -1812,13 +1906,7 @@ if (global.chapter >= 4)
 }
 else
 {
-    dlight_weapons = [
-    [2,  scr_dmode_get_text(""pencil"")],
-    [6,  scr_dmode_get_text(""halloween_pencil"")],
-    [7,  scr_dmode_get_text(""lucky_pencil"")],
-    [12, scr_dmode_get_text(""eraser"")],
-    [13, scr_dmode_get_text(""mech_pencil"")]
-];
+    dlight_weapons = [[2, scr_dmode_get_text(""pencil"")], [6, scr_dmode_get_text(""halloween_pencil"")], [7, scr_dmode_get_text(""lucky_pencil"")], [12, scr_dmode_get_text(""eraser"")], [13, scr_dmode_get_text(""mech_pencil"")]];
 }
 
 for (i = 0; i < array_length(dlight_objects); i++)
@@ -1838,9 +1926,10 @@ if (global.chapter == 1)
 if (global.chapter < 3)
     array_delete(dbutton_options_original, 2, 1);
 
-dbutton_options = dbutton_options_original;
+dbutton_options = [];
+dbutton_options_2d = dbutton_options_original;
 dmenu_state = ""debug"";
-dbutton_selected = 1;
+dvertical_index = 0;
 dhorizontal_page = 0;
 dhorizontal_index = 0;
 dmenu_state_history = [];
@@ -1863,28 +1952,30 @@ dkeyitem_gaps = [0, 0, 0, 10, 0];
 
 dpop_history = function()
 {
-	dkeyboard_input = """";
-	if (array_length(dmenu_state_history) > 0)
-	{
-		dmenu_state = dmenu_state_history[array_length(dmenu_state_history) - 1];
-		array_resize(dmenu_state_history, array_length(dmenu_state_history) - 1);
-	}
-	else
-	{
-		dmenu_active = !dmenu_active;
-		dmenu_state_history = [];
-		dbutton_selected_history = [];
-		global.interact = 0;
-	}
-	if (array_length(dbutton_selected_history) > 0)
-	{
-		dbutton_selected = dbutton_selected_history[array_length(dbutton_selected_history) - 1];
-		array_resize(dbutton_selected_history, array_length(dbutton_selected_history) - 1);
-	}
-	
-	dmenu_state_update();
-	dmenu_start_index = clamp(dbutton_selected - 1, 0, max(0, array_length(dbutton_options) - dbutton_max_visible));
-}
+    dkeyboard_input = """";
+    
+    if (array_length(dmenu_state_history) > 0)
+    {
+        dmenu_state = dmenu_state_history[array_length(dmenu_state_history) - 1];
+        array_resize(dmenu_state_history, array_length(dmenu_state_history) - 1);
+    }
+    else
+    {
+        dmenu_active = !dmenu_active;
+        dmenu_state_history = [];
+        dbutton_selected_history = [];
+        global.interact = 0;
+    }
+    
+    if (array_length(dbutton_selected_history) > 0)
+    {
+        dvertical_index = dbutton_selected_history[array_length(dbutton_selected_history) - 1];
+        array_resize(dbutton_selected_history, array_length(dbutton_selected_history) - 1);
+    }
+    
+    dmenu_state_update();
+    dmenu_start_index = clamp(dvertical_index, 0, max(0, array_length(dbutton_options) - dbutton_max_visible));
+};
 
 ditem_index_data = function(arg0)
 {
@@ -1946,6 +2037,10 @@ dkeyitem_index_data = function(arg0)
     };
 };
 
+extract_global_infos = function(arg0)
+{
+};
+
 cate_enum = 0;
 GONER = cate_enum++;
 SUPERBOSS = cate_enum++;
@@ -1961,77 +2056,26 @@ MISC3 = cate_enum++;
 MISC4 = cate_enum++;
 MOUSSE = cate_enum++;
 ROBOTEUR = cate_enum++;
-dother_categories = [
-    scr_dmode_get_text(""cat_vessel""),
-    scr_dmode_get_text(""cat_superboss""),
-    scr_dmode_get_text(""cat_weird""),
-    scr_dmode_get_text(""cat_seam""),
-    scr_dmode_get_text(""cat_eggs""),
-    scr_dmode_get_text(""cat_onion""),
-    scr_dmode_get_text(""cat_misc1""),
-    scr_dmode_get_text(""cat_misc2""),
-    scr_dmode_get_text(""cat_tenna""),
-    scr_dmode_get_text(""cat_sword""),
-    scr_dmode_get_text(""cat_misc3""),
-    scr_dmode_get_text(""cat_misc4""),
-    scr_dmode_get_text(""cat_moss""),
-    scr_dmode_get_text(""cat_thrash"")
-];
+dother_categories = [scr_dmode_get_text(""cat_vessel""), scr_dmode_get_text(""cat_superboss""), scr_dmode_get_text(""cat_weird""), scr_dmode_get_text(""cat_seam""), scr_dmode_get_text(""cat_eggs""), scr_dmode_get_text(""cat_onion""), scr_dmode_get_text(""cat_misc1""), scr_dmode_get_text(""cat_misc2""), scr_dmode_get_text(""cat_tenna""), scr_dmode_get_text(""cat_sword""), scr_dmode_get_text(""cat_misc3""), scr_dmode_get_text(""cat_misc4""), scr_dmode_get_text(""cat_moss""), scr_dmode_get_text(""cat_thrash"")];
 dother_all_options = [];
 dother_options = [];
 
 if (global.chapter >= 0)
 {
-    // FOOD
-    array_push(dother_all_options, [GONER, scr_dmode_get_text(""g_food""), 903, [
-        [scr_dmode_get_text(""opt_sweet""), 0], [scr_dmode_get_text(""opt_soft""), 1], 
-        [scr_dmode_get_text(""opt_bitter""), 2], [scr_dmode_get_text(""opt_salty""), 3], 
-        [scr_dmode_get_text(""opt_pain""), 4], [scr_dmode_get_text(""opt_cold""), 5]
-    ]]);
-
-    // BLOOD TYPE
-    array_push(dother_all_options, [GONER, scr_dmode_get_text(""g_blood""), 904, [
-        [""A"", 0], [""AB"", 1], [""B"", 2], [""C"", 3], [""D"", 4]
-    ]]);
-
-    // COLOR
-    array_push(dother_all_options, [GONER, scr_dmode_get_text(""g_color""), 905, [
-        [scr_dmode_get_text(""opt_red""), 0], [scr_dmode_get_text(""opt_blue""), 1], 
-        [scr_dmode_get_text(""opt_green""), 2], [scr_dmode_get_text(""opt_cyan""), 3]
-    ]]);
-
-    // GIFT
-    array_push(dother_all_options, [GONER, scr_dmode_get_text(""g_gift""), 909, [
-        [scr_dmode_get_text(""opt_kindness""), -1], [scr_dmode_get_text(""opt_mind""), 0], 
-        [scr_dmode_get_text(""opt_ambition""), 1], [scr_dmode_get_text(""opt_bravery""), 2], 
-        [scr_dmode_get_text(""opt_voice""), 3]
-    ]]);
-
-    // OPINION
-    array_push(dother_all_options, [GONER, scr_dmode_get_text(""g_feeling""), 906, [
-        [scr_dmode_get_text(""opt_love""), 0], [scr_dmode_get_text(""opt_hope""), 1], 
-        [scr_dmode_get_text(""opt_disgust""), 2], [scr_dmode_get_text(""opt_fear""), 3]
-    ]]);
-
-    // HONEST
-    array_push(dother_all_options, [GONER, scr_dmode_get_text(""g_honest""), 907, [
-        [scr_dmode_get_text(""opt_yes""), 0], [scr_dmode_get_text(""opt_no""), 1]
-    ]]);
-
-    // CONSENT
-    array_push(dother_all_options, [GONER, scr_dmode_get_text(""g_crises""), 908, [
-        [scr_dmode_get_text(""opt_yes""), 0], [scr_dmode_get_text(""opt_no""), 1]
-    ]]);
+    array_push(dother_all_options, [GONER, scr_dmode_get_text(""g_food""), 903, [[scr_dmode_get_text(""opt_sweet""), 0], [scr_dmode_get_text(""opt_soft""), 1], [scr_dmode_get_text(""opt_bitter""), 2], [scr_dmode_get_text(""opt_salty""), 3], [scr_dmode_get_text(""opt_pain""), 4], [scr_dmode_get_text(""opt_cold""), 5]]]);
+    array_push(dother_all_options, [GONER, scr_dmode_get_text(""g_blood""), 904, [[""A"", 0], [""AB"", 1], [""B"", 2], [""C"", 3], [""D"", 4]]]);
+    array_push(dother_all_options, [GONER, scr_dmode_get_text(""g_color""), 905, [[scr_dmode_get_text(""opt_red""), 0], [scr_dmode_get_text(""opt_blue""), 1], [scr_dmode_get_text(""opt_green""), 2], [scr_dmode_get_text(""opt_cyan""), 3]]]);
+    array_push(dother_all_options, [GONER, scr_dmode_get_text(""g_gift""), 909, [[scr_dmode_get_text(""opt_kindness""), -1], [scr_dmode_get_text(""opt_mind""), 0], [scr_dmode_get_text(""opt_ambition""), 1], [scr_dmode_get_text(""opt_bravery""), 2], [scr_dmode_get_text(""opt_voice""), 3]]]);
+    array_push(dother_all_options, [GONER, scr_dmode_get_text(""g_feeling""), 906, [[scr_dmode_get_text(""opt_love""), 0], [scr_dmode_get_text(""opt_hope""), 1], [scr_dmode_get_text(""opt_disgust""), 2], [scr_dmode_get_text(""opt_fear""), 3]]]);
+    array_push(dother_all_options, [GONER, scr_dmode_get_text(""g_honest""), 907, [[scr_dmode_get_text(""opt_yes""), 0], [scr_dmode_get_text(""opt_no""), 1]]]);
+    array_push(dother_all_options, [GONER, scr_dmode_get_text(""g_crises""), 908, [[scr_dmode_get_text(""opt_yes""), 0], [scr_dmode_get_text(""opt_no""), 1]]]);
 }
 
 if (global.chapter >= 1)
 {
-    // TRASH MACHINE
     array_push(dother_all_options, [ROBOTEUR, scr_dmode_get_text(""thrash_head""), 220, [[scr_dmode_get_text(""opt_laser""), 0], [scr_dmode_get_text(""opt_sword""), 1], [scr_dmode_get_text(""opt_flame""), 2], [scr_dmode_get_text(""opt_duck""), 3]]]);
     array_push(dother_all_options, [ROBOTEUR, scr_dmode_get_text(""thrash_body""), 221, [[scr_dmode_get_text(""opt_simple""), 0], [scr_dmode_get_text(""opt_wheel""), 1], [scr_dmode_get_text(""opt_tank""), 2], [scr_dmode_get_text(""opt_duck""), 3]]]);
     array_push(dother_all_options, [ROBOTEUR, scr_dmode_get_text(""thrash_legs""), 222, [[scr_dmode_get_text(""opt_sneakers""), 0], [scr_dmode_get_text(""opt_tires""), 1], [scr_dmode_get_text(""opt_tracks""), 2], [scr_dmode_get_text(""opt_duck""), 3]]]);
-    
-    // MISC 1
     array_push(dother_all_options, [MISC1, scr_dmode_get_text(""label_gang""), 214, [[scr_dmode_get_text(""gang_guys""), 0], [scr_dmode_get_text(""gang_squad""), 1], [scr_dmode_get_text(""gang_fanclub""), 2], [scr_dmode_get_text(""gang_fungang""), 3]]]);
     array_push(dother_all_options, [MISC1, scr_dmode_get_text(""label_prophecy""), 203, [[scr_dmode_get_text(""opt_no""), 1], [scr_dmode_get_text(""opt_yes""), 0]]]);
     array_push(dother_all_options, [MISC1, scr_dmode_get_text(""label_manual""), 207, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_tried""), 1], [scr_dmode_get_text(""opt_thrown""), 2]]]);
@@ -2041,23 +2085,16 @@ if (global.chapter >= 1)
     array_push(dother_all_options, [MISC1, scr_dmode_get_text(""label_asgore_flowers""), 262, [[scr_dmode_get_text(""opt_notseen""), 0], [scr_dmode_get_text(""opt_no""), 2], [scr_dmode_get_text(""opt_given""), 4]]]);
     array_push(dother_all_options, [MISC1, scr_dmode_get_text(""label_noelle_out""), 276, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_no""), 1], [scr_dmode_get_text(""opt_talked_susie""), 2]]]);
     array_push(dother_all_options, [MISC1, scr_dmode_get_text(""label_sink""), 278, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
-    
-    // EGGS & SUPERBOSSES
     array_push(dother_all_options, [ZOEUFS, scr_dmode_get_text(""label_egg1""), 911, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
     array_push(dother_all_options, [SUPERBOSS, scr_dmode_get_text(""label_jevil""), 241, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_violence""), 6], [scr_dmode_get_text(""opt_mercy""), 7]]]);
-    
-    // ONION SAN
     array_push(dother_all_options, [ONION_SAN, scr_dmode_get_text(""label_onion_rel""), 258, [[scr_dmode_get_text(""opt_notseen""), 0], [scr_dmode_get_text(""opt_friends""), 2], [scr_dmode_get_text(""opt_notfriends""), 3]]]);
     array_push(dother_all_options, [ONION_SAN, scr_dmode_get_text(""label_kris_name""), 259, [[scr_dmode_get_text(""opt_no""), 0], [""Kris"", 1], [scr_dmode_get_text(""opt_hippo""), 2]]]);
     array_push(dother_all_options, [ONION_SAN, scr_dmode_get_text(""label_onion_name""), 260, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_onyx""), 1], [scr_dmode_get_text(""opt_beauty""), 2], [scr_dmode_get_text(""opt_asriel2""), 3], [scr_dmode_get_text(""opt_stinky""), 4]]]);
-    
-    // MOSS
     array_push(dother_all_options, [MOUSSE, scr_dmode_get_text(""label_moss1""), 106, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
 }
 
 if (global.chapter >= 2)
 {
-    // MISC 2
     array_push(dother_all_options, [MISC2, scr_dmode_get_text(""label_plush""), 307, [[scr_dmode_get_text(""opt_notgiven""), 0], [""Ralsei"", 1], [""Susie"", 2], [""Noëlle"", 3], [""Berdly"", 4]]]);
     array_push(dother_all_options, [MISC2, scr_dmode_get_text(""label_hacker""), 659, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
     array_push(dother_all_options, [MISC2, scr_dmode_get_text(""label_berdly_arm""), 457, [[scr_dmode_get_text(""opt_burnt""), 0], [scr_dmode_get_text(""opt_ok""), 1]]]);
@@ -2066,24 +2103,14 @@ if (global.chapter >= 2)
     array_push(dother_all_options, [MISC2, scr_dmode_get_text(""label_icee_statue""), 394, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
     array_push(dother_all_options, [MISC2, scr_dmode_get_text(""label_sink2""), 461, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
     array_push(dother_all_options, [MISC2, scr_dmode_get_text(""label_shelter""), 315, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
-
-    // WEIRD ROUTE
     array_push(dother_all_options, [WEIRD2, scr_dmode_get_text(""label_weird_prog""), 915, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_viri_killed""), 3], [scr_dmode_get_text(""opt_frozen""), 6], [scr_dmode_get_text(""opt_talked_susie""), 9], [scr_dmode_get_text(""opt_hospital""), 20]]]);
     array_push(dother_all_options, [WEIRD2, scr_dmode_get_text(""label_weird_cancel""), 916, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
-    
-    // Eggs & Superbosses
     array_push(dother_all_options, [ZOEUFS, scr_dmode_get_text(""label_egg2""), 918, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
     array_push(dother_all_options, [SUPERBOSS, scr_dmode_get_text(""label_spamton""), 309, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 9]]]);
-    
-    // ONION SAN
     array_push(dother_all_options, [ONION_SAN, scr_dmode_get_text(""label_onion_rel2""), 425, [[scr_dmode_get_text(""opt_notseen""), 0], [scr_dmode_get_text(""opt_friends""), 1], [scr_dmode_get_text(""opt_notfriends_anymore""), 2]]]);
-    
-    // MOSS
     array_push(dother_all_options, [MOUSSE, scr_dmode_get_text(""label_moss2""), 920, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
     array_push(dother_all_options, [MOUSSE, scr_dmode_get_text(""label_moss_noelle""), 921, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
     array_push(dother_all_options, [MOUSSE, scr_dmode_get_text(""label_moss_susie""), 922, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
-    
-    // SEAM
     array_push(dother_all_options, [SEAM, scr_dmode_get_text(""label_seam_gaveup""), 961, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
     array_push(dother_all_options, [SEAM, scr_dmode_get_text(""label_crystal_jevil""), 954, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
     array_push(dother_all_options, [SEAM, scr_dmode_get_text(""label_crystal_spamton""), 353, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
@@ -2092,75 +2119,29 @@ if (global.chapter >= 2)
 
 if (global.chapter >= 3)
 {
-    // LOT
     array_push(dother_all_options, [LOT, scr_dmode_get_text(""label_lot_rank1""), 1173, [[""Z"", 0], [""C"", 1], [""B"", 2], [""A"", 3], [""S"", 4], [""T"", 5]]]);
     array_push(dother_all_options, [LOT, scr_dmode_get_text(""label_lot_rank2""), 1174, [[""Z"", 0], [""C"", 1], [""B"", 2], [""A"", 3], [""S"", 4], [""T"", 5]]]);
-    
-    // SWORD ROUTE
-    array_push(dother_all_options, [SWORD3, scr_dmode_get_text(""label_sword_prog""), 1055, [
-        [scr_dmode_get_text(""opt_notseen""), 0], 
-        [scr_dmode_get_text(""opt_ice_key""), 1], 
-        [scr_dmode_get_text(""opt_dungeon2""), 1.5], 
-        [scr_dmode_get_text(""opt_key_used""), 2], 
-        [scr_dmode_get_text(""opt_shelter_key""), 3], 
-        [scr_dmode_get_text(""opt_dungeon3""), 4], 
-        [scr_dmode_get_text(""opt_shelter_used""), 5], 
-        [scr_dmode_get_text(""opt_eram""), 6]
-    ]]);
+    array_push(dother_all_options, [SWORD3, scr_dmode_get_text(""label_sword_prog""), 1055, [[scr_dmode_get_text(""opt_notseen""), 0], [scr_dmode_get_text(""opt_ice_key""), 1], [scr_dmode_get_text(""opt_dungeon2""), 1.5], [scr_dmode_get_text(""opt_key_used""), 2], [scr_dmode_get_text(""opt_shelter_key""), 3], [scr_dmode_get_text(""opt_dungeon3""), 4], [scr_dmode_get_text(""opt_shelter_used""), 5], [scr_dmode_get_text(""opt_eram""), 6]]]);
     array_push(dother_all_options, [SWORD3, scr_dmode_get_text(""label_susie_attacked""), 1268, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
-    
-    // Eggs & Superbosses
     array_push(dother_all_options, [ZOEUFS, scr_dmode_get_text(""label_egg3""), 930, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
     array_push(dother_all_options, [SUPERBOSS, scr_dmode_get_text(""label_knight""), 1047, [[scr_dmode_get_text(""opt_no""), 2], [scr_dmode_get_text(""opt_yes""), 1]]]);
-    
-    // MISC 3
-    array_push(dother_all_options, [MISC3, scr_dmode_get_text(""label_fountain""), 1144, [
-        [scr_dmode_get_text(""opt_notseen""), 0], 
-        [scr_dmode_get_text(""opt_flirt_no_curtain""), 1], 
-        [scr_dmode_get_text(""opt_no_flirt""), 2], 
-        [scr_dmode_get_text(""opt_flirt_curtain""), 3]
-    ]]);
+    array_push(dother_all_options, [MISC3, scr_dmode_get_text(""label_fountain""), 1144, [[scr_dmode_get_text(""opt_notseen""), 0], [scr_dmode_get_text(""opt_flirt_no_curtain""), 1], [scr_dmode_get_text(""opt_no_flirt""), 2], [scr_dmode_get_text(""opt_flirt_curtain""), 3]]]);
     array_push(dother_all_options, [MISC3, scr_dmode_get_text(""label_tenna_statue""), 1222, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
-    
-    // MOSS
     array_push(dother_all_options, [MOUSSE, scr_dmode_get_text(""label_moss3""), 1078, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
-    
-    // SEAM
     array_push(dother_all_options, [SEAM, scr_dmode_get_text(""label_crystal_knight""), 856, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
 }
 
 if (global.chapter >= 4)
 {
-    // Eggs & Superbosses
     array_push(dother_all_options, [ZOEUFS, scr_dmode_get_text(""label_egg4""), 931, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
     array_push(dother_all_options, [SUPERBOSS, scr_dmode_get_text(""label_gerson""), 1629, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
-    
-    // MOSS
     array_push(dother_all_options, [MOUSSE, scr_dmode_get_text(""label_moss4""), 1592, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1], [scr_dmode_get_text(""opt_refused""), 2]]]);
-    
-    // MISC 4
     array_push(dother_all_options, [MISC4, scr_dmode_get_text(""label_ralsei_room""), 710, [[scr_dmode_get_text(""opt_notseen""), 0], [scr_dmode_get_text(""opt_seen""), 2]]]);
     array_push(dother_all_options, [MISC4, scr_dmode_get_text(""label_qcs_susie""), 701, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_visited""), 1]]]);
     array_push(dother_all_options, [MISC4, scr_dmode_get_text(""label_tea_ralsei""), 1514, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
-    
-    // Pray
-    array_push(dother_all_options, [MISC4, scr_dmode_get_text(""label_prayer""), 1507, [
-        [scr_dmode_get_text(""opt_no""), 0], 
-        [scr_dmode_get_text(""opt_for_susie""), 1], 
-        [scr_dmode_get_text(""opt_for_noelle""), 2], 
-        [scr_dmode_get_text(""opt_for_asriel""), 3]
-    ]]);
-    
+    array_push(dother_all_options, [MISC4, scr_dmode_get_text(""label_prayer""), 1507, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_for_susie""), 1], [scr_dmode_get_text(""opt_for_noelle""), 2], [scr_dmode_get_text(""opt_for_asriel""), 3]]]);
     array_push(dother_all_options, [MISC4, scr_dmode_get_text(""label_tenna_given""), 779, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 2]]]);
-    
-    // Noelle's phone
-    array_push(dother_all_options, [MISC4, scr_dmode_get_text(""label_noelle_phone""), 714, [
-        [scr_dmode_get_text(""opt_not_inspected""), 0], 
-        [scr_dmode_get_text(""opt_no_answer""), 1], 
-        [scr_dmode_get_text(""opt_festival""), 2], 
-        [scr_dmode_get_text(""opt_wrong_number""), 3]
-    ]]);
-    
+    array_push(dother_all_options, [MISC4, scr_dmode_get_text(""label_noelle_phone""), 714, [[scr_dmode_get_text(""opt_not_inspected""), 0], [scr_dmode_get_text(""opt_no_answer""), 1], [scr_dmode_get_text(""opt_festival""), 2], [scr_dmode_get_text(""opt_wrong_number""), 3]]]);
     array_push(dother_all_options, [MISC4, scr_dmode_get_text(""label_susie_prize""), 747, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
     array_push(dother_all_options, [MISC4, scr_dmode_get_text(""label_stain""), 748, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
     array_push(dother_all_options, [MISC4, scr_dmode_get_text(""label_ladder""), 864, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
@@ -2175,8 +2156,33 @@ for (i = 0; i < array_length(dother_categories); i++)
 for (i = 0; i < array_length(dother_all_options); i++)
     dflag_categories_len[dother_all_options[i][0]] += 1;
 
+dglobal_changer_options = [[""Custom"", ""string"", -1]];
+array_push(dglobal_changer_options, [""truename"", ""string"", -1]);
+array_push(dglobal_changer_options, [""othername"", ""string"", 6]);
+array_push(dglobal_changer_options, [""gold"", ""int"", -1]);
+array_push(dglobal_changer_options, [""maxhp"", ""uint"", 5]);
+array_push(dglobal_changer_options, [""hp"", ""int"", 5]);
+array_push(dglobal_changer_options, [""at"", ""int"", 5]);
+array_push(dglobal_changer_options, [""df"", ""int"", 5]);
+array_push(dglobal_changer_options, [""mag"", ""int"", 5]);
 global.dreading_custom_flag = 0;
 dcustom_flag_text = ["""", """"];
+dkeys_helper = 0;
+dkeys_data = [];
+drooms_id = scr_get_room_list();
+drooms = [];
+drooms_options = 
+{
+    target_room: ROOM_INITIALIZE,
+    target_plot: global.plot,
+    target_is_darkzone: global.darkzone,
+    target_member_2: global.char[1],
+    target_member_3: global.char[2]
+};
+dkeyboard_input = """";
+
+for (i = 0; i < array_length(drooms_id); i++)
+    array_push(drooms, room_get_name(drooms_id[i].room_index));
 
 find_subarray_index = function(arg0, arg1)
 {
@@ -2207,6 +2213,14 @@ draw_monospace = function(arg0, arg1, arg2)
     }
 };
 
+set_keyboard_reader = function(arg0)
+{
+    global.dreading_custom_flag = arg0;
+    keyboard_string = """";
+    dcustom_flag_text = ["""", """"];
+    global.dkeyboard_text = """";
+};
+
 function scr_array_contains(arg0, arg1)
 {
     for (var i = 0; i < array_length(arg0); i++)
@@ -2218,28 +2232,53 @@ function scr_array_contains(arg0, arg1)
     return false;
 }
 
-dkeys_helper = 0;
-dkeys_data = [];
-drooms_id = scr_get_room_list();
-drooms = [];
-drooms_options = 
+function parse_var_str(arg0, arg1)
 {
-    target_room: ROOM_INITIALIZE,
-    target_room: ROOM_INITIALIZE,
-    target_plot: global.plot,
-    target_is_darkzone: global.darkzone,
-    target_member_2: global.char[1],
-    target_member_3: global.char[2]
-};
-dkeyboard_input = """";
-
-for (i = 0; i < array_length(drooms_id); i++)
-    array_push(drooms, room_get_name(drooms_id[i].room_index));
+    str = arg0;
+    check_error = arg1;
+    is_good = scr_string_respect_type(str, ""variable"", 1, check_error);
+    dtemp_text = """";
+    dtemp_num = 0;
+    
+    if (!is_good)
+        return 0;
+    
+	brack_start = string_pos(""["", str);
+    if (brack_start == 0)
+    {
+        dtemp_text = str;
+        dtemp_num = -1;
+    }
+    else
+    {
+        dtemp_text = string_copy(str, 1, brack_start - 1);
+        dtemp_num = real(string_copy(str, brack_start + 1, string_length(str) - brack_start - 1));
+    }
+    
+    return 1;
+}
 ");
 
 
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)0, Data),
 @"dmenu_arrow_timer += 1;
+
+if (!global.dreading_custom_flag && keyboard_check_pressed(ord(""D"")))
+{
+    dmenu_active = !dmenu_active;
+    
+    if (dmenu_active)
+    {
+        dmenu_previous_interact = global.interact;
+        snd_play(snd_egg);
+        global.interact = 1;
+    }
+    else
+    {
+        snd_play(snd_smallswing);
+        global.interact = dmenu_previous_interact;
+    }
+}
 
 function dmenu_pressed_key(arg0)
 {
@@ -2281,79 +2320,56 @@ function vmove_menu(arg0, arg1)
     
     if (pressed_up != 0 || pressed_down != 0)
     {
-        if (pressed_up == 1 && dbutton_selected == 1)
+        if (pressed_up == 1 && dvertical_index == 0)
         {
-            dbutton_selected = array_length(dbutton_options) + 1;
-            dmenu_start_index = dbutton_selected - 3;
+            dvertical_index = array_length(dbutton_options);
+            dmenu_start_index = dvertical_index - 2;
         }
-        else if (pressed_down == 1 && dbutton_selected == array_length(dbutton_options))
+        else if (pressed_down == 1 && dvertical_index == (array_length(dbutton_options) - 1))
         {
-            dbutton_selected = 0;
+            dvertical_index = -1;
             dmenu_start_index = 0;
         }
         
         increment = pressed_up ? -1 : 1;
         
-        if ((pressed_up && dbutton_selected != 1) || (pressed_down && dbutton_selected != array_length(dbutton_options)))
+        if ((pressed_up && dvertical_index != 0) || (pressed_down && dvertical_index != (array_length(dbutton_options) - 1)))
         {
-            dbutton_selected += increment;
+            dvertical_index += increment;
             snd_play(snd_menumove);
             
-            if (pressed_up && dbutton_selected < (dmenu_start_index + 1))
+            if (pressed_up && dvertical_index < dmenu_start_index)
                 dmenu_start_index += increment;
-            else if (pressed_down && dbutton_selected > (dmenu_start_index + dbutton_max_visible))
+            else if (pressed_down && (dvertical_index + 1) > (dmenu_start_index + dbutton_max_visible))
                 dmenu_start_index += increment;
             
             if (dmenu_state == ""flag_misc"")
             {
-                new_options = dother_options[dbutton_selected - 1];
+                new_options = dother_options[dvertical_index];
                 dhorizontal_index = find_subarray_index(new_options[2], new_options[3]);
             }
         }
     }
 }
 
-function evaluate_custom_flag(arg0)
+function evaluate_custom_flag(arg0, arg1)
 {
+    scr_debug_print(""Checking for "" + string(arg1));
     proper_exit = arg0;
     
     if (!proper_exit)
     {
-        global.dreading_custom_flag = 0;
-        dcustom_flag_text = ["""", """"];
+        set_keyboard_reader(0);
         return 0;
     }
     
-    for (c = 1; c <= string_length(dcustom_flag_text[0]); c++)
-    {
-        cur_char = string_char_at(dcustom_flag_text[0], c);
-        if (!scr_84_is_digit(string_char_at(dcustom_flag_text[0], c)))
-        {
-            scr_debug_print(scr_dmode_get_text(""dbg_inv_flag"") + ""|"" + dcustom_flag_text[0] + ""|"" + scr_dmode_get_text(""dbg_because"") + ""|"" + string_char_at(dcustom_flag_text[0], c) + ""|"");
-            proper_exit = 0;
-            break;
-        }
-    }
+    first_type = arg1;
+    proper_exit = scr_string_respect_type(dcustom_flag_text[0], first_type, 1, 1);
     
-    if (string_length(dcustom_flag_text[0]) == 0)
-    {
-        scr_debug_print(scr_dmode_get_text(""dbg_empty_flag""));
-        proper_exit = 0;
-    }
-    
-    if (dmenu_state == ""warp_options"")
+    if (dmenu_state != ""flag_categories"")
         return proper_exit;
     
-    for (c = 1; c <= string_length(dcustom_flag_text[1]); c++)
-    {
-        cur_char = string_char_at(dcustom_flag_text[0], c);
-        if (!scr_84_is_digit(cur_char) && cur_char != ""."" && cur_char != ""-"")
-        {
-            scr_debug_print(scr_dmode_get_text(""dbg_inv_val"") + ""|"" + dcustom_flag_text[1] + ""|"");
-            proper_exit = 0;
-            break;
-        }
-    }
+    proper_exit = scr_string_respect_type(dcustom_flag_text[1], ""real"", 0, 1);
     
     if (string_length(dcustom_flag_text[1]) == 0)
     {
@@ -2384,20 +2400,41 @@ if (dmenu_active && global.dreading_custom_flag)
 {
     update_visu = 1;
     will_exit = 0;
+    reading_double_flag = dmenu_state == ""flag_categories"" || (dmenu_state == ""globals_changer"" && dvertical_index == 0);
     
-    if (dmenu_state == ""warp"" || dmenu_state == ""warp_options"")
+    if (!reading_double_flag)
         dkeyboard_input = dcustom_flag_text[0];
     
     will_exit = keyboard_check_pressed(vk_escape) || keyboard_check_pressed(global.input_k[7]);
-    will_exit |= ((dmenu_state == ""warp_options"" || dmenu_state == ""warp"") && (keyboard_check_pressed(vk_up) || keyboard_check_pressed(vk_down)));
+    will_exit |= (keyboard_check_pressed(vk_up) || keyboard_check_pressed(vk_down));
     
     if (will_exit)
     {
         clean_exit = !keyboard_check_pressed(vk_escape);
         
-        if (dmenu_state == ""flag_categories"" || dmenu_state == ""warp_options"")
+        if (dmenu_state == ""flag_categories"" || dmenu_state == ""warp_options"" || dmenu_state == ""globals_changer"")
         {
-            flags_good = evaluate_custom_flag(clean_exit);
+            check_type = ""uint"";
+            
+			if (dmenu_state == ""warp_options"")
+				check_type = ""real"";
+            if (dmenu_state == ""globals_changer"")
+            {
+                if (dvertical_index == 0)
+                {
+                    check_type = ""variable"";
+                    dglobal_changer_options[dvertical_index][1] = ""string"";
+                    
+                    if (scr_string_respect_type(dcustom_flag_text[1], ""real"", 1, 0))
+                        dglobal_changer_options[dvertical_index][1] = ""real"";
+                }
+                else
+                {
+                    check_type = dglobal_changer_options[dvertical_index][1];
+                }
+            }
+            
+            flags_good = evaluate_custom_flag(clean_exit, check_type);
             
             if (flags_good && dmenu_state == ""warp_options"")
                 drooms_options.target_plot = real(dkeyboard_input);
@@ -2405,68 +2442,55 @@ if (dmenu_active && global.dreading_custom_flag)
             snd_play(array_get([299, 420], flags_good));
         }
         
-        if (dmenu_state == ""warp"" || dmenu_state == ""warp_options"")
+        if (keyboard_check_pressed(vk_down))
+            vmove_menu(0, 1);
+        else if (keyboard_check_pressed(vk_up))
+            vmove_menu(1, 0);
+        
+        if (dmenu_state != ""warp_options"")
         {
-            if (keyboard_check_pressed(vk_down))
-                vmove_menu(0, 1);
-            else if (keyboard_check_pressed(vk_up))
-                vmove_menu(1, 0);
-            
-            if (dmenu_state == ""warp"")
+            if (keyboard_check_pressed(global.input_k[4]) || keyboard_check_pressed(global.input_k[7]))
             {
-                if (keyboard_check_pressed(global.input_k[4]) || keyboard_check_pressed(global.input_k[7]))
-                    snd_play(snd_select);
-                else if (keyboard_check_pressed(vk_escape))
-                    snd_play(snd_error);
-                else
-                    snd_play(snd_menumove);
+                snd_play(snd_select);
+                
+                if (dmenu_state == ""globals_changer"" && flags_good)
+                    dmenu_state_interact();
+            }
+            else if (keyboard_check_pressed(vk_escape))
+            {
+                snd_play(snd_error);
+            }
+            else
+            {
+                snd_play(snd_menumove);
             }
         }
-        
-        global.dreading_custom_flag = 0;
         
         if (!clean_exit)
             dkeyboard_input = """";
         
-        dcustom_flag_text = ["""", """"];
+        set_keyboard_reader(0);
         will_exit = 1;
     }
-    else if (dmenu_state == ""flag_categories"" && keyboard_check_pressed(vk_left) && dhorizontal_index != 0)
+    else if (reading_double_flag && keyboard_check_pressed(vk_left) && dhorizontal_index != 0)
     {
         snd_play(snd_menumove);
-        dhorizontal_index--;
+        global.dkeyboard_text = dcustom_flag_text[--dhorizontal_index];
     }
-    else if (dmenu_state == ""flag_categories"" && keyboard_check_pressed(vk_right) && dhorizontal_index != 1)
+    else if (reading_double_flag && keyboard_check_pressed(vk_right) && dhorizontal_index != 1)
     {
         snd_play(snd_menumove);
-        dhorizontal_index++;
-    }
-    else if (keyboard_check(vk_backspace))
-    {
-        if (keyboard_check_pressed(vk_backspace))
-        {
-            dcustom_flag_text[dhorizontal_index] = string_delete(dcustom_flag_text[dhorizontal_index], string_length(dcustom_flag_text[dhorizontal_index]), 1);
-            keyboard_string = """";
-            dbackspace_timer = 20;
-        }
-        
-        dbackspace_timer--;
-        
-        if (dbackspace_timer <= 0)
-        {
-            dcustom_flag_text[dhorizontal_index] = string_delete(dcustom_flag_text[dhorizontal_index], string_length(dcustom_flag_text[dhorizontal_index]), 1);
-            keyboard_string = """";
-            dbackspace_timer = 1;
-        }
-    }
-    else if (keyboard_string != """")
-    {
-        dcustom_flag_text[dhorizontal_index] += keyboard_string;
-        keyboard_string = """";
+        global.dkeyboard_text = dcustom_flag_text[++dhorizontal_index];
     }
     else
     {
-        update_visu = 0;
+        update_visu = scr_read_keyboard();
+        flag_index = 0;
+        
+        if (reading_double_flag)
+            flag_index = dhorizontal_index;
+        
+        dcustom_flag_text[flag_index] = global.dkeyboard_text;
     }
     
     if (update_visu)
@@ -2481,30 +2505,72 @@ else if (dmenu_active)
 {
     if (dbutton_layout == 0 && dkeys_helper == 0)
     {
-        if (keyboard_check_pressed(vk_left))
+        moved = 1;
+        
+        if (keyboard_check_pressed(vk_up))
         {
-            dbutton_selected -= 1;
+            dvertical_index--;
             
-            if (dbutton_selected < 1)
-                dbutton_selected = array_length(dbutton_options);
+            if (dvertical_index == -1)
+                dvertical_index = array_length(dbutton_options_2d) - 1;
             
-            snd_play(snd_menumove);
+            dhorizontal_index = min(dhorizontal_index, array_length(dbutton_options_2d[dvertical_index]) - 1);
+        }
+        else if (keyboard_check_pressed(vk_down))
+        {
+            dvertical_index++;
+            
+            if (dvertical_index == array_length(dbutton_options_2d))
+                dvertical_index = 0;
+            
+            dhorizontal_index = min(dhorizontal_index, array_length(dbutton_options_2d[dvertical_index]) - 1);
+        }
+        else if (keyboard_check_pressed(vk_left))
+        {
+            dhorizontal_index--;
+            
+            if (dhorizontal_index == -1)
+            {
+                dvertical_index--;
+                
+                if (dvertical_index == -1)
+                    dvertical_index = array_length(dbutton_options_2d) - 1;
+                
+                dhorizontal_index = array_length(dbutton_options_2d[dvertical_index]) - 1;
+            }
+        }
+        else if (keyboard_check_pressed(vk_right))
+        {
+            dhorizontal_index++;
+            
+            if (dhorizontal_index == array_length(dbutton_options_2d[dvertical_index]))
+            {
+                dvertical_index++;
+                
+                if (dvertical_index == array_length(dbutton_options_2d))
+                    dvertical_index = 0;
+                
+                dhorizontal_index = 0;
+            }
+        }
+        else
+        {
+            moved = 0;
         }
         
-        if (keyboard_check_pressed(vk_right))
-        {
-            dbutton_selected = (dbutton_selected % array_length(dbutton_options)) + 1;
+        if (moved)
             snd_play(snd_menumove);
-        }
     }
     
     if (dbutton_layout == 1)
     {
         og_horizontal_index = dhorizontal_index;
+        pressed_right = dmenu_pressed_key(39);
+        pressed_left = dmenu_pressed_key(37);
         
         if (dmenu_state == ""flag_misc"")
         {
-            cur_options = dother_options[dbutton_selected - 1];
+            cur_options = dother_options[dvertical_index];
             cur_options_len = array_length(cur_options[3]);
             playsound = 1;
             
@@ -2522,9 +2588,19 @@ else if (dmenu_active)
                 snd_play(snd_menumove);
             }
         }
-        
-        pressed_right = dmenu_pressed_key(39);
-        pressed_left = dmenu_pressed_key(37);
+        else if (dmenu_state == ""globals_changer"")
+        {
+            cur_global_array_limit = dglobal_changer_options[dvertical_index][2];
+            
+            if (pressed_left == 1 && dhorizontal_index != 0)
+                dhorizontal_index--;
+            
+            if (pressed_right == 1 && dhorizontal_index != (cur_global_array_limit - 1))
+                dhorizontal_index++;
+            
+            if (dhorizontal_index != og_horizontal_index)
+                snd_play(snd_menumove);
+        }
         
         if (pressed_left && pressed_right)
             pressed_right = 0;
@@ -2533,9 +2609,9 @@ else if (dmenu_active)
         {
             if (dmenu_state == ""recruits"")
             {
-                if (dbutton_selected != 1)
+                if (dvertical_index != 0)
                 {
-                    real_index = dbutton_indices[dbutton_selected - 1];
+                    real_index = dbutton_indices[dvertical_index];
                     scr_recruit_info(real_index);
                     recruit_count = global.flag[real_index + 600];
                     to_add = 1 / _recruitcount;
@@ -2543,10 +2619,9 @@ else if (dmenu_active)
                     if (pressed_left)
                     {
                         to_add = -to_add;
+                        
                         if (recruit_count == 0)
-                        {
                             to_add = -1;
-                        }
                     }
                     else if (pressed_right && recruit_count == -1)
                     {
@@ -2575,9 +2650,9 @@ else if (dmenu_active)
                     dmenu_state_update();
                 }
             }
-            else if (dmenu_state == ""warp_options"" && (dbutton_selected == 4 || dbutton_selected == 5))
+            else if (dmenu_state == ""warp_options"" && (dvertical_index == 3 || dvertical_index == 4))
             {
-                cur_party = array_get([drooms_options.target_member_2, drooms_options.target_member_3], dbutton_selected - 4);
+                cur_party = array_get([drooms_options.target_member_2, drooms_options.target_member_3], dvertical_index - 3);
                 new_party = -1;
                 
                 if (pressed_left && cur_party != 0)
@@ -2590,7 +2665,7 @@ else if (dmenu_active)
                 
                 if (new_party != -1)
                 {
-                    if (dbutton_selected == 4)
+                    if (dvertical_index == 3)
                         drooms_options.target_member_2 = new_party;
                     else
                         drooms_options.target_member_3 = new_party;
@@ -2603,7 +2678,7 @@ else if (dmenu_active)
             {
                 dhorizontal_page = !dhorizontal_page;
                 dmenu_start_index = 0;
-                dbutton_selected = 1;
+                dvertical_index = 0;
                 snd_play(snd_menumove);
                 dmenu_state_update();
             }
@@ -2611,6 +2686,9 @@ else if (dmenu_active)
         
         pressed_up = dmenu_pressed_key(38);
         pressed_down = dmenu_pressed_key(40);
+        
+        if (dmenu_state == ""globals_changer"" && (pressed_up || pressed_down))
+            dhorizontal_index = 0;
         
         if (pressed_up && pressed_down)
             pressed_up = 0;
@@ -2700,7 +2778,7 @@ else if (dmenu_active)
                     break;
                 
                 case ""recruits"":
-                    real_indice = dbutton_indices[dbutton_selected - 1];
+                    real_indice = dbutton_indices[dvertical_index];
                     recruited_nbr = global.flag[real_indice + 600];
                     global.flag[real_indice + 600] = recruited_nbr + 1;
                     break;
@@ -2723,19 +2801,19 @@ else if (dmenu_active)
     
     if (keyboard_check_pressed(global.input_k[4]) || keyboard_check_pressed(global.input_k[7]))
     {
-        must_save = dmenu_state != ""givertab"" && dmenu_state != ""recruit_presets"" && dmenu_state != ""flag_misc"" && dmenu_state != ""warp_options"" && !(dmenu_state == ""warp"" && dbutton_selected == 2);
-        must_save &= ((dmenu_state != ""flag_categories"" || dbutton_selected != 1) && (!(dmenu_state == ""weapons"" && dhorizontal_page) && !(dmenu_state == ""armors"" && dhorizontal_page)));
-        must_save &= (dmenu_state != ""recruits"" || dbutton_selected == 1);
-        must_save &= !(scr_array_contains(ditem_types, dmenu_state) && dhorizontal_page == 0 && dbutton_selected == 1);
+        must_save = dmenu_state != ""givertab"" && dmenu_state != ""recruit_presets"" && dmenu_state != ""flag_misc"" && dmenu_state != ""warp_options"" && !(dmenu_state == ""warp"" && dvertical_index == 1);
+        must_save &= ((dmenu_state != ""flag_categories"" || dvertical_index != 0) && (!(dmenu_state == ""weapons"" && dhorizontal_page) && !(dmenu_state == ""armors"" && dhorizontal_page)));
+        must_save &= ((dmenu_state != ""recruits"" || dvertical_index == 0) && dmenu_state != ""globals_changer"");
+        must_save &= !(scr_array_contains(ditem_types, dmenu_state) && dhorizontal_page == 0 && dvertical_index == 0);
         snd_play(snd_select);
         
         if (must_save)
         {
             array_push(dmenu_state_history, dmenu_state);
-            array_push(dbutton_selected_history, dbutton_selected);
+            array_push(dbutton_selected_history, dvertical_index);
         }
         
-        if (dmenu_state == ""flag_categories"" && dbutton_selected == 1)
+        if (dmenu_state == ""flag_categories"" && dvertical_index == 0)
         {
             global.dreading_custom_flag = 1;
             dhorizontal_index = 0;
@@ -2747,9 +2825,9 @@ else if (dmenu_active)
             switch (dmenu_state)
             {
                 case ""objects"":
-                    if (dhorizontal_page != 0 || dbutton_selected > 1)
+                    if (dhorizontal_page != 0 || dvertical_index != 0)
                     {
-                        real_index = dbutton_indices[dbutton_selected - 1];
+                        real_index = dbutton_indices[dvertical_index];
                         
                         if (dhorizontal_page == 0)
                         {
@@ -2776,9 +2854,9 @@ else if (dmenu_active)
                     break;
                 
                 case ""armors"":
-                    if (dhorizontal_page != 0 || dbutton_selected > 1)
+                    if (dhorizontal_page != 0 || dvertical_index != 0)
                     {
-                        real_index = dbutton_indices[dbutton_selected - 1];
+                        real_index = dbutton_indices[dvertical_index];
                         
                         if (dhorizontal_page == 0)
                         {
@@ -2796,9 +2874,9 @@ else if (dmenu_active)
                     break;
                 
                 case ""weapons"":
-                    if (dhorizontal_page != 0 || dbutton_selected > 1)
+                    if (dhorizontal_page != 0 || dvertical_index != 0)
                     {
-                        real_index = dbutton_indices[dbutton_selected - 1];
+                        real_index = dbutton_indices[dvertical_index];
                         
                         if (dhorizontal_page == 0)
                         {
@@ -2816,9 +2894,9 @@ else if (dmenu_active)
                     break;
                 
                 case ""keyitems"":
-                    if (dbutton_selected > 1)
+                    if (dvertical_index != 0)
                     {
-                        real_index = dbutton_indices[dbutton_selected - 1];
+                        real_index = dbutton_indices[dvertical_index];
                         scr_keyiteminfo(real_index);
                         dgiver_bname = tempkeyitemname;
                         scr_debug_print(string(dgiver_bname) + scr_dmode_get_text(""msg_selected""));
@@ -2827,16 +2905,23 @@ else if (dmenu_active)
                     break;
             }
         }
-        else if (dmenu_state == ""warp"" && dbutton_selected == 2)
+        else if (dmenu_state == ""warp"" && dvertical_index == 1)
         {
             scr_debug_print(scr_dmode_get_text(""msg_search_selected""));
         }
-        else if (dmenu_state != ""givertab"" && dmenu_state != ""flag_misc"" && dmenu_state != ""warp_options"" && (dmenu_state != ""recruits"" || dbutton_selected == 1))
+        else if (dmenu_state != ""givertab"" && dmenu_state != ""flag_misc"" && dmenu_state != ""warp_options"" && (dmenu_state != ""recruits"" || dvertical_index == 0))
         {
-            scr_debug_print(string(dbutton_options[dbutton_selected - 1]) + scr_dmode_get_text(""msg_selected""));
+            option_name = """";
+            
+            if (dbutton_layout == 0)
+                option_name = string(dbutton_options_2d[dvertical_index][dhorizontal_index]);
+            else
+                option_name = string(dbutton_options[dvertical_index]);
+            
+            scr_debug_print(option_name + scr_dmode_get_text(""msg_selected""));
         }
         
-        if ((dmenu_state == ""recruits"" && dbutton_selected != 1) || dmenu_state == ""warp_options"" || dmenu_state == ""recruit_presets"" || dmenu_state == ""warp_options"" || dmenu_state == ""flag_misc"" || ((dmenu_state == ""armors"" || dmenu_state == ""weapons"") && dhorizontal_page) || (dmenu_state == ""warp"" && dbutton_selected == 2))
+        if ((dmenu_state == ""recruits"" && dvertical_index != 0) || dmenu_state == ""warp_options"" || dmenu_state == ""recruit_presets"" || dmenu_state == ""warp_options"" || dmenu_state == ""flag_misc"" || ((dmenu_state == ""armors"" || dmenu_state == ""weapons"") && dhorizontal_page) || (dmenu_state == ""warp"" && dvertical_index == 1) || dmenu_state == ""globals_changer"")
         {
             dmenu_state_interact();
             dmenu_state_update();
@@ -2845,7 +2930,7 @@ else if (dmenu_active)
         {
             dmenu_state_interact();
             dmenu_start_index = 0;
-            dbutton_selected = 1;
+            dvertical_index = 0;
             dmenu_state_update();
         }
     }
@@ -2870,13 +2955,13 @@ else if (dmenu_active)
         
         if (scr_array_contains(ditem_types, dmenu_state))
         {
-            if (dhorizontal_page == 0 && dbutton_selected == 1)
+            if (dhorizontal_page == 0 && dvertical_index == 0)
             {
                 dhinter_text = scr_dmode_get_text(""hint_press"") + scr_get_input_name(4) + scr_dmode_get_text(""hint_change_chap"");
             }
-            else if (dhorizontal_page == 0 && dbutton_selected > 1)
+            else if (dhorizontal_page == 0 && dvertical_index != 0)
             {
-                var hover_id = dbutton_indices[dbutton_selected - 1];
+                var hover_id = dbutton_indices[dvertical_index];
                 
                 if (hover_id != -1)
                 {
@@ -2942,7 +3027,8 @@ if ((dmenu_active == 1 && dmenu_state == ""debug"" && global.darkzone == 1) || d
         
         dkeys_helper = !dkeys_helper;
     }
-}");
+}
+");
 
 
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)1, Data),
@@ -2985,14 +3071,7 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
         
         case ""warp_options"":
             dmenu_title = scr_dmode_get_text(""warp_options"");
-            dbutton_options = [
-                scr_dmode_get_text(""btn_cancel""), 
-                scr_dmode_get_text(""ui_is_darkworld""), 
-                scr_dmode_get_text(""ui_plot_value""), 
-                scr_dmode_get_text(""ui_teammate2""), 
-                scr_dmode_get_text(""ui_teammate3""), 
-                scr_dmode_get_text(""btn_warp"")
-            ];
+            dbutton_options = [scr_dmode_get_text(""btn_cancel""), scr_dmode_get_text(""ui_is_darkworld""), scr_dmode_get_text(""ui_plot_value""), scr_dmode_get_text(""ui_teammate2""), scr_dmode_get_text(""ui_teammate3""), scr_dmode_get_text(""btn_warp"")];
             dbutton_indices = [0, 1, 2, 3, 4, 5];
             dbutton_options[1] += drooms_options.target_is_darkzone ? scr_dmode_get_text(""opt_yes"") : scr_dmode_get_text(""opt_no"");
             
@@ -3008,12 +3087,7 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
         
         case ""give"":
             dmenu_title = scr_dmode_get_text(""item_type"");
-            dbutton_options = [
-                scr_dmode_get_text(""type_items""), 
-                scr_dmode_get_text(""type_armors""), 
-                scr_dmode_get_text(""type_weapons""), 
-                scr_dmode_get_text(""type_keyitems"")
-            ];
+            dbutton_options_2d = [[scr_dmode_get_text(""type_items""), scr_dmode_get_text(""type_armors""), scr_dmode_get_text(""type_weapons""), scr_dmode_get_text(""type_keyitems"")]];
             dmenu_box = 0;
             dbutton_layout = 0;
             break;
@@ -3096,7 +3170,7 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
                     var combined = dlight_armors[i][1];
                     
                     if (global.larmor == dlight_armors[i][0])
-                        combined += "" ("" + scr_dmode_get_text(""ui_equipped"") + "")"";
+                        combined += ("" ("" + scr_dmode_get_text(""ui_equipped"") + "")"");
                     
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
@@ -3142,7 +3216,7 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
                     var combined = dlight_weapons[i][1];
                     
                     if (global.lweapon == dlight_weapons[i][0])
-                        combined += "" ("" + scr_dmode_get_text(""ui_equipped"") + "")"";
+                        combined += ("" ("" + scr_dmode_get_text(""ui_equipped"") + "")"");
                     
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
@@ -3278,7 +3352,7 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
                 flag_number = global.flag[cur_option[2]];
                 var combined = cur_option[1] + "" - "" + scr_dmode_get_text(""ui_problem"");
                 
-                if (i == (dbutton_selected - 1))
+                if (i == dvertical_index)
                     option_index = dhorizontal_index;
                 else
                     option_index = find_subarray_index(cur_option[2], cur_option[3]);
@@ -3296,56 +3370,126 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             dbutton_layout = 1;
             break;
         
-        default:
-            dmenu_title = scr_dmode_get_text(""menu_unknown"");
+        case ""globals_changer"":
+            dmenu_title = ""Global changer"";
             dbutton_options = [];
+            dmenu_box = 1;
+            dbutton_layout = 1;
+            reading_double_flag = dvertical_index == 0 && global.dreading_custom_flag;
+            
+            for (var i = 0; i < array_length(dglobal_changer_options); i++)
+            {
+                array_push(dbutton_indices, i);
+                name = dglobal_changer_options[i][0];
+                limit = dglobal_changer_options[i][2];
+                
+                if (i == 0 && reading_double_flag)
+                {
+                    name = dcustom_flag_text[0];
+                    is_good = parse_var_str(name, 0);
+                    
+                    if (is_good)
+                    {
+                        name = dtemp_text;
+                        limit = dtemp_num;
+                    }
+                }
+                
+                text = name;
+                
+                if (i == 0 && reading_double_flag)
+                    text = ""global."" + name;
+                
+                cur_global_value = """";
+                var_exist = variable_global_exists(name);
+                
+                if (var_exist)
+                    cur_global_value = variable_global_get(name);
+                
+                if (limit != -1)
+                {
+                    lookup_index = 0;
+                    
+                    if (i == dvertical_index && i == 0)
+                        lookup_index = limit;
+                    else if (i == dvertical_index)
+                        lookup_index = dhorizontal_index;
+                    
+                    text += (""["" + string(lookup_index) + ""]"");
+                    
+                    if (typeof(cur_global_value) != ""array"")
+                        cur_global_value = ""(Not an array)"";
+                    else if (lookup_index >= array_length(cur_global_value))
+                        cur_global_value = ""(Index too high)"";
+                    else
+                        cur_global_value = cur_global_value[lookup_index];
+                }
+                
+                if (global.dreading_custom_flag && i == dvertical_index)
+                {
+                    if (i != 0 || dcustom_flag_text[1] != """" || !var_exist)
+                        cur_global_value = dcustom_flag_text[reading_double_flag];
+                }
+                
+                if (!(i == 0 && dvertical_index == 0 && !global.dreading_custom_flag))
+                    text += ("" = |"" + string(cur_global_value) + ""|"");
+                
+                array_push(dbutton_options, text);
+            }
+            
+            break;
+        
+        default:
             dmenu_box = 0;
             dbutton_layout = 0;
+            dbutton_options = [];
     }
 }
 
 function dmenu_state_interact()
 {
+    selected_name = """";
+    
+    if (dbutton_layout != 0)
+        selected_name = string(dbutton_options[dvertical_index]);
+    else
+        selected_name = string(dbutton_options_2d[dvertical_index][dhorizontal_index]);
+    
     switch (dmenu_state)
     {
         case ""debug"":
-            if (dbutton_selected == 1)
+            dvertical_index = 0;
+            
+            if (selected_name == scr_dmode_get_text(""warps""))
             {
                 dmenu_state = ""warp"";
                 dhorizontal_index = 0;
                 dkeyboard_input = """";
                 drooms_options.target_plot = global.plot;
                 drooms_options.target_is_darkzone = global.darkzone;
-                dbutton_selected = 1;
             }
-            
-            if (dbutton_selected == 2)
+            else if (selected_name == scr_dmode_get_text(""items""))
             {
                 dmenu_state = ""give"";
-                dbutton_selected = 1;
             }
-            
-            if (dbutton_selected == 3)
+            else if (selected_name == scr_dmode_get_text(""recruits""))
             {
-                if (global.chapter >= 3)
-                    dmenu_state = ""recruits"";
-                else
-                    dmenu_state = ""flag_categories"";
-                
+                dmenu_state = ""recruits"";
                 dhorizontal_page = 0;
-                dbutton_selected = 1;
             }
-            
-            if (dbutton_selected == 4)
+            else if (selected_name == scr_dmode_get_text(""misc""))
             {
                 dmenu_state = ""flag_categories"";
-                dbutton_selected = 1;
+            }
+            else if (selected_name == ""Globals"")
+            {
+                dmenu_state = ""globals_changer"";
             }
             
             break;
         
         case ""warp"":
-            if (dbutton_selected == 2)
+            if (dvertical_index == 1)
             {
                 global.dreading_custom_flag = 1;
                 keyboard_string = """";
@@ -3356,8 +3500,8 @@ function dmenu_state_interact()
             {
                 drooms_options.target_room = -1;
                 
-                if (dbutton_selected != 1)
-                    drooms_options.target_room = dbutton_indices[dbutton_selected - 1];
+                if (dvertical_index != 0)
+                    drooms_options.target_room = dbutton_indices[dvertical_index];
                 
                 drooms_options.target_plot = global.plot;
                 drooms_options.target_is_darkzone = global.darkzone;
@@ -3370,21 +3514,21 @@ function dmenu_state_interact()
             break;
         
         case ""warp_options"":
-            if (dbutton_selected == 1)
+            if (dvertical_index == 0)
             {
                 dkeyboard_input = """";
                 dmenu_state = ""warp"";
             }
-            else if (dbutton_selected == 2)
+            else if (dvertical_index == 1)
             {
                 drooms_options.target_is_darkzone ^= 1;
             }
-            else if (dbutton_selected == 3)
+            else if (dvertical_index == 2)
             {
                 global.dreading_custom_flag = 1;
                 keyboard_string = """";
             }
-            else if (dbutton_selected == 6)
+            else if (dvertical_index == 5)
             {
                 new_room = drooms_options.target_room;
                 
@@ -3403,25 +3547,25 @@ function dmenu_state_interact()
             break;
         
         case ""give"":
-            if (dbutton_selected == 1)
+            if (dvertical_index == 0)
                 dmenu_state = ""objects"";
-            else if (dbutton_selected == 2)
+            else if (dvertical_index == 1)
                 dmenu_state = ""armors"";
-            else if (dbutton_selected == 3)
+            else if (dvertical_index == 2)
                 dmenu_state = ""weapons"";
-            else if (dbutton_selected == 4)
+            else if (dvertical_index == 3)
                 dmenu_state = ""keyitems"";
             
             dhorizontal_page = !global.darkzone;
             
-            if (dbutton_selected == 4)
+            if (dvertical_index == 3)
                 dhorizontal_page = 0;
             
-            dbutton_selected = 1;
+            dvertical_index = 0;
             break;
         
         case ""objects"":
-            if (dhorizontal_page == 0 && dbutton_selected == 1)
+            if (dhorizontal_page == 0 && dvertical_index == 0)
             {
                 ditem_chap += 1;
                 
@@ -3431,10 +3575,10 @@ function dmenu_state_interact()
             else
             {
                 dgiver_menu_state = dmenu_state;
-                dbutton_selected = clamp(dbutton_selected, 0, array_length(dbutton_options));
-                dgiver_button_selected = dbutton_selected;
+                dvertical_index = clamp(dvertical_index, 0, array_length(dbutton_options));
+                dgiver_button_selected = dvertical_index;
                 dmenu_state = ""givertab"";
-                dbutton_selected = 1;
+                dvertical_index = 0;
             }
             
             break;
@@ -3442,11 +3586,11 @@ function dmenu_state_interact()
         case ""armors"":
             if (dhorizontal_page == 1)
             {
-                global.larmor = dlight_armors[dbutton_selected - 1][0];
+                global.larmor = dlight_armors[dvertical_index][0];
                 break;
             }
             
-            if (dhorizontal_page == 0 && dbutton_selected == 1)
+            if (dhorizontal_page == 0 && dvertical_index == 0)
             {
                 ditem_chap += 1;
                 
@@ -3456,9 +3600,9 @@ function dmenu_state_interact()
             else
             {
                 dgiver_menu_state = dmenu_state;
-                dgiver_button_selected = dbutton_selected;
+                dgiver_button_selected = dvertical_index;
                 dmenu_state = ""givertab"";
-                dbutton_selected = 1;
+                dvertical_index = 0;
             }
             
             break;
@@ -3466,11 +3610,11 @@ function dmenu_state_interact()
         case ""weapons"":
             if (dhorizontal_page == 1)
             {
-                global.lweapon = dlight_weapons[dbutton_selected - 1][0];
+                global.lweapon = dlight_weapons[dvertical_index][0];
                 break;
             }
             
-            if (dhorizontal_page == 0 && dbutton_selected == 1)
+            if (dhorizontal_page == 0 && dvertical_index == 0)
             {
                 ditem_chap += 1;
                 
@@ -3480,15 +3624,15 @@ function dmenu_state_interact()
             else
             {
                 dgiver_menu_state = dmenu_state;
-                dgiver_button_selected = dbutton_selected;
+                dgiver_button_selected = dvertical_index;
                 dmenu_state = ""givertab"";
-                dbutton_selected = 1;
+                dvertical_index = 0;
             }
             
             break;
         
         case ""keyitems"":
-            if (dbutton_selected == 1)
+            if (dvertical_index == 0)
             {
                 ditem_chap += 1;
                 
@@ -3498,9 +3642,9 @@ function dmenu_state_interact()
             else
             {
                 dgiver_menu_state = dmenu_state;
-                dgiver_button_selected = dbutton_selected;
+                dgiver_button_selected = dvertical_index;
                 dmenu_state = ""givertab"";
-                dbutton_selected = 1;
+                dvertical_index = 0;
             }
             
             break;
@@ -3511,6 +3655,7 @@ function dmenu_state_interact()
                 scr_debug_print(scr_dmode_get_text(""msg_cancelled""));
                 break;
             }
+            
             if (dgiver_menu_state == ""objects"")
             {
                 real_index = dbutton_indices[dgiver_button_selected - 1];
@@ -3612,10 +3757,10 @@ function dmenu_state_interact()
             break;
         
         case ""flag_categories"":
-            if (dbutton_selected > 1)
+            if (dvertical_index > 0)
             {
                 dother_options = [];
-                real_index = dbutton_indices[dbutton_selected - 1];
+                real_index = dbutton_indices[dvertical_index];
                 
                 for (var i = 0; i < array_length(dother_all_options); i++)
                 {
@@ -3627,7 +3772,7 @@ function dmenu_state_interact()
                 
                 dhorizontal_index = find_subarray_index(dother_options[0][2], dother_options[0][3]);
                 dmenu_state = ""flag_misc"";
-                dbutton_selected = 1;
+                dvertical_index = 0;
             }
             
             break;
@@ -3636,11 +3781,8 @@ function dmenu_state_interact()
             break;
         
         case ""recruits"":
-            if (dbutton_selected == 1)
-            {
+            if (dvertical_index == 0)
                 dmenu_state = ""recruit_presets"";
-                dbutton_selected = 1;
-            }
             
             break;
         
@@ -3657,7 +3799,7 @@ function dmenu_state_interact()
                     var enemy_id = test_lst[i];
                     scr_recruit_info(enemy_id);
                     
-                    if (dbutton_selected == 1)
+                    if (dvertical_index == 0)
                         global.flag[enemy_id + 600] = 1;
                     else
                         global.flag[enemy_id + 600] = -1;
@@ -3667,7 +3809,7 @@ function dmenu_state_interact()
                     break;
             }
             
-            if (dbutton_selected == 1)
+            if (dvertical_index == 0)
                 snd_play(snd_pirouette);
             else
                 snd_play(snd_weirdeffect);
@@ -3675,34 +3817,74 @@ function dmenu_state_interact()
             dpop_history();
             break;
         
+        case ""globals_changer"":
+            if (global.dreading_custom_flag)
+            {
+                var value = 0;
+                cur_global_array = dglobal_changer_options[dvertical_index];
+                reading_double_flag = dvertical_index == 0;
+                glob_name = cur_global_array[0];
+                glob_index = -1;
+                
+                if (reading_double_flag)
+                {
+                    parse_var_str(dcustom_flag_text[0], 1);
+                    glob_name = dtemp_text;
+                    glob_index = dtemp_num;
+                }
+                else if (cur_global_array[2] != -1)
+                {
+                    glob_index = dhorizontal_index;
+                }
+                
+                scr_debug_print(string(cur_global_array));
+                
+                switch (cur_global_array[1])
+                {
+                    case ""string"":
+                        value = string(dcustom_flag_text[reading_double_flag]);
+                        break;
+                    
+                    case ""int"":
+                    case ""uint"":
+                    case ""real"":
+                        value = real(dcustom_flag_text[reading_double_flag]);
+                        break;
+                    
+                    default:
+                        scr_debug_print(""Unrecognized type |"" + string(cur_global_array[1]) + ""|"");
+                }
+                
+                if (glob_index != -1)
+                {
+                    base = variable_global_get(glob_name);
+                    base[glob_index] = value;
+                    value = base;
+                }
+                
+                variable_global_set(glob_name, value);
+                scr_debug_print(""Changed global."" + string(glob_name) + "" to |"" + string(value) + ""|"");
+            }
+            else if (dvertical_index == 0)
+            {
+                dhorizontal_index = 0;
+            }
+            
+            set_keyboard_reader(global.dreading_custom_flag ^ 1);
+            break;
+        
         default:
             snd_play(snd_error);
             scr_debug_print(scr_dmode_get_text(""msg_invalid""));
     }
-}");
+}
+");
 
 
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Draw, (uint)0, Data),
 @"xx = __view_get(e__VW.XView, 0);
 yy = __view_get(e__VW.YView, 0);
 d = global.darkzone + 1;
-
-if (!global.dreading_custom_flag && keyboard_check_pressed(ord(""D"")))
-{
-    dmenu_active = !dmenu_active;
-    
-    if (dmenu_active)
-    {
-        dmenu_previous_interact = global.interact;
-        snd_play(snd_egg);
-        global.interact = 1;
-    }
-    else
-    {
-        snd_play(snd_smallswing);
-        global.interact = dmenu_previous_interact;
-    }
-}
 
 if (dmenu_box == 0)
 {
@@ -3859,13 +4041,22 @@ if (dmenu_active)
     
     if (dbutton_layout == 0)
     {
-        for (var i = 0; i < button_count; i++)
+        var draw_y = (100 * d) + yy;
+        
+        for (var j = 0; j < array_length(dbutton_options_2d); j++)
         {
-            var cur_btn = string(dbutton_options[i]);
-            var text_width = string_width(cur_btn);
-            draw_set_color((dbutton_selected == (i + 1)) ? c_yellow : c_white);
-            draw_text(x_start + xx, (100 * d) + yy, cur_btn);
-            x_start += (text_width + x_spacing);
+            var draw_x = x_start + xx;
+            
+            for (var i = 0; i < array_length(dbutton_options_2d[j]); i++)
+            {
+                var cur_btn = string(dbutton_options_2d[j][i]);
+                var text_width = string_width(cur_btn);
+                draw_set_color((dvertical_index == j && dhorizontal_index == i) ? c_yellow : c_white);
+                draw_text(draw_x, draw_y, cur_btn);
+                draw_x += (text_width + x_spacing);
+            }
+            
+            draw_y += 30;
         }
     }
     
@@ -3885,10 +4076,9 @@ if (dmenu_active)
             
             if (button_index < array_length(dbutton_options))
             {
-                is_cur_line = dbutton_selected == (button_index + 1);
+                is_cur_line = dvertical_index == button_index;
                 var text_color = is_cur_line ? c_yellow : c_white;
                 draw_set_color(text_color);
-                
                 var cur_btn = string(dbutton_options[button_index]);
                 draw_monospace(x_start + xx, y_start + yy + (i * y_spacing), cur_btn);
                 var mono_spacing = (global.darkzone == 1) ? 15 : 8;
@@ -3907,7 +4097,7 @@ if (dmenu_active)
                         draw_sprite_ext(spr_morearrow, 0, x_start + xx + ((dash_pos * mono_spacing) + floor(mono_spacing / 2)) + dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[0], darrow_scale, -darrow_scale, 90, c_white, 1);
                     }
                     
-                    if ((dmenu_state == ""flag_misc"" && dhorizontal_index < (array_length(dother_options[dbutton_selected - 1][3]) - 1)) || (dmenu_state == ""warp_options"" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != (4 - (global.chapter == 1))))
+                    if ((dmenu_state == ""flag_misc"" && dhorizontal_index < (array_length(dother_options[dvertical_index][3]) - 1)) || (dmenu_state == ""warp_options"" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != (4 - (global.chapter == 1))))
                         draw_sprite_ext(spr_morearrow, 0, (x_start + xx + ((string_length(cur_btn) + 1) * mono_spacing)) - floor(mono_spacing / 2) - dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[1], darrow_scale, -darrow_scale, 270, c_white, 1);
                 }
                 else if (dmenu_state == ""recruits"" && button_index == 0)
@@ -4025,23 +4215,7 @@ if (dmenu_active)
 
 if (dkeys_helper == 1)
 {
-    dkeys_data = [
-        string(scr_dmode_get_text(""key_0"")),
-        string(scr_dmode_get_text(""key_1"")),
-        string(scr_dmode_get_text(""key_2"")),
-        string(scr_dmode_get_text(""key_3"")),
-        string(scr_dmode_get_text(""key_4"")),
-        string(scr_dmode_get_text(""key_5"")),
-        string(scr_dmode_get_text(""key_6"")),
-        string(scr_dmode_get_text(""key_7"")),
-        string(scr_dmode_get_text(""key_8"")),
-        string(scr_dmode_get_text(""key_9"")),
-        string(scr_dmode_get_text(""key_10"")),
-        string(scr_dmode_get_text(""key_11"")),
-        string(scr_dmode_get_text(""key_12"")),
-        string(scr_dmode_get_text(""key_13"")),
-        string(scr_dmode_get_text(""key_14""))
-    ];
+    dkeys_data = [string(scr_dmode_get_text(""key_0"")), string(scr_dmode_get_text(""key_1"")), string(scr_dmode_get_text(""key_2"")), string(scr_dmode_get_text(""key_3"")), string(scr_dmode_get_text(""key_4"")), string(scr_dmode_get_text(""key_5"")), string(scr_dmode_get_text(""key_6"")), string(scr_dmode_get_text(""key_7"")), string(scr_dmode_get_text(""key_8"")), string(scr_dmode_get_text(""key_9"")), string(scr_dmode_get_text(""key_10"")), string(scr_dmode_get_text(""key_11"")), string(scr_dmode_get_text(""key_12"")), string(scr_dmode_get_text(""key_13"")), string(scr_dmode_get_text(""key_14""))];
     x_padding = 7;
     y_start = 50 * d;
     x_spacing = 10 * d;
@@ -4094,11 +4268,12 @@ enum e__VW
     HPort,
     Camera,
     SurfaceID
-}");
+}
+");
 
 
 UndertaleScript scr_debug = Data.Scripts.ByName("scr_debug");
-importGroup.QueueReplace(scr_debug.Code,
+importGroup.QueueReplace("gml_GlobalScript_scr_debug",
 @"function scr_debug()
 {
     return global.debug;
@@ -4230,6 +4405,8 @@ importGroup.QueueAppend(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint
 if (!instance_exists(obj_dmenu_system))
     instance_create(0, 0, obj_dmenu_system);
 ");
+
+
 importGroup.QueueFindReplace("gml_Object_obj_darkcontroller_Step_0",
 @"if (scr_debug())",
 @"if (0)");
@@ -4254,9 +4431,6 @@ importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, 
     }
 }
 ");
-importGroup.QueueFindReplace("gml_Object_obj_overworldc_Step_0",
-@"if (scr_debug())",
-@"if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))");
 
 
 importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, Data),
@@ -4276,14 +4450,13 @@ importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, 
         global.interact = 0;
     }
 }");
-importGroup.QueueFindReplace("gml_Object_obj_overworldc_Step_0",
-@"if (scr_debug())",
-@"if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))");
 
 
 importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, Data),
 @"if (!instance_exists(obj_dmenu_system))
     instance_create(0, 0, obj_dmenu_system);");
+
+
 importGroup.QueueFindReplace("gml_Object_obj_overworldc_Step_0",
 @"if (scr_debug())",
 @"if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))");
@@ -4322,6 +4495,8 @@ importGroup.QueueAppend(obj_battlecontroller.EventHandlerFor(EventType.Step, (ui
         scr_debug_print(scr_dmode_get_text(""fightwin""));
     }
 }");
+
+
 importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_Step_0",
 @"if (scr_debug())",
 @"if (0)");
@@ -4344,7 +4519,7 @@ importGroup.QueueFindReplace("gml_GlobalScript_scr_damage",
 
 
 UndertaleScript scr_debug_fullheal = Data.Scripts.ByName("scr_debug_fullheal");
-importGroup.QueueReplace(scr_debug_fullheal.Code,
+importGroup.QueueReplace("gml_GlobalScript_scr_debug_fullheal",
 @"function scr_debug_fullheal()
 {
     with (obj_dmgwriter)
@@ -4364,7 +4539,7 @@ importGroup.QueueReplace(scr_debug_fullheal.Code,
 
 
 UndertaleScript scr_turn_skip = Data.Scripts.ByName("scr_turn_skip");
-importGroup.QueueReplace(scr_turn_skip.Code,
+importGroup.QueueReplace("gml_GlobalScript_scr_turn_skip",
 @"function scr_turn_skip()
 {
     if (global.turntimer > 0 && instance_exists(obj_growtangle) && scr_isphase(""bullets""))
@@ -4373,13 +4548,5 @@ importGroup.QueueReplace(scr_turn_skip.Code,
         scr_debug_print(scr_dmode_get_text(""turnskip""));
     }
 }");
-
-
-UndertaleGameObject obj_spritecomparer = Data.GameObjects.ByName("obj_spritecomparer");
-importGroup.QueueAppend(obj_spritecomparer.EventHandlerFor(EventType.Draw, (uint)0, Data),
-@"");
-importGroup.QueueFindReplace("gml_Object_obj_spritecomparer_Draw_0",
-@"if (keyboard_check_pressed(ord(""D"")))",
-@"if (keyboard_check_pressed(vk_f2))");
 
 importGroup.Import();

@@ -7,12 +7,15 @@
 	"chap3+": {
 		"chapters": [-1, -2]
 	},
-	"actions": [
-		{
-			"find_replace": {
-				"find": "if (scr_debug())",
-				"replace": "if (0)"
+	".replace_scr_debug": {
+		"chapters": [-1],
+		"actions": [
+			{
+				"find_replace": {
+					"find": "if (scr_debug())",
+					"replace": "if (0)"
+				}
 			}
-		}
-	]
+		]
+	}
 }
