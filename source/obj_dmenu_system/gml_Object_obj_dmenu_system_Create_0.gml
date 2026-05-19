@@ -22,6 +22,7 @@ armordesctemp = "";
 weapondesctemp = "";
 tempkeyitemdesc = "";
 dhinter_text = "";
+global.dload_cur_inv = 0;
 
 if (global.chapter >= 4)
 {
@@ -86,10 +87,15 @@ dpop_history = function()
     }
     else
     {
+        dmenu_popup_launch = 0;
         dmenu_active = !dmenu_active;
+        dmenu_state = "debug";
+        dbutton_options = dbutton_options_original;
         dmenu_state_history = [];
         dbutton_selected_history = [];
+        dbutton_selected = 1;
         global.interact = 0;
+        dmenu_state_update();
     }
     
     if (array_length(dbutton_selected_history) > 0)
@@ -332,6 +338,11 @@ drooms_options =
     target_is_darkzone: global.darkzone,
     target_member_2: global.char[1],
     target_member_3: global.char[2]
+};
+dload_options = 
+{
+    target_save: -1,
+    target_with_cur_inv: global.dload_cur_inv
 };
 dkeyboard_input = "";
 

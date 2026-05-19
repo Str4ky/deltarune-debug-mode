@@ -1,6 +1,12 @@
 {
-	"gml_GlobalScript_scr_dmode_init_lang.gml": {
-		"create_new": true,
-		"mode": "replace"
-	}
+	".init_lang": {
+    "gml_name": "gml_GlobalScript_scr_dmode_init_lang",
+    "actions": [
+      {
+        "replace": {
+          "content_file": "dmode_init_lang.gml"
+        }
+      }
+    ]
+  }
 }

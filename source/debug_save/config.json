@@ -43,13 +43,32 @@
       }
     ]
   },
+  ".get_debug_save_list": {
+    "gml_name": "gml_GlobalScript_scr_get_debug_save_list",
+    "actions": [
+      {
+        "replace": {
+          "content_file": "get_debug_save_list"
+        }
+      }
+    ]
+  },
   ".debug_save": {
-    "create_new": true,
     "gml_name": "gml_GlobalScript_scr_debug_save",
     "actions": [
       {
         "replace": {
           "content_file": "debug_save"
+        }
+      }
+    ]
+  },
+  ".debug_load": {
+    "gml_name": "gml_GlobalScript_scr_debug_load",
+    "actions": [
+      {
+        "replace": {
+          "content_file": "debug_load"
         }
       }
     ]

@@ -1,8 +1,10 @@
 function scr_debug_save()
 {
-    scr_saveprocess(global.debug_save_name);
+    var debug_saves = scr_get_debug_save_list();
+    var debug_save_current_id = array_length(debug_saves) + 1;
+    scr_saveprocess(debug_save_current_id);
     debug_save_name_bk2 = global.debug_save_name;
-    var section_name = string(global.debug_save_name);
+    var section_name = string(debug_save_current_id);
     var full_file_path = "";
     
     if (global.debug_saving == 1)
@@ -11,7 +13,7 @@ function scr_debug_save()
         full_file_path = "filech" + string(global.chapter) + "_" + section_name;
     
     iniwrite = ossafe_ini_open("debug_save/debug.ini");
-    ini_write_string(section_name, "SaveName", section_name);
+    ini_write_string(section_name, "SaveName", global.debug_save_name);
     ini_write_string(section_name, "Name", global.truename);
     ini_write_string(section_name, "FileLocation", full_file_path);
     var save_desc = "Saved in room " + string(scr_get_id_by_room_index(room)) + " at " + string(global.time);

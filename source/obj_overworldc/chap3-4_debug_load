@@ -1,0 +1,13 @@
+if (scr_debug())
+{
+    if (sunkus_kb_check_pressed(ord("L")) && keyboard_check(vk_shift))
+    {
+        obj_dmenu_system.dmenu_popup_launch = 1;
+        obj_dmenu_system.dmenu_state = "debug_load";
+        obj_dmenu_system.dbutton_selected = 1;
+        obj_dmenu_system.dmenu_active = true;
+        snd_play(snd_egg);
+}
+    if (sunkus_kb_check_pressed(ord("L")) && !keyboard_check(vk_shift))
+        scr_load();
+}

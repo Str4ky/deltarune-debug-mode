@@ -199,6 +199,21 @@ if (dmenu_active)
             var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
             draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
         }
+        else if (dmenu_state == "debug_load")
+        {
+            var base_x = x_start + xx;
+            var base_y = (((110 - (dmenu_start_index * 20)) + 2) * d) + yy;
+            var mono_spacing = (global.darkzone == 1) ? 15 : 8;
+            var thickness = 1 * d;
+            var visual_offset = -2;
+            var cursor_padding = 3 * d;
+            var w_prefix = string_length(string(scr_dmode_get_text("ui_contains"))) * mono_spacing;
+            var w_name = string_length(string(dcustom_flag_text[0])) * mono_spacing;
+            var x1_start = base_x + w_prefix;
+            draw_set_color(c_yellow);
+            var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
+            draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
+        }
     }
     
     if (dbutton_layout == 0)

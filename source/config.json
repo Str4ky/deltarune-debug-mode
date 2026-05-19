@@ -1,12 +1,13 @@
 {
     "order": [
+        "scr_dmode_init_lang",
         "scr_gamestart",
         "scr_debug_print",
         "obj_debug_gui",
         "obj_debug_xy",
         "obj_debug_windows",
-        "scr_dmode_init_lang",
         "scr_dmode_get_text",
+        "debug_save",
         "obj_dmenu_system",
         "scr_debug",
         "obj_time",
@@ -20,7 +21,6 @@
 		"scr_flag_set_ch4_fix",
         "scr_debug_fullheal",
         "scr_turn_skip",
-        "obj_spritecomparer",
-        "debug save"
+        "obj_spritecomparer"
     ]
 }

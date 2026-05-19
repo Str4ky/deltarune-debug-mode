@@ -152,11 +152,11 @@ if (dmenu_active && global.dreading_custom_flag)
     update_visu = 1;
     will_exit = 0;
     
-    if (dmenu_state == "warp" || dmenu_state == "warp_options" || dmenu_state == "debug_save")
+    if (dmenu_state == "warp" || dmenu_state == "warp_options" || dmenu_state == "debug_save" || dmenu_state == "debug_load")
         dkeyboard_input = dcustom_flag_text[0];
     
     will_exit = keyboard_check_pressed(vk_escape) || keyboard_check_pressed(global.input_k[7]);
-    will_exit |= ((dmenu_state == "warp_options" || dmenu_state == "warp" || dmenu_state == "debug_save") && (keyboard_check_pressed(vk_up) || keyboard_check_pressed(vk_down)));
+    will_exit |= ((dmenu_state == "warp_options" || dmenu_state == "warp" || dmenu_state == "debug_save" || dmenu_state == "debug_load") && (keyboard_check_pressed(vk_up) || keyboard_check_pressed(vk_down)));
     
     if (will_exit)
     {
@@ -521,12 +521,12 @@ else if (dmenu_active)
     
     if (keyboard_check_pressed(global.input_k[4]) || keyboard_check_pressed(global.input_k[7]))
     {
-        must_save = dmenu_state != "givertab" && dmenu_state != "recruit_presets" && dmenu_state != "flag_misc" && dmenu_state != "warp_options" && !(dmenu_state == "warp" && dbutton_selected == 2);
+        must_save = dmenu_state != "givertab" && dmenu_state != "recruit_presets" && dmenu_state != "flag_misc" && dmenu_state != "warp_options" && !(dmenu_state == "warp" && dbutton_selected == 2) && !(dmenu_state == "debug_load" && dbutton_selected == 1) && !(dmenu_state == "debug_save" && dbutton_selected == 3) && dmenu_state != "debug_load_options";
         must_save &= ((dmenu_state != "flag_categories" || dbutton_selected != 1) && (!(dmenu_state == "weapons" && dhorizontal_page) && !(dmenu_state == "armors" && dhorizontal_page)));
         must_save &= (dmenu_state != "recruits" || dbutton_selected == 1);
         must_save &= !(scr_array_contains(ditem_types, dmenu_state) && dhorizontal_page == 0 && dbutton_selected == 1);
         
-        if (dmenu_state != "debug_save" && dbutton_selected != 1)
+        if (!(dmenu_state == "debug_save" && dbutton_selected == 1))
             snd_play(snd_select);
         
         if (must_save)
@@ -631,12 +631,12 @@ else if (dmenu_active)
         {
             scr_debug_print(scr_dmode_get_text("msg_search_selected"));
         }
-        else if (dmenu_state != "givertab" && dmenu_state != "flag_misc" && dmenu_state != "warp_options" && (dmenu_state != "recruits" || dbutton_selected == 1))
+        else if (dmenu_state != "givertab" && dmenu_state != "flag_misc" && dmenu_state != "warp_options" && (dmenu_state != "recruits" || dbutton_selected == 1) && dmenu_state != "debug_save")
         {
             scr_debug_print(string(dbutton_options[dbutton_selected - 1]) + scr_dmode_get_text("msg_selected"));
         }
         
-        if ((dmenu_state == "recruits" && dbutton_selected != 1) || dmenu_state == "warp_options" || dmenu_state == "recruit_presets" || dmenu_state == "warp_options" || dmenu_state == "flag_misc" || ((dmenu_state == "armors" || dmenu_state == "weapons") && dhorizontal_page) || (dmenu_state == "warp" && dbutton_selected == 2) || dmenu_state == "debug_save")
+        if ((dmenu_state == "recruits" && dbutton_selected != 1) || dmenu_state == "warp_options" || dmenu_state == "recruit_presets" || dmenu_state == "warp_options" || dmenu_state == "flag_misc" || ((dmenu_state == "armors" || dmenu_state == "weapons") && dhorizontal_page) || (dmenu_state == "warp" && dbutton_selected == 2) || dmenu_state == "debug_save" || dmenu_state == "debug_load")
         {
             dmenu_state_interact();
             dmenu_state_update();
@@ -655,8 +655,6 @@ else if (dmenu_active)
         if (dmenu_state != "debug_save")
             snd_play(snd_smallswing);
         
-        dpop_history();
-        
         if (dmenu_popup_launch == 1)
         {
             if (dmenu_state == "debug_save")
@@ -666,16 +664,9 @@ else if (dmenu_active)
                 obj_savemenu.mpos = 3;
                 global.interact = 1;
             }
-            
-            dmenu_popup_launch = 0;
-            dmenu_active = false;
-            dmenu_state = "debug";
-            dbutton_options = dbutton_options_original;
-            dmenu_state_history = [];
-            dbutton_selected_history = [];
-            dbutton_selected = 1;
-            dmenu_state_update();
         }
+        
+        dpop_history();
     }
     
     if (dhinter_active)

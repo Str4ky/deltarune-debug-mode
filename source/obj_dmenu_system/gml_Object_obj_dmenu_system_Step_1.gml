@@ -23,6 +23,44 @@ function dmenu_state_update()
             dbutton_layout = 3;
             break;
         
+        case "debug_load":
+            dmenu_title = "Debug Load";
+            dbutton_options = [scr_dmode_get_text("btn_search")];
+            dbutton_indices = [-1];
+            
+            if (global.dreading_custom_flag || dkeyboard_input != "")
+                dbutton_options[0] = scr_dmode_get_text("ui_contains");
+            else
+                dbutton_options[0] = scr_dmode_get_text("btn_search");
+            
+            dbutton_options[0] += dkeyboard_input;
+            var my_ids = scr_get_debug_save_list();
+            
+            for (var i = 0; i < array_length(my_ids); i++)
+            {
+                var current_id = my_ids[i];
+                var current_save_name = debug_save_names[i];
+                
+                if (!string_pos(string_lower(dkeyboard_input), string_lower(current_save_name)))
+                    continue;
+                
+                array_push(dbutton_options, current_save_name);
+                array_push(dbutton_indices, current_id);
+            }
+            
+            dmenu_box = 1;
+            dbutton_layout = 1;
+            break;
+        
+        case "debug_load_options":
+            dmenu_title = "Debug Load Options";
+            dbutton_options = ["With current inventory: ", "Load"];
+            dbutton_indices = [0, 1];
+            dbutton_options[0] += dload_options.target_with_cur_inv ? scr_dmode_get_text("opt_yes") : scr_dmode_get_text("opt_no");
+            dmenu_box = 0;
+            dbutton_layout = 1;
+            break;
+        
         case "warp":
             dmenu_title = scr_dmode_get_text("room_list");
             dbutton_options = [scr_dmode_get_text("btn_current_room"), scr_dmode_get_text("btn_search")];
@@ -408,7 +446,13 @@ function dmenu_state_interact()
             }
             else if (dbutton_selected == 1)
             {
-                global.debug_save_name = dkeyboard_input;
+                if (dkeyboard_input != "")
+                    global.debug_save_name = dkeyboard_input;
+                else
+                    global.debug_save_name = "Untitled";
+                
+                dkeyboard_input = "";
+                scr_debug_print("Save created: " + string(global.debug_save_name));
                 global.debug_saving = 1;
                 scr_debug_save();
                 dmenu_popup_launch = 0;
@@ -431,6 +475,52 @@ function dmenu_state_interact()
                 dbutton_selected = 1;
                 dmenu_active = false;
                 global.interact = 0;
+            }
+            
+            break;
+        
+        case "debug_load":
+            if (dbutton_selected == 1)
+            {
+                global.dreading_custom_flag = 1;
+                keyboard_string = "";
+                dkeyboard_input = "";
+                dmenu_state_update();
+            }
+            else
+            {
+                dload_options.target_save = -1;
+                
+                if (dbutton_selected != 1)
+                    dload_options.target_save = dbutton_indices[dbutton_selected - 1];
+                
+                dload_options.target_with_cur_inv = global.dload_cur_inv;
+                dmenu_state = "debug_load_options";
+                dbutton_selected = 2;
+                dkeyboard_input = "";
+            }
+            
+            break;
+        
+        case "debug_load_options":
+            if (dbutton_selected == 1)
+            {
+                dload_options.target_with_cur_inv ^= 1;
+            }
+            else if (dbutton_selected == 2)
+            {
+                var chosen_save_id = dload_options.target_save;
+                dmenu_popup_launch = 0;
+                dmenu_state = "debug";
+                dbutton_options = dbutton_options_original;
+                dmenu_state_history = [];
+                dbutton_selected_history = [];
+                dbutton_selected = 1;
+                dmenu_active = false;
+                dkeyboard_input = "";
+                global.dload_cur_inv = dload_options.target_with_cur_inv;
+                global.interact = 0;
+                scr_debug_load(chosen_save_id);
             }
             
             break;

@@ -1,0 +1,35 @@
+function scr_get_debug_save_list()
+{
+    var save_array = [];
+    var path = "debug_save/debug.ini";
+    debug_save_names = [];
+    
+    if (!ossafe_file_exists(path))
+        return save_array;
+    
+    var file_id = ossafe_file_text_open_read(path);
+    
+    while (!ossafe_file_text_eof(file_id))
+    {
+        var line = ossafe_file_text_read_string(file_id);
+        ossafe_file_text_readln(file_id);
+        
+        if (string_char_at(line, 1) == "[" && string_char_at(line, string_length(line)) == "]")
+        {
+            var section = string_copy(line, 2, string_length(line) - 2);
+            array_push(save_array, section);
+        }
+    }
+    
+    ossafe_file_text_close(file_id);
+    ossafe_ini_open(path);
+    
+    for (var i = 0; i < array_length(save_array); i++)
+    {
+        var save_name_val = ini_read_string(save_array[i], "SaveName", "Unknown");
+        array_push(debug_save_names, save_name_val);
+    }
+    
+    ossafe_ini_close();
+    return save_array;
+}
