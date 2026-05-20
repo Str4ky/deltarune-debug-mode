@@ -1,16 +1,1 @@
-if (button1_p() && buffer < 0)
-        {
-            if (mpos == 3)
-            {
-                menuno = 0;
-                buffer = 3;
-                mpos = global.filechoice;
-                snd_play(snd_select);
-            }
-            else if (level_file[mpos] != 0 && mpos != global.filechoice)
-            {
-                overwrite = 0.5;
-                buffer = 3;
-                overcoord = 0;
-            }
-            else
+if\s*\(\s*button1_p\(\)\s*&&\s*buffer\s*<\s*0\s*\)\s*\{[\s\S]*?if\s*\(\s*mpos\s*==\s*3\s*\)\s*\{[\s\S]*?\}\s*else\s*if\s*\(\s*level_file\[mpos\]\s*!=\s*0\s*&&\s*mpos\s*!=\s*global\.filechoice\s*\)\s*\{[\s\S]*?\}\s*else

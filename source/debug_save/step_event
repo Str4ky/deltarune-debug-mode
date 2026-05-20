@@ -1,8 +1,13 @@
 if (menuno == 98)
 {
     obj_dmenu_system.dmenu_popup_launch = 1;
-    obj_dmenu_system.dmenu_state = "debug_save";
+    obj_dmenu_system.dmenu_state = "new_debug_save";
     obj_dmenu_system.dvertical_index = 0;
+    obj_dmenu_system.dhorizontal_index = 0;
+    obj_dmenu_system.dmenu_state_history = [];
+    obj_dmenu_system.dmenu_horizontal_index_history = [];
+    obj_dmenu_system.dmenu_vertical_index_history = [];
+    obj_dmenu_system.dmenu_page_index_history = [];
     obj_dmenu_system.dmenu_active = true;
     endme = 2;
     menuno = -1;

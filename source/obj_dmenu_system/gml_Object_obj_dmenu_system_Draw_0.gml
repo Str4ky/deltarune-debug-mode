@@ -1,6 +1,7 @@
 xx = __view_get(e__VW.XView, 0);
 yy = __view_get(e__VW.YView, 0);
 d = global.darkzone + 1;
+
 if (dmenu_box == 0)
 {
     menu_width = 214;
@@ -8,6 +9,7 @@ if (dmenu_box == 0)
     xcenter = 160;
     ycenter = 105;
 }
+
 if (dmenu_box == 1)
 {
     menu_width = 214;
@@ -15,6 +17,7 @@ if (dmenu_box == 1)
     xcenter = 160;
     ycenter = 135;
 }
+
 if (dmenu_box == 2)
 {
     menu_width = 256;
@@ -22,7 +25,9 @@ if (dmenu_box == 2)
     xcenter = 160;
     ycenter = 135;
 }
+
 var x_start = 0;
+
 if (dbutton_layout == 0)
 {
     x_padding = 7 * d;
@@ -31,6 +36,7 @@ if (dbutton_layout == 0)
     y_spacing = 10 * d;
     x_start = ((xcenter - (menu_width / 2)) * d) + x_padding;
 }
+
 if (dbutton_layout == 1)
 {
     x_padding = 7 * d;
@@ -39,12 +45,14 @@ if (dbutton_layout == 1)
     y_spacing = 20 * d;
     x_start = ((xcenter - (menu_width / 2)) * d) + x_padding;
 }
+
 if (dbutton_layout == 2)
 {
     x_padding = 7 * d;
     y_start = 95 * d;
     x_start = ((xcenter - (menu_width / 2)) * d) + x_padding;
 }
+
 if (dbutton_layout == 3)
 {
     x_padding = 7 * d;
@@ -53,23 +61,24 @@ if (dbutton_layout == 3)
     y_spacing = 10 * d;
     x_start = ((xcenter - (menu_width / 2)) * d) + x_padding;
 }
+
 var button_count = array_length(dbutton_options);
+
 if (dmenu_active)
 {
     draw_set_color(c_white);
     draw_rectangle(((xcenter - (menu_width / 2) - 3) * d) + xx, ((ycenter - (menu_length / 2) - 3) * d) + yy, ((xcenter + (menu_width / 2) + 3) * d) + xx, ((ycenter + (menu_length / 2) + 3) * d) + yy, false);
     draw_set_color(c_black);
     draw_rectangle(((xcenter - (menu_width / 2)) * d) + xx, ((ycenter - (menu_length / 2)) * d) + yy, ((xcenter + (menu_width / 2)) * d) + xx, ((ycenter + (menu_length / 2)) * d) + yy, false);
+    
     if (global.darkzone == 1)
-    {
         draw_set_font(fnt_mainbig);
-    }
     else
-    {
         draw_set_font(fnt_main);
-    }
+    
     draw_set_color(c_white);
     draw_text(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, string(dmenu_title));
+    
     if (dmenu_state == "debug" && global.darkzone == 1)
     {
         draw_set_halign(fa_right);
@@ -82,6 +91,7 @@ if (dmenu_active)
         draw_set_font(fnt_mainbig);
         draw_set_halign(fa_left);
     }
+    
     if (global.dreading_custom_flag)
     {
         draw_set_halign(fa_right);
@@ -93,6 +103,7 @@ if (dmenu_active)
         draw_text(draw_x, draw_y, string(scr_dmode_get_text("ui_esc_cancel")));
         draw_set_halign(fa_left);
     }
+    
     if (global.dreading_custom_flag)
     {
         if (dmenu_state == "flag_categories")
@@ -112,14 +123,11 @@ if (dmenu_active)
             draw_set_color(c_yellow);
             var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
             var draw_w_value = (w_value == 0) ? (mono_spacing / 4) : w_value;
+            
             if (dhorizontal_index == 0)
-            {
                 draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
-            }
             else if (dhorizontal_index == 1)
-            {
                 draw_rectangle((x2_start + visual_offset) - cursor_padding - 2, base_y, (x2_start + draw_w_value + visual_offset + cursor_padding) - 2, base_y + thickness, false);
-            }
         }
         else if (dmenu_state == "warp")
         {
@@ -135,10 +143,9 @@ if (dmenu_active)
             var x2_start = x1_start + w_name;
             draw_set_color(c_yellow);
             var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
+            
             if (dhorizontal_index == 0)
-            {
                 draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
-            }
         }
         else if (dmenu_state == "warp_options")
         {
@@ -154,12 +161,11 @@ if (dmenu_active)
             var x2_start = x1_start + w_name;
             draw_set_color(c_yellow);
             var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
+            
             if (dhorizontal_index == 0)
-            {
                 draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
-            }
         }
-        else if (dmenu_state == "debug_save")
+        else if (dmenu_state == "new_debug_save")
         {
             var base_x = x_start + x_padding + xx;
             var base_y = y_start + (17 * d) + yy;
@@ -189,12 +195,15 @@ if (dmenu_active)
             draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
         }
     }
+    
     if (dbutton_layout == 0)
     {
         var draw_y = (100 * d) + yy;
+        
         for (var j = 0; j < array_length(dbutton_options_2d); j++)
         {
             var draw_x = x_start + xx;
+            
             for (var i = 0; i < array_length(dbutton_options_2d[j]); i++)
             {
                 var cur_btn = string(dbutton_options_2d[j][i]);
@@ -203,20 +212,25 @@ if (dmenu_active)
                 draw_text(draw_x, draw_y, cur_btn);
                 draw_x += (text_width + x_spacing);
             }
+            
             draw_y += 30;
         }
     }
+    
     side_arrows_mult = (global.darkzone == 1) ? [23, 10] : [12, 5];
     var dmenu_arrow_yoffset, darrow_scale;
+    
     if (dbutton_layout == 1)
     {
         var dcan_scroll_up = dmenu_start_index > 0;
         var dcan_scroll_down = (dmenu_start_index + dbutton_max_visible) < array_length(dbutton_options);
         dmenu_arrow_yoffset = 2 * sin(dmenu_arrow_timer / 10);
         darrow_scale = d / 2;
+        
         for (var i = 0; i < dbutton_max_visible; i++)
         {
             var button_index = dmenu_start_index + i;
+            
             if (button_index < array_length(dbutton_options))
             {
                 is_cur_line = dvertical_index == button_index;
@@ -225,6 +239,7 @@ if (dmenu_active)
                 var cur_btn = string(dbutton_options[button_index]);
                 draw_monospace(x_start + xx, y_start + (i * y_spacing) + yy, cur_btn);
                 var mono_spacing = (global.darkzone == 1) ? 15 : 8;
+                
                 if ((is_cur_line && dmenu_state == "flag_misc") || (dmenu_state == "warp_options" && (button_index == 3 || button_index == 4)))
                 {
                     if ((dmenu_state == "flag_misc" && dhorizontal_index != 0) || (dmenu_state == "warp_options" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != 0))
@@ -232,56 +247,48 @@ if (dmenu_active)
                         for (dash_pos = 0; 1; dash_pos++)
                         {
                             if (dash_pos > 4 && string_char_at(cur_btn, dash_pos) == ((dmenu_state == "flag_misc") ? "-" : ":"))
-                            {
                                 break;
-                            }
                         }
+                        
                         dash_pos++;
                         draw_sprite_ext(spr_morearrow, 0, x_start + ((dash_pos * mono_spacing) + floor(mono_spacing / 2)) + dmenu_arrow_yoffset + xx, y_start + (i * y_spacing) + side_arrows_mult[0] + yy, darrow_scale, -darrow_scale, 90, c_white, 1);
                     }
+                    
                     if ((dmenu_state == "flag_misc" && dhorizontal_index < (array_length(dother_options[dvertical_index][3]) - 1)) || (dmenu_state == "warp_options" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != (4 - (global.chapter == 1))))
-                    {
                         draw_sprite_ext(spr_morearrow, 0, (x_start + xx + ((string_length(cur_btn) + 1) * mono_spacing)) - floor(mono_spacing / 2) - dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[1], darrow_scale, -darrow_scale, 270, c_white, 1);
-                    }
                 }
                 else if (dmenu_state == "recruits" && button_index == 0)
                 {
                     if (dhorizontal_page != 0)
-                    {
                         draw_sprite_ext(spr_morearrow, 0, x_start + floor(mono_spacing / 2) + dmenu_arrow_yoffset + xx, y_start + (i * y_spacing) + side_arrows_mult[0] + yy, darrow_scale, -darrow_scale, 90, c_white, 1);
-                    }
+                    
                     if (dhorizontal_page != global.chapter)
-                    {
                         draw_sprite_ext(spr_morearrow, 0, ((x_start + ((string_length(cur_btn) + 1) * mono_spacing)) - floor(mono_spacing / 2) - dmenu_arrow_yoffset) + xx, y_start + (i * y_spacing) + side_arrows_mult[1] + yy, darrow_scale, -darrow_scale, 270, c_white, 1);
-                    }
                 }
             }
         }
+        
         draw_set_color(c_white);
+        
         if (dcan_scroll_up)
-        {
             draw_sprite_ext(spr_morearrow, 0, x_start + xx, y_start + (dbutton_max_visible * (y_spacing * -0.03)) + dmenu_arrow_yoffset + yy, darrow_scale, -darrow_scale, 0, c_white, 1);
-        }
+        
         if (dcan_scroll_down)
-        {
             draw_sprite_ext(spr_morearrow, 0, x_start + xx, ((y_start + (dbutton_max_visible * y_spacing)) - dmenu_arrow_yoffset) + yy, darrow_scale, darrow_scale, 0, c_white, 1);
-        }
     }
+    
     if (dmenu_state == "recruits" || dmenu_state == "weapons" || dmenu_state == "armors" || dmenu_state == "objects")
     {
         draw_set_halign(fa_right);
         var draw_y = (((ycenter - (menu_length / 2)) + 8) * d) + yy;
         var draw_x = x_start + (200 * d) + xx;
+        
         if (dmenu_state == "recruits")
         {
             if (dhorizontal_page != 0)
-            {
                 draw_text(draw_x, draw_y, "(" + string(scr_dmode_get_text("ui_chap_short")) + " " + string(dhorizontal_page) + ")");
-            }
             else
-            {
                 draw_text(draw_x, draw_y, string(scr_dmode_get_text("ui_chap_all")));
-            }
         }
         else if (dhorizontal_page == 0)
         {
@@ -293,8 +300,10 @@ if (dmenu_active)
             draw_text(draw_x + 30 + (global.darkzone * 30), draw_y, string(scr_dmode_get_text("ui_world_light")));
             draw_sprite_ext(spr_morearrow, 0, draw_x + -55 + (global.darkzone * -55) + dmenu_arrow_yoffset, draw_y + side_arrows_mult[0], darrow_scale, -darrow_scale, 90, c_white, 1);
         }
+        
         draw_set_halign(fa_left);
     }
+    
     if (dbutton_layout == 2)
     {
         dmenu_arrow_yoffset = 2 * sin(dmenu_arrow_timer / 10);
@@ -302,44 +311,48 @@ if (dmenu_active)
         draw_text(((xcenter - (string_length(string(dgiver_amount)) * 4)) * d) + xx, (ycenter * d) + yy, string(dgiver_amount));
         draw_set_color(c_white);
         var itemreminder = "";
+        
         if (dgiver_menu_state == "objects")
         {
             itemreminder = "[" + string(dgiver_bname) + "]";
+            
             if (dhorizontal_page == 0)
-            {
                 scr_itemcheck(0);
-            }
             else
-            {
                 scr_litemcheck(0);
-            }
+            
             max_items = (dhorizontal_page == 0) ? 12 : 8;
             draw_text(x_start + xx, ((ycenter + 25) * d) + yy, string(scr_dmode_get_text("ui_inv_items")) + string(max_items - itemcount) + " / " + string(max_items));
         }
+        
         if (dgiver_menu_state == "armors")
         {
             itemreminder = "[" + string(dgiver_bname) + "]";
             scr_armorcheck_inventory(0);
             draw_text(x_start + xx, ((ycenter + 25) * d) + yy, string(scr_dmode_get_text("ui_inv_armors")) + string(48 - itemcount) + " / 48");
         }
+        
         if (dgiver_menu_state == "weapons")
         {
             itemreminder = "[" + string(dgiver_bname) + "]";
             scr_weaponcheck_inventory(0);
             draw_text(x_start + xx, ((ycenter + 25) * d) + yy, string(scr_dmode_get_text("ui_inv_weapons")) + string(48 - itemcount) + " / 48");
         }
+        
         if (dgiver_menu_state == "keyitems")
         {
             itemreminder = "[" + string(dgiver_bname) + "]";
             scr_keyitemcheck(0);
             draw_text(x_start + xx, ((ycenter + 25) * d) + yy, string(scr_dmode_get_text("ui_inv_keyitems")) + string(12 - itemcount) + " / 12");
         }
+        
         var text_width = string_width(itemreminder);
         draw_text(((xcenter * d) - (text_width / 2)) + xx, ((ycenter - 22) * d) + yy, itemreminder);
         darrow_scale = d / 2;
         draw_sprite_ext(spr_morearrow, 0, ((xcenter - 15) * d) + xx + dmenu_arrow_yoffset, ((ycenter + 6) * d) + yy, darrow_scale, darrow_scale, 270, c_white, 1);
         draw_sprite_ext(spr_morearrow, 0, (((xcenter + 15) * d) + xx) - dmenu_arrow_yoffset, ((ycenter + 12) * d) + yy, darrow_scale, darrow_scale, 90, c_white, 1);
     }
+    
     if (dbutton_layout == 3)
     {
         for (var i = 0; i < array_length(dbutton_options_2d[1]); i++)
@@ -354,54 +367,44 @@ if (dmenu_active)
         inputbox = function(arg0, arg1, arg2, arg3)
         {
             border = 1 * d;
+            
             if (dvertical_index == 0 && !global.dreading_custom_flag)
-            {
                 draw_set_color(c_yellow);
-            }
             else
-            {
                 draw_set_color(c_white);
-            }
+            
             for (var i = 0; i < border; i++)
-            {
                 draw_rectangle((arg0 - border) + i, (arg1 - border) + i, (arg2 + border) - i, (arg3 + border) - i, true);
-            }
         };
         
         inputbox(x_start + xx, y_start + yy, (((xcenter + (menu_width / 2)) * d) - x_padding) + xx, y_start + (19 * d) + yy);
         var cur_btn = string(dbutton_options_2d[0][0]);
+        
         if (dkeyboard_input != "")
-        {
             cur_btn = dkeyboard_input;
-        }
+        
         if (dvertical_index == 0 && global.dreading_custom_flag)
-        {
             color = c_yellow;
-        }
         else if (dkeyboard_input != "")
-        {
             color = c_white;
-        }
         else
-        {
             color = c_gray;
-        }
+        
         draw_set_color(color);
         draw_text(x_start + x_padding + xx, y_start + yy, cur_btn);
+        
         if (d == 2)
-        {
             heartsprite = spr_heart;
-        }
+        
         if (d == 1)
-        {
             heartsprite = spr_heartsmall;
-        }
+        
         if (dvertical_index != 0)
-        {
             draw_sprite_ext(heartsprite, 0, x_start + (108 * dhorizontal_index * d) + xx, (130 * d) + yy, 1, 1, 0, c_white, 1);
-        }
     }
+    
     dhinter_active = true;
+    
     if (dhinter_active && dhinter_text != "" && (scr_array_contains(ditem_types, dmenu_state) || dmenu_state == "warp_options"))
     {
         draw_set_color(c_white);
@@ -413,6 +416,7 @@ if (dmenu_active)
         draw_text_ext(x_start_desc + xx, (10 * d) + yy, string(dhinter_text), 18 * d, (menu_width - (x_padding * 2)) * d);
     }
 }
+
 if (dkeys_helper == 1)
 {
     dkeys_data = [string(scr_dmode_get_text("key_0")), string(scr_dmode_get_text("key_1")), string(scr_dmode_get_text("key_2")), string(scr_dmode_get_text("key_3")), string(scr_dmode_get_text("key_4")), string(scr_dmode_get_text("key_5")), string(scr_dmode_get_text("key_6")), string(scr_dmode_get_text("key_7")), string(scr_dmode_get_text("key_8")), string(scr_dmode_get_text("key_9")), string(scr_dmode_get_text("key_10")), string(scr_dmode_get_text("key_11")), string(scr_dmode_get_text("key_12")), string(scr_dmode_get_text("key_13")), string(scr_dmode_get_text("key_14"))];
@@ -440,6 +444,7 @@ if (dkeys_helper == 1)
     draw_set_halign(fa_left);
     draw_set_color(c_white);
     draw_text(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, string(scr_dmode_get_text("ui_keys_title")));
+    
     for (var i = 0; i < array_length(dkeys_data); i++)
     {
         draw_set_font(fnt_main);

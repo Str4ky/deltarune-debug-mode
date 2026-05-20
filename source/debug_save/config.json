@@ -25,7 +25,7 @@
     "gml_name": "gml_Object_obj_savemenu_Draw_0",
     "actions": [
       {
-        "find_replace": {
+        "regex_find_replace": {
           "find_file": "draw_event_find",
           "replace_file": "draw_event_replace"
         }

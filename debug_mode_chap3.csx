@@ -2219,8 +2219,13 @@ importGroup.QueueAppend("gml_Object_obj_savemenu_Step_0",
 @"if (menuno == 98)
 {
     obj_dmenu_system.dmenu_popup_launch = 1;
-    obj_dmenu_system.dmenu_state = ""debug_save"";
+    obj_dmenu_system.dmenu_state = ""new_debug_save"";
     obj_dmenu_system.dvertical_index = 0;
+    obj_dmenu_system.dhorizontal_index = 0;
+    obj_dmenu_system.dmenu_state_history = [];
+    obj_dmenu_system.dmenu_horizontal_index_history = [];
+    obj_dmenu_system.dmenu_vertical_index_history = [];
+    obj_dmenu_system.dmenu_page_index_history = [];
     obj_dmenu_system.dmenu_active = true;
     endme = 2;
     menuno = -1;
@@ -2229,30 +2234,13 @@ importGroup.QueueAppend("gml_Object_obj_savemenu_Step_0",
 
 
 importGroup.QueueRegexFindReplace("gml_Object_obj_savemenu_Draw_0",
-@"    returntxt = stringsetloc\([^,]*, ""obj_savemenu_slash_Draw_0_gml_48_0""\);
-    var bo = 0;
-",
+@"returntxt = stringsetloc\([^,]*, ""obj_savemenu_slash_Draw_0_gml_48_0""\);\s+var bo = 0;",
 @"    returntxt = stringsetloc(global.debug ? ""Create Debug Save"" : ""Return"", ""obj_savemenu_slash_Draw_0_gml_48_0"");
     var bo = 0;");
 
 
-importGroup.QueueFindReplace("gml_Object_obj_savemenu_Draw_0",
-@"if (button1_p() && buffer < 0)
-        {
-            if (mpos == 3)
-            {
-                menuno = 0;
-                buffer = 3;
-                mpos = global.filechoice;
-                snd_play(snd_select);
-            }
-            else if (level_file[mpos] != 0 && mpos != global.filechoice)
-            {
-                overwrite = 0.5;
-                buffer = 3;
-                overcoord = 0;
-            }
-            else",
+importGroup.QueueRegexFindReplace("gml_Object_obj_savemenu_Draw_0",
+@"if\s*\(\s*button1_p\(\)\s*&&\s*buffer\s*<\s*0\s*\)\s*\{[\s\S]*?if\s*\(\s*mpos\s*==\s*3\s*\)\s*\{[\s\S]*?\}\s*else\s*if\s*\(\s*level_file\[mpos\]\s*!=\s*0\s*&&\s*mpos\s*!=\s*global\.filechoice\s*\)\s*\{[\s\S]*?\}\s*else",
 @"if (button1_p() && buffer < 0)
         {
             if (mpos == 3)
@@ -3034,7 +3022,7 @@ dscroll_delay = 15;
 dscroll_speed = 5;
 dbackspace_timer = 0;
 dmenu_title = scr_dmode_get_text(""debug_menu"");
-dbutton_options_original = [[scr_dmode_get_text(""warps""), scr_dmode_get_text(""items""), scr_dmode_get_text(""recruits""), scr_dmode_get_text(""misc"")], [""Globals""]];
+dbutton_options_original = [[scr_dmode_get_text(""warps""), scr_dmode_get_text(""items""), scr_dmode_get_text(""recruits""), scr_dmode_get_text(""misc"")], [""Globals"", ""Test""]];
 dnumber_litems = [0, 11, 14, 14, 18];
 dlight_weapons = [];
 dlight_armors = [[3, scr_dmode_get_text(""bandage"")], [14, scr_dmode_get_text(""wristwatch"")]];
@@ -3048,25 +3036,25 @@ dhinter_text = """";
 global.dload_cur_inv = 0;
 dtemp_text = """";
 dtemp_num = 0;
+
 if (global.chapter >= 4)
 {
     dtemp_lst = get_lw_dw_weapon_list();
+    
     for (i = 0; i < array_length(dtemp_lst); i++)
-    {
         array_push(dlight_weapons, dlight_objects[dtemp_lst[i].lw_id - 1]);
-    }
 }
 else
 {
     dlight_weapons = [[2, scr_dmode_get_text(""pencil"")], [6, scr_dmode_get_text(""halloween_pencil"")], [7, scr_dmode_get_text(""lucky_pencil"")], [12, scr_dmode_get_text(""eraser"")], [13, scr_dmode_get_text(""mech_pencil"")]];
 }
+
 for (i = 0; i < array_length(dlight_objects); i++)
 {
     if (dlight_objects[i][0] > dnumber_litems[global.chapter])
-    {
         array_delete(dlight_objects, i--, 1);
-    }
 }
+
 if (global.chapter == 1)
 {
     array_delete(dlight_weapons, 3, 2);
@@ -3074,10 +3062,10 @@ if (global.chapter == 1)
     array_delete(dlight_objects, 8, 1);
     array_delete(dlight_objects, 8, 1);
 }
+
 if (global.chapter < 3)
-{
     array_delete(dbutton_options_original, 2, 1);
-}
+
 dbutton_options = [];
 dbutton_options_2d = dbutton_options_original;
 dmenu_state = ""debug"";
@@ -3085,7 +3073,9 @@ dvertical_index = 0;
 dhorizontal_page = 0;
 dhorizontal_index = 0;
 dmenu_state_history = [];
-dbutton_selected_history = [];
+dmenu_vertical_index_history = [];
+dmenu_horizontal_index_history = [];
+dmenu_page_index_history = [];
 dgiver_menu_state = 0;
 dgiver_button_selected = 0;
 dgiver_amount = 1;
@@ -3104,11 +3094,12 @@ dkeyitem_gaps = [0, 0, 0, 10, 0];
 
 dpop_history = function()
 {
+    dmenu_skip_reindexing = true;
     dkeyboard_input = """";
+    
     if (array_length(dmenu_state_history) > 0)
     {
-        dmenu_state = dmenu_state_history[array_length(dmenu_state_history) - 1];
-        array_resize(dmenu_state_history, array_length(dmenu_state_history) - 1);
+        dmenu_state = array_pop(dmenu_state_history);
     }
     else
     {
@@ -3117,28 +3108,50 @@ dpop_history = function()
         dmenu_state = ""debug"";
         dbutton_options = dbutton_options_original;
         dmenu_state_history = [];
-        dbutton_selected_history = [];
-        dbutton_selected = 1;
+        dmenu_vertical_index_history = [];
+        dmenu_horizontal_index_history = [];
+        dmenu_page_index_history = [];
+        dvertical_index = 0;
         global.interact = 0;
         dmenu_state_update();
     }
-    if (array_length(dbutton_selected_history) > 0)
-    {
-        dvertical_index = dbutton_selected_history[array_length(dbutton_selected_history) - 1];
-        array_resize(dbutton_selected_history, array_length(dbutton_selected_history) - 1);
-    }
+    
+    if (array_length(dmenu_vertical_index_history) > 0)
+        dvertical_index = array_pop(dmenu_vertical_index_history);
+    
+    if (array_length(dmenu_horizontal_index_history) > 0)
+        dhorizontal_index = array_pop(dmenu_horizontal_index_history);
+    
+    if (array_length(dmenu_page_index_history) > 0)
+        dhorizontal_page = array_pop(dmenu_page_index_history);
+    
     dmenu_state_update();
     dmenu_start_index = clamp(dvertical_index, 0, max(0, array_length(dbutton_options) - dbutton_max_visible));
+};
+
+dremove_false_history = function()
+{
+    if (array_length(dmenu_state_history) > 0)
+        array_pop(dmenu_state_history);
+    
+    if (array_length(dmenu_vertical_index_history) > 0)
+        array_pop(dmenu_vertical_index_history);
+    
+    if (array_length(dmenu_horizontal_index_history) > 0)
+        array_pop(dmenu_horizontal_index_history);
+    
+    if (array_length(dmenu_page_index_history) > 0)
+        array_pop(dmenu_page_index_history);
 };
 
 ditem_index_data = function(arg0)
 {
     var _chap = arg0;
     var _start_at = 0;
+    
     for (var i = 0; i < _chap; i++)
-    {
         _start_at += (ditemcount_all[i] + ditem_gaps[i]);
-    }
+    
     return 
     {
         start_id: _start_at,
@@ -3150,10 +3163,10 @@ darmor_index_data = function(arg0)
 {
     var _chap = arg0;
     var _start_at = 0;
+    
     for (var i = 0; i < _chap; i++)
-    {
         _start_at += (darmorcount_all[i] + darmor_gaps[i]);
-    }
+    
     return 
     {
         start_id: _start_at,
@@ -3165,10 +3178,10 @@ dweapon_index_data = function(arg0)
 {
     var _chap = arg0;
     var _start_at = 0;
+    
     for (var i = 0; i < _chap; i++)
-    {
         _start_at += (dweaponcount_all[i] + dweapon_gaps[i]);
-    }
+    
     return 
     {
         start_id: _start_at,
@@ -3180,10 +3193,10 @@ dkeyitem_index_data = function(arg0)
 {
     var _chap = arg0;
     var _start_at = 0;
+    
     for (var i = 0; i < _chap; i++)
-    {
         _start_at += (dkeyitemcount_all[i] + dkeyitem_gaps[i]);
-    }
+    
     return 
     {
         start_id: _start_at,
@@ -3213,6 +3226,7 @@ ROBOTEUR = cate_enum++;
 dother_categories = [scr_dmode_get_text(""cat_vessel""), scr_dmode_get_text(""cat_superboss""), scr_dmode_get_text(""cat_weird""), scr_dmode_get_text(""cat_seam""), scr_dmode_get_text(""cat_eggs""), scr_dmode_get_text(""cat_onion""), scr_dmode_get_text(""cat_misc1""), scr_dmode_get_text(""cat_misc2""), scr_dmode_get_text(""cat_tenna""), scr_dmode_get_text(""cat_sword""), scr_dmode_get_text(""cat_misc3""), scr_dmode_get_text(""cat_misc4""), scr_dmode_get_text(""cat_moss""), scr_dmode_get_text(""cat_thrash"")];
 dother_all_options = [];
 dother_options = [];
+
 if (global.chapter >= 0)
 {
     array_push(dother_all_options, [GONER, scr_dmode_get_text(""g_food""), 903, [[scr_dmode_get_text(""opt_sweet""), 0], [scr_dmode_get_text(""opt_soft""), 1], [scr_dmode_get_text(""opt_bitter""), 2], [scr_dmode_get_text(""opt_salty""), 3], [scr_dmode_get_text(""opt_pain""), 4], [scr_dmode_get_text(""opt_cold""), 5]]]);
@@ -3223,6 +3237,7 @@ if (global.chapter >= 0)
     array_push(dother_all_options, [GONER, scr_dmode_get_text(""g_honest""), 907, [[scr_dmode_get_text(""opt_yes""), 0], [scr_dmode_get_text(""opt_no""), 1]]]);
     array_push(dother_all_options, [GONER, scr_dmode_get_text(""g_crises""), 908, [[scr_dmode_get_text(""opt_yes""), 0], [scr_dmode_get_text(""opt_no""), 1]]]);
 }
+
 if (global.chapter >= 1)
 {
     array_push(dother_all_options, [ROBOTEUR, scr_dmode_get_text(""thrash_head""), 220, [[scr_dmode_get_text(""opt_laser""), 0], [scr_dmode_get_text(""opt_sword""), 1], [scr_dmode_get_text(""opt_flame""), 2], [scr_dmode_get_text(""opt_duck""), 3]]]);
@@ -3244,6 +3259,7 @@ if (global.chapter >= 1)
     array_push(dother_all_options, [ONION_SAN, scr_dmode_get_text(""label_onion_name""), 260, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_onyx""), 1], [scr_dmode_get_text(""opt_beauty""), 2], [scr_dmode_get_text(""opt_asriel2""), 3], [scr_dmode_get_text(""opt_stinky""), 4]]]);
     array_push(dother_all_options, [MOUSSE, scr_dmode_get_text(""label_moss1""), 106, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
 }
+
 if (global.chapter >= 2)
 {
     array_push(dother_all_options, [MISC2, scr_dmode_get_text(""label_plush""), 307, [[scr_dmode_get_text(""opt_notgiven""), 0], [""Ralsei"", 1], [""Susie"", 2], [""Noëlle"", 3], [""Berdly"", 4]]]);
@@ -3267,6 +3283,7 @@ if (global.chapter >= 2)
     array_push(dother_all_options, [SEAM, scr_dmode_get_text(""label_crystal_spamton""), 353, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
     array_push(dother_all_options, [SEAM, scr_dmode_get_text(""label_seam_talk""), 312, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
 }
+
 if (global.chapter >= 3)
 {
     array_push(dother_all_options, [LOT, scr_dmode_get_text(""label_lot_rank1""), 1173, [[""Z"", 0], [""C"", 1], [""B"", 2], [""A"", 3], [""S"", 4], [""T"", 5]]]);
@@ -3280,6 +3297,7 @@ if (global.chapter >= 3)
     array_push(dother_all_options, [MOUSSE, scr_dmode_get_text(""label_moss3""), 1078, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
     array_push(dother_all_options, [SEAM, scr_dmode_get_text(""label_crystal_knight""), 856, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
 }
+
 if (global.chapter >= 4)
 {
     array_push(dother_all_options, [ZOEUFS, scr_dmode_get_text(""label_egg4""), 931, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
@@ -3296,15 +3314,15 @@ if (global.chapter >= 4)
     array_push(dother_all_options, [MISC4, scr_dmode_get_text(""label_ladder""), 864, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
     array_push(dother_all_options, [MISC4, scr_dmode_get_text(""label_pillow""), 865, [[scr_dmode_get_text(""opt_no""), 0], [scr_dmode_get_text(""opt_yes""), 1]]]);
 }
+
 dflag_categories_len = [];
+
 for (i = 0; i < array_length(dother_categories); i++)
-{
     array_push(dflag_categories_len, 0);
-}
+
 for (i = 0; i < array_length(dother_all_options); i++)
-{
     dflag_categories_len[dother_all_options[i][0]] += 1;
-}
+
 dglobal_changer_options = [[""Custom"", ""string"", -1]];
 array_push(dglobal_changer_options, [""truename"", ""string"", -1]);
 array_push(dglobal_changer_options, [""othername"", ""string"", 6]);
@@ -3329,24 +3347,24 @@ drooms_options =
     target_member_3: global.char[2]
 };
 dkeyboard_input = """";
+
 for (i = 0; i < array_length(drooms_id); i++)
-{
     array_push(drooms, room_get_name(drooms_id[i].room_index));
-}
 
 find_subarray_index = function(arg0, arg1)
 {
     value = global.flag[arg0];
     lst = arg1;
     prev = 0;
+    
     for (i = 0; i < array_length(lst); i++)
     {
         if (lst[i][1] > value)
-        {
             break;
-        }
+        
         prev = i;
     }
+    
     return prev;
 };
 
@@ -3354,6 +3372,7 @@ draw_monospace = function(arg0, arg1, arg2)
 {
     draw_x = arg0;
     sep = (global.darkzone == 1) ? 15 : 8;
+    
     for (i = 0; i < string_length(arg2); i++)
     {
         draw_text(draw_x, arg1, string_char_at(arg2, i + 1));
@@ -3374,10 +3393,9 @@ function scr_array_contains(arg0, arg1)
     for (var i = 0; i < array_length(arg0); i++)
     {
         if (arg0[i] == arg1)
-        {
             return true;
-        }
     }
+    
     return false;
 }
 
@@ -3394,11 +3412,12 @@ function parse_var_str(arg0, arg1)
     is_good = scr_string_respect_type(str, ""variable"", 1, check_error);
     dtemp_text = """";
     dtemp_num = 0;
+    
     if (!is_good)
-    {
         return 0;
-    }
+    
     brack_start = string_pos(""["", str);
+    
     if (brack_start == 0)
     {
         dtemp_text = str;
@@ -3409,23 +3428,153 @@ function parse_var_str(arg0, arg1)
         dtemp_text = string_copy(str, 1, brack_start - 1);
         dtemp_num = real(string_copy(str, brack_start + 1, string_length(str) - brack_start - 1));
     }
+    
     return 1;
 }
-");
+
+dmenu_expanded = {};
+dmenu_last_search = """";
+dmenu_was_searching = false;
+my_options = [];
+
+function dmenu_process_submenus(arg0, arg1 = """")
+{
+    my_options = array_create(array_length(dbutton_options));
+    array_copy(my_options, 0, dbutton_options, 0, array_length(dbutton_options));
+    var _state_tracker = variable_struct_exists(dmenu_expanded, dmenu_state) ? variable_struct_get(dmenu_expanded, dmenu_state) : array_create(array_length(dbutton_options), false);
+    var _search = string_lower(arg1);
+    var _search_changed = dmenu_last_search != _search;
+    dmenu_last_search = _search;
+    
+    if (_search == """" && dmenu_was_searching)
+    {
+        for (var k = 0; k < array_length(_state_tracker); k++)
+            _state_tracker[k] = false;
+        
+        dmenu_was_searching = false;
+    }
+    else if (_search != """")
+    {
+        dmenu_was_searching = true;
+    }
+    
+    var _temp_options = [];
+    var _temp_indices = [];
+    var _needs_struct_save = false;
+    
+    for (var i = 0; i < array_length(my_options); i++)
+    {
+        var _base_name = my_options[i];
+        var _is_dropdown = i < array_length(arg0) && is_array(arg0[i]);
+        var _original_index = (i < array_length(dbutton_indices)) ? dbutton_indices[i] : -1;
+        var _is_persistent = _original_index == -2;
+        var _cat_match = true;
+        var _sub_match = false;
+        
+        if (_search != """" && !_is_persistent)
+        {
+            _cat_match = string_pos(_search, string_lower(_base_name)) > 0;
+            
+            if (_is_dropdown)
+            {
+                var _submenu = arg0[i];
+                
+                for (var j = 0; j < array_length(_submenu); j++)
+                {
+                    if (string_pos(_search, string_lower(_submenu[j])) > 0)
+                        _sub_match = true;
+                }
+                
+                if (_search_changed && _state_tracker[i] != _sub_match)
+                {
+                    _state_tracker[i] = _sub_match;
+                    _needs_struct_save = true;
+                }
+            }
+            
+            if (!_cat_match && !_sub_match)
+                continue;
+        }
+        
+        var _is_open = _is_dropdown && _state_tracker[i] == true;
+        var _display_name = _base_name;
+        
+        if (_is_dropdown)
+            _display_name += (_is_open ? "" ^"" : "" v"");
+        
+        array_push(_temp_options, _display_name);
+        array_push(_temp_indices, _original_index);
+        
+        if (_is_open)
+        {
+            var _submenu = arg0[i];
+            
+            for (var j = 0; j < array_length(_submenu); j++)
+            {
+                if (_search == """" || _cat_match || string_pos(_search, string_lower(_submenu[j])) > 0)
+                {
+                    array_push(_temp_options, ""- "" + _submenu[j]);
+                    array_push(_temp_indices, -1);
+                }
+            }
+        }
+    }
+    
+    if (_needs_struct_save || !variable_struct_exists(dmenu_expanded, dmenu_state))
+        variable_struct_set(dmenu_expanded, dmenu_state, _state_tracker);
+    
+    dbutton_options = _temp_options;
+    dbutton_indices = _temp_indices;
+}
+
+function dmenu_interact_submenus(arg0)
+{
+    var _clicked_index = -1;
+    
+    for (var i = 0; i < array_length(my_options); i++)
+    {
+        var _base_name = my_options[i];
+        
+        if (arg0 == _base_name || arg0 == (_base_name + "" v"") || arg0 == (_base_name + "" ^""))
+        {
+            _clicked_index = i;
+            break;
+        }
+    }
+    
+    if (_clicked_index != -1 && variable_struct_exists(dmenu_expanded, dmenu_state))
+    {
+        var _state_tracker = variable_struct_get(dmenu_expanded, dmenu_state);
+        
+        if (_clicked_index < array_length(_state_tracker))
+        {
+            _state_tracker[_clicked_index] = !_state_tracker[_clicked_index];
+            variable_struct_set(dmenu_expanded, dmenu_state, _state_tracker);
+            dmenu_skip_reindexing = true;
+            dremove_false_history();
+            return true;
+        }
+    }
+    
+    return false;
+}");
 
 
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)0, Data),
 @"dmenu_arrow_timer += 1;
+
 if (dmenu_popup_launch == 1)
 {
     dmenu_state_update();
     global.interact = 1;
 }
+
 if (dmenu_popup_launch != 1)
 {
     if (!global.dreading_custom_flag && keyboard_check_pressed(ord(""D"")))
     {
         dmenu_active = !dmenu_active;
+        
         if (dmenu_active)
         {
             dmenu_previous_interact = global.interact;
@@ -3443,27 +3592,25 @@ if (dmenu_popup_launch != 1)
 function dmenu_pressed_key(arg0)
 {
     if (arg0 != 40 && arg0 != 38 && arg0 != 37 && arg0 != 39)
-    {
         return 0;
-    }
+    
     if (keyboard_check_pressed(arg0))
     {
         dscroll_cur_key = arg0;
         return 1;
     }
+    
     if (arg0 != dscroll_cur_key)
-    {
         return 0;
-    }
+    
     if (keyboard_check(arg0))
     {
         if (dscroll_timer >= dscroll_delay)
         {
             if ((dscroll_timer % dscroll_speed) == 0)
-            {
                 return 2;
-            }
         }
+        
         dscroll_timer += 1;
     }
     else if (arg0 == dscroll_cur_key)
@@ -3471,6 +3618,7 @@ function dmenu_pressed_key(arg0)
         dscroll_timer = 0;
         dscroll_cur_key = 0;
     }
+    
     return 0;
 }
 
@@ -3478,6 +3626,7 @@ function vmove_menu(arg0, arg1)
 {
     pressed_up = arg0;
     pressed_down = arg1;
+    
     if (pressed_up != 0 || pressed_down != 0)
     {
         if (pressed_up == 1 && dvertical_index == 0)
@@ -3490,19 +3639,19 @@ function vmove_menu(arg0, arg1)
             dvertical_index = -1;
             dmenu_start_index = 0;
         }
+        
         increment = pressed_up ? -1 : 1;
+        
         if ((pressed_up && dvertical_index != 0) || (pressed_down && dvertical_index != (array_length(dbutton_options) - 1)))
         {
             dvertical_index += increment;
             snd_play(snd_menumove);
+            
             if (pressed_up && dvertical_index < dmenu_start_index)
-            {
                 dmenu_start_index += increment;
-            }
             else if (pressed_down && (dvertical_index + 1) > (dmenu_start_index + dbutton_max_visible))
-            {
                 dmenu_start_index += increment;
-            }
+            
             if (dmenu_state == ""flag_misc"")
             {
                 new_options = dother_options[dvertical_index];
@@ -3516,40 +3665,43 @@ function evaluate_custom_flag(arg0, arg1)
 {
     scr_debug_print(""Checking for "" + string(arg1));
     proper_exit = arg0;
+    
     if (!proper_exit)
     {
         set_keyboard_reader(0);
         return 0;
     }
+    
     first_type = arg1;
     proper_exit = scr_string_respect_type(dcustom_flag_text[0], first_type, 1, 1);
+    
     if (dmenu_state != ""flag_categories"")
-    {
         return proper_exit;
-    }
+    
     proper_exit = scr_string_respect_type(dcustom_flag_text[1], ""real"", 0, 1);
+    
     if (string_length(dcustom_flag_text[1]) == 0)
     {
         if (proper_exit)
-        {
             scr_debug_print(""global.flag["" + string(real(dcustom_flag_text[0])) + ""] = |"" + string(global.flag[real(dcustom_flag_text[0])]) + ""|"");
-        }
         else
-        {
             scr_debug_print(scr_dmode_get_text(""dbg_empty_val""));
-        }
+        
         proper_exit = 0;
     }
+    
     if (proper_exit)
     {
         scr_debug_print(scr_dmode_get_text(""dbg_updated"") + ""global.flag["" + string(real(dcustom_flag_text[0])) + ""]"" + scr_dmode_get_text(""dbg_from"") + ""|"" + string(global.flag[real(dcustom_flag_text[0])]) + ""|"" + scr_dmode_get_text(""dbg_to"") + ""|"" + dcustom_flag_text[1] + ""|"");
         global.flag[real(dcustom_flag_text[0])] = real(dcustom_flag_text[1]);
     }
+    
     if (proper_exit)
     {
         dmenu_active = 0;
         global.interact = 0;
     }
+    
     return proper_exit;
 }
 
@@ -3558,62 +3710,74 @@ if (dmenu_active && global.dreading_custom_flag)
     update_visu = 1;
     will_exit = 0;
     reading_double_flag = dmenu_state == ""flag_categories"" || (dmenu_state == ""globals_changer"" && dvertical_index == 0);
+    
     if (!reading_double_flag)
-    {
         dkeyboard_input = dcustom_flag_text[0];
-    }
+    
     will_exit = keyboard_check_pressed(vk_escape) || keyboard_check_pressed(global.input_k[7]);
     will_exit |= (keyboard_check_pressed(vk_up) || keyboard_check_pressed(vk_down));
+    
     if (will_exit)
     {
         clean_exit = !keyboard_check_pressed(vk_escape);
-        if (dmenu_state == ""flag_categories"" || dmenu_state == ""warp_options"" || dmenu_state == ""globals_changer"")
+        
+        if (clean_exit)
         {
-            check_type = ""uint"";
-            if (dmenu_state == ""warp_options"")
+            if (dmenu_state == ""flag_categories"" || dmenu_state == ""warp_options"" || dmenu_state == ""globals_changer"")
             {
-                check_type = ""real"";
-            }
-            if (dmenu_state == ""globals_changer"")
-            {
-                if (dvertical_index == 0)
+                check_type = ""uint"";
+                
+                if (dmenu_state == ""warp_options"")
+                    check_type = ""real"";
+                
+                if (dmenu_state == ""globals_changer"")
                 {
-                    check_type = ""variable"";
-                    dglobal_changer_options[dvertical_index][1] = ""string"";
-                    if (scr_string_respect_type(dcustom_flag_text[1], ""real"", 1, 0))
+                    if (dvertical_index == 0)
                     {
-                        dglobal_changer_options[dvertical_index][1] = ""real"";
+                        check_type = ""variable"";
+                        dglobal_changer_options[dvertical_index][1] = ""string"";
+                        
+                        if (scr_string_respect_type(dcustom_flag_text[1], ""real"", 1, 0))
+                            dglobal_changer_options[dvertical_index][1] = ""real"";
+                    }
+                    else
+                    {
+                        check_type = dglobal_changer_options[dvertical_index][1];
                     }
                 }
-                else
+                
+                if (dcustom_flag_text[0] != """")
                 {
-                    check_type = dglobal_changer_options[dvertical_index][1];
+                    flags_good = evaluate_custom_flag(clean_exit, check_type);
+                    
+                    if (flags_good && dmenu_state == ""warp_options"")
+                        drooms_options.target_plot = real(dkeyboard_input);
+                    
+                    snd_play(array_get([299, 420], flags_good));
                 }
             }
-            flags_good = evaluate_custom_flag(clean_exit, check_type);
-            if (flags_good && dmenu_state == ""warp_options"")
-            {
-                drooms_options.target_plot = real(dkeyboard_input);
-            }
-            snd_play(array_get([299, 420], flags_good));
         }
+        else
+        {
+            set_keyboard_reader(0);
+            dkeyboard_input = """";
+            dcustom_flag_text = ["""", """"];
+            snd_play(snd_error);
+        }
+        
         if (keyboard_check_pressed(vk_down))
-        {
             vmove_menu(0, 1);
-        }
         else if (keyboard_check_pressed(vk_up))
-        {
             vmove_menu(1, 0);
-        }
+        
         if (dmenu_state != ""warp_options"")
         {
             if (keyboard_check_pressed(global.input_k[4]) || keyboard_check_pressed(global.input_k[7]))
             {
                 snd_play(snd_select);
+                
                 if (dmenu_state == ""globals_changer"" && flags_good)
-                {
                     dmenu_state_interact();
-                }
             }
             else if (keyboard_check_pressed(vk_escape))
             {
@@ -3624,10 +3788,10 @@ if (dmenu_active && global.dreading_custom_flag)
                 snd_play(snd_menumove);
             }
         }
+        
         if (!clean_exit)
-        {
             dkeyboard_input = """";
-        }
+        
         set_keyboard_reader(0);
         will_exit = 1;
     }
@@ -3645,18 +3809,18 @@ if (dmenu_active && global.dreading_custom_flag)
     {
         update_visu = scr_read_keyboard();
         flag_index = 0;
+        
         if (reading_double_flag)
-        {
             flag_index = dhorizontal_index;
-        }
+        
         dcustom_flag_text[flag_index] = global.dkeyboard_text;
     }
+    
     if (update_visu)
     {
         if (!will_exit)
-        {
             dkeyboard_input = dcustom_flag_text[0];
-        }
+        
         dmenu_state_update();
     }
 }
@@ -3665,47 +3829,50 @@ else if (dmenu_active)
     if (dbutton_layout == 0 && dkeys_helper == 0)
     {
         moved = 1;
+        
         if (keyboard_check_pressed(vk_up))
         {
             dvertical_index--;
+            
             if (dvertical_index == -1)
-            {
                 dvertical_index = array_length(dbutton_options_2d) - 1;
-            }
+            
             dhorizontal_index = min(dhorizontal_index, array_length(dbutton_options_2d[dvertical_index]) - 1);
         }
         else if (keyboard_check_pressed(vk_down))
         {
             dvertical_index++;
+            
             if (dvertical_index == array_length(dbutton_options_2d))
-            {
                 dvertical_index = 0;
-            }
+            
             dhorizontal_index = min(dhorizontal_index, array_length(dbutton_options_2d[dvertical_index]) - 1);
         }
         else if (keyboard_check_pressed(vk_left))
         {
             dhorizontal_index--;
+            
             if (dhorizontal_index == -1)
             {
                 dvertical_index--;
+                
                 if (dvertical_index == -1)
-                {
                     dvertical_index = array_length(dbutton_options_2d) - 1;
-                }
+                
                 dhorizontal_index = array_length(dbutton_options_2d[dvertical_index]) - 1;
             }
         }
         else if (keyboard_check_pressed(vk_right))
         {
             dhorizontal_index++;
+            
             if (dhorizontal_index == array_length(dbutton_options_2d[dvertical_index]))
             {
                 dvertical_index++;
+                
                 if (dvertical_index == array_length(dbutton_options_2d))
-                {
                     dvertical_index = 0;
-                }
+                
                 dhorizontal_index = 0;
             }
         }
@@ -3713,33 +3880,30 @@ else if (dmenu_active)
         {
             moved = 0;
         }
+        
         if (moved)
-        {
             snd_play(snd_menumove);
-        }
     }
+    
     if (dbutton_layout == 1)
     {
         og_horizontal_index = dhorizontal_index;
         pressed_right = dmenu_pressed_key(39);
         pressed_left = dmenu_pressed_key(37);
+        
         if (dmenu_state == ""flag_misc"")
         {
             cur_options = dother_options[dvertical_index];
             cur_options_len = array_length(cur_options[3]);
             playsound = 1;
+            
             if (keyboard_check_pressed(vk_right) && dhorizontal_index < (cur_options_len - 1))
-            {
                 dhorizontal_index++;
-            }
             else if (keyboard_check_pressed(vk_left) && dhorizontal_index != 0)
-            {
                 dhorizontal_index--;
-            }
             else
-            {
                 playsound = 0;
-            }
+            
             if (playsound)
             {
                 global.flag[cur_options[2]] = cur_options[3][dhorizontal_index][1];
@@ -3750,23 +3914,20 @@ else if (dmenu_active)
         else if (dmenu_state == ""globals_changer"")
         {
             cur_global_array_limit = dglobal_changer_options[dvertical_index][2];
+            
             if (pressed_left == 1 && dhorizontal_index != 0)
-            {
                 dhorizontal_index--;
-            }
+            
             if (pressed_right == 1 && dhorizontal_index != (cur_global_array_limit - 1))
-            {
                 dhorizontal_index++;
-            }
+            
             if (dhorizontal_index != og_horizontal_index)
-            {
                 snd_play(snd_menumove);
-            }
         }
+        
         if (pressed_left && pressed_right)
-        {
             pressed_right = 0;
-        }
+        
         if (pressed_right || pressed_left)
         {
             if (dmenu_state == ""recruits"")
@@ -3777,18 +3938,19 @@ else if (dmenu_active)
                     scr_recruit_info(real_index);
                     recruit_count = global.flag[real_index + 600];
                     to_add = 1 / _recruitcount;
+                    
                     if (pressed_left)
                     {
                         to_add = -to_add;
+                        
                         if (recruit_count == 0)
-                        {
                             to_add = -1;
-                        }
                     }
                     else if (pressed_right && recruit_count == -1)
                     {
                         to_add = 1;
                     }
+                    
                     if ((pressed_right && (recruit_count * _recruitcount) < _recruitcount) || (pressed_left && (recruit_count * _recruitcount) > -1))
                     {
                         global.flag[600 + real_index] = recruit_count + to_add;
@@ -3803,10 +3965,10 @@ else if (dmenu_active)
                 else if ((pressed_right && dhorizontal_page != global.chapter) || (pressed_left && dhorizontal_page != 0))
                 {
                     dhorizontal_page++;
+                    
                     if (pressed_left)
-                    {
                         dhorizontal_page -= 2;
-                    }
+                    
                     snd_play(snd_menumove);
                     dmenu_state_update();
                 }
@@ -3815,28 +3977,22 @@ else if (dmenu_active)
             {
                 cur_party = array_get([drooms_options.target_member_2, drooms_options.target_member_3], dvertical_index - 3);
                 new_party = -1;
+                
                 if (pressed_left && cur_party != 0)
-                {
                     new_party = cur_party - 1;
-                }
                 else if (pressed_right && cur_party != (4 - (global.chapter == 1)))
-                {
                     new_party = cur_party + 1;
-                }
+                
                 if (new_party == 1)
-                {
                     new_party += (pressed_right - pressed_left);
-                }
+                
                 if (new_party != -1)
                 {
                     if (dvertical_index == 3)
-                    {
                         drooms_options.target_member_2 = new_party;
-                    }
                     else
-                    {
                         drooms_options.target_member_3 = new_party;
-                    }
+                    
                     snd_play(snd_menumove);
                     dmenu_state_update();
                 }
@@ -3850,56 +4006,59 @@ else if (dmenu_active)
                 dmenu_state_update();
             }
         }
+        
         pressed_up = dmenu_pressed_key(38);
         pressed_down = dmenu_pressed_key(40);
+        
         if (dmenu_state == ""globals_changer"" && (pressed_up || pressed_down))
-        {
             dhorizontal_index = 0;
-        }
+        
         if (pressed_up && pressed_down)
-        {
             pressed_up = 0;
-        }
+        
         vmove_menu(pressed_up, pressed_down);
         dmenu_start_index = clamp(dmenu_start_index, 0, max(0, array_length(dbutton_options) - dbutton_max_visible));
+        
         if (dhorizontal_index != og_horizontal_index)
-        {
             dmenu_state_update();
-        }
     }
+    
     if (dbutton_layout == 2)
     {
         if (keyboard_check_pressed(vk_left))
         {
             var owned_count = 0;
+            
             switch (dgiver_menu_state)
             {
                 case ""objects"":
                     if (dhorizontal_page == 0)
-                    {
                         scr_itemcheck(dbutton_indices[dgiver_button_selected - 1]);
-                    }
                     else
-                    {
                         scr_litemcheck(dbutton_indices[dgiver_button_selected - 1]);
-                    }
+                    
                     owned_count = itemcount;
                     break;
+                
                 case ""armors"":
                     scr_armorcheck_inventory(dbutton_indices[dgiver_button_selected - 1]);
                     owned_count = itemcount;
                     break;
+                
                 case ""weapons"":
                     scr_weaponcheck_inventory(dbutton_indices[dgiver_button_selected - 1]);
                     owned_count = itemcount;
                     break;
+                
                 case ""keyitems"":
                     scr_keyitemcheck(dbutton_indices[dgiver_button_selected - 1]);
                     owned_count = itemcount;
                     break;
+                
                 default:
                     owned_count = 0;
             }
+            
             if (dgiver_amount > -owned_count)
             {
                 dgiver_amount -= 1;
@@ -3910,42 +4069,47 @@ else if (dmenu_active)
                 snd_play(snd_error);
             }
         }
+        
         if (keyboard_check_pressed(vk_right))
         {
             var owned_count = 0;
+            
             switch (dgiver_menu_state)
             {
                 case ""objects"":
                     if (dhorizontal_page == 0)
-                    {
                         scr_itemcheck(0);
-                    }
                     else
-                    {
                         scr_litemcheck(0);
-                    }
+                    
                     owned_count = itemcount;
                     break;
+                
                 case ""armors"":
                     scr_armorcheck_inventory(0);
                     owned_count = itemcount;
                     break;
+                
                 case ""weapons"":
                     scr_weaponcheck_inventory(0);
                     owned_count = itemcount;
                     break;
+                
                 case ""keyitems"":
                     scr_keyitemcheck(0);
                     owned_count = itemcount;
                     break;
+                
                 case ""recruits"":
                     real_indice = dbutton_indices[dvertical_index];
                     recruited_nbr = global.flag[real_indice + 600];
                     global.flag[real_indice + 600] = recruited_nbr + 1;
                     break;
+                
                 default:
                     owned_count = 0;
             }
+            
             if (dgiver_amount < owned_count)
             {
                 dgiver_amount += 1;
@@ -3957,6 +4121,7 @@ else if (dmenu_active)
             }
         }
     }
+    
     if (dbutton_layout == 3)
     {
         if (dvertical_index != 0)
@@ -3964,50 +4129,51 @@ else if (dmenu_active)
             if (keyboard_check_pressed(vk_left))
             {
                 dhorizontal_index--;
+                
                 if (dhorizontal_index == -1)
                 {
                     var TODO = ""change this to a proper array_len later"";
                     dhorizontal_index = 1;
                 }
+                
                 snd_play(snd_menumove);
             }
+            
             if (keyboard_check_pressed(vk_right))
             {
                 dhorizontal_index++;
+                
                 if (dhorizontal_index == 2)
-                {
                     dhorizontal_index = 0;
-                }
+                
                 snd_play(snd_menumove);
             }
         }
+        
         if (keyboard_check_pressed(vk_up) || keyboard_check_pressed(vk_down))
         {
             dvertical_index ^= 1;
             snd_play(snd_menumove);
         }
     }
+    
     if (keyboard_check_pressed(global.input_k[4]) || keyboard_check_pressed(global.input_k[7]))
     {
-        must_save = dmenu_state != ""givertab"" && dmenu_state != ""recruit_presets"" && dmenu_state != ""flag_misc"" && dmenu_state != ""warp_options"" && !(dmenu_state == ""warp"" && dvertical_index == 1) && !(dmenu_state == ""debug_load"" && dvertical_index == 0) && !(dmenu_state == ""debug_save"" && dvertical_index == 2) && dmenu_state != ""debug_load_options"";
-        must_save &= ((dmenu_state != ""flag_categories"" || dvertical_index != 0) && (!(dmenu_state == ""weapons"" && dhorizontal_page) && !(dmenu_state == ""armors"" && dhorizontal_page)));
-        must_save &= ((dmenu_state != ""recruits"" || dvertical_index == 0) && dmenu_state != ""globals_changer"");
-        must_save &= !(scr_array_contains(ditem_types, dmenu_state) && dhorizontal_page == 0 && dvertical_index == 0);
-        if (!(dmenu_state == ""debug_save"" && dvertical_index == 0))
-        {
+        if (!(dmenu_state == ""new_debug_save"" && dvertical_index == 0))
             snd_play(snd_select);
-        }
-        if (must_save)
-        {
-            array_push(dmenu_state_history, dmenu_state);
-            array_push(dbutton_selected_history, dvertical_index);
-        }
+        
+        array_push(dmenu_state_history, dmenu_state);
+        array_push(dmenu_vertical_index_history, dvertical_index);
+        array_push(dmenu_horizontal_index_history, dhorizontal_index);
+        array_push(dmenu_page_index_history, dhorizontal_page);
+        
         if (dmenu_state == ""flag_categories"" && dvertical_index == 0)
         {
             global.dreading_custom_flag = 1;
             dhorizontal_index = 0;
             keyboard_string = """";
         }
+        
         if (scr_array_contains(ditem_types, dmenu_state))
         {
             switch (dmenu_state)
@@ -4016,6 +4182,7 @@ else if (dmenu_active)
                     if (dhorizontal_page != 0 || dvertical_index != 0)
                     {
                         real_index = dbutton_indices[dvertical_index];
+                        
                         if (dhorizontal_page == 0)
                         {
                             scr_iteminfo(real_index);
@@ -4031,15 +4198,20 @@ else if (dmenu_active)
                                     break;
                                 }
                             }
+                            
                             dgiver_bname = dlight_objects[real_index][1];
                         }
+                        
                         scr_debug_print(dgiver_bname + scr_dmode_get_text(""msg_selected""));
                     }
+                    
                     break;
+                
                 case ""armors"":
                     if (dhorizontal_page != 0 || dvertical_index != 0)
                     {
                         real_index = dbutton_indices[dvertical_index];
+                        
                         if (dhorizontal_page == 0)
                         {
                             scr_armorinfo(real_index);
@@ -4049,13 +4221,17 @@ else if (dmenu_active)
                         {
                             dgiver_bname = dlight_armors[real_index][1];
                         }
+                        
                         scr_debug_print(string(dgiver_bname) + scr_dmode_get_text(""msg_selected""));
                     }
+                    
                     break;
+                
                 case ""weapons"":
                     if (dhorizontal_page != 0 || dvertical_index != 0)
                     {
                         real_index = dbutton_indices[dvertical_index];
+                        
                         if (dhorizontal_page == 0)
                         {
                             scr_weaponinfo(real_index);
@@ -4065,9 +4241,12 @@ else if (dmenu_active)
                         {
                             dgiver_bname = dlight_weapons[real_index][1];
                         }
+                        
                         scr_debug_print(string(dgiver_bname) + scr_dmode_get_text(""msg_selected""));
                     }
+                    
                     break;
+                
                 case ""keyitems"":
                     if (dvertical_index != 0)
                     {
@@ -4076,6 +4255,7 @@ else if (dmenu_active)
                         dgiver_bname = tempkeyitemname;
                         scr_debug_print(string(dgiver_bname) + scr_dmode_get_text(""msg_selected""));
                     }
+                    
                     break;
             }
         }
@@ -4083,41 +4263,39 @@ else if (dmenu_active)
         {
             scr_debug_print(scr_dmode_get_text(""msg_search_selected""));
         }
-        else if (dmenu_state != ""givertab"" && dmenu_state != ""flag_misc"" && dmenu_state != ""warp_options"" && (dmenu_state != ""recruits"" || dvertical_index == 0) && dmenu_state != ""debug_save"")
+        else if (dmenu_state != ""givertab"" && dmenu_state != ""flag_misc"" && dmenu_state != ""warp_options"" && (dmenu_state != ""recruits"" || dvertical_index == 0) && dmenu_state != ""new_debug_save"")
         {
             option_name = """";
+            
             if (dbutton_layout == 0)
-            {
                 option_name = string(dbutton_options_2d[dvertical_index][dhorizontal_index]);
-            }
             else
-            {
                 option_name = string(dbutton_options[dvertical_index]);
-            }
+            
             scr_debug_print(option_name + scr_dmode_get_text(""msg_selected""));
         }
-        if ((dmenu_state == ""recruits"" && dvertical_index != 0) || dmenu_state == ""warp_options"" || dmenu_state == ""recruit_presets"" || dmenu_state == ""warp_options"" || dmenu_state == ""flag_misc"" || ((dmenu_state == ""armors"" || dmenu_state == ""weapons"") && dhorizontal_page) || (dmenu_state == ""warp"" && dvertical_index == 1) || dmenu_state == ""globals_changer"" || dmenu_state == ""debug_load"")
+        
+        dmenu_skip_reindexing = false;
+        dmenu_state_interact();
+        
+        if (!dmenu_skip_reindexing)
         {
-            dmenu_state_interact();
-            dmenu_state_update();
-        }
-        else
-        {
-            dmenu_state_interact();
             dmenu_start_index = 0;
             dvertical_index = 0;
-            dmenu_state_update();
+            dhorizontal_index = 0;
         }
+        
+        dmenu_state_update();
     }
+    
     if (keyboard_check_pressed(global.input_k[5]) || keyboard_check_pressed(global.input_k[8]))
     {
-        if (dmenu_state != ""debug_save"")
-        {
+        if (dmenu_state != ""new_debug_save"" || array_length(dmenu_state_history) > 0)
             snd_play(snd_smallswing);
-        }
+        
         if (dmenu_popup_launch == 1)
         {
-            if (dmenu_state == ""debug_save"")
+            if (dmenu_state == ""new_debug_save"")
             {
                 instance_create(0, 0, obj_savemenu);
                 obj_savemenu.menuno = 1;
@@ -4125,19 +4303,22 @@ else if (dmenu_active)
                 global.interact = 1;
             }
         }
+        
         dpop_history();
     }
+    
     if (dhinter_active)
     {
         if (dmenu_state == ""warp_options"")
         {
             new_room = drooms_options.target_room;
+            
             if (new_room == -1)
-            {
                 new_room = room;
-            }
+            
             dhinter_text = scr_dmode_get_text(""hint_room"") + room_get_name(new_room);
         }
+        
         if (scr_array_contains(ditem_types, dmenu_state))
         {
             if (dhorizontal_page == 0 && dvertical_index == 0)
@@ -4147,38 +4328,44 @@ else if (dmenu_active)
             else if (dhorizontal_page == 0 && dvertical_index != 0)
             {
                 var hover_id = dbutton_indices[dvertical_index];
+                
                 if (hover_id != -1)
                 {
                     var raw_desc = """";
+                    
                     switch (dmenu_state)
                     {
                         case ""objects"":
                             scr_iteminfo(hover_id);
                             raw_desc = itemdescb;
                             break;
+                        
                         case ""armors"":
                             scr_armorinfo(hover_id);
                             raw_desc = armordesctemp;
                             break;
+                        
                         case ""weapons"":
                             scr_weaponinfo(hover_id);
                             raw_desc = weapondesctemp;
                             break;
+                        
                         case ""keyitems"":
                             scr_keyiteminfo(hover_id);
                             raw_desc = tempkeyitemdesc;
                             break;
                     }
+                    
                     dhinter_text = string_replace_all(raw_desc, ""#"", "" "");
                     var max_w = (menu_width - (x_padding * 2)) * d;
                     var line_sep = 18 * d;
                     var max_h = line_sep * 2;
+                    
                     if (string_height_ext(dhinter_text, line_sep, max_w) > max_h)
                     {
                         while (string_height_ext(dhinter_text + ""..."", line_sep, max_w) > max_h && string_length(dhinter_text) > 0)
-                        {
                             dhinter_text = string_delete(dhinter_text, string_length(dhinter_text), 1);
-                        }
+                        
                         dhinter_text += ""..."";
                     }
                 }
@@ -4194,22 +4381,19 @@ else if (dmenu_active)
         }
     }
 }
+
 if ((dmenu_active == 1 && dmenu_state == ""debug"" && global.darkzone == 1) || dkeys_helper == 1)
 {
     if (keyboard_check_pressed(ord(""M"")))
     {
         if (dkeys_helper == 0)
-        {
             snd_play(snd_select);
-        }
         else
-        {
             snd_play(snd_smallswing);
-        }
+        
         dkeys_helper = !dkeys_helper;
     }
-}
-");
+}");
 
 
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)1, Data),
@@ -4223,49 +4407,68 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             dmenu_box = 0;
             dbutton_layout = 0;
             break;
-        case ""debug_save"":
-            dmenu_title = ""Debug Save"";
-            dbutton_options_2d = [[""Enter save name""], [""Save"", ""Cancel""]];
+        
+        case ""test"":
+            dmenu_title = ""Debug save"";
+            dbutton_options = [""New save"", ""Search"", ""Spare route"", ""Weird route""];
+            dbutton_indices = [-2, -2, -1, -1];
+            
             if (global.dreading_custom_flag || dkeyboard_input != """")
-            {
-                dbutton_options_2d[0][0] = """";
-            }
+                dbutton_options[1] = scr_dmode_get_text(""ui_contains"") + dkeyboard_input;
             else
-            {
+                dbutton_options[1] = scr_dmode_get_text(""btn_search"") + dkeyboard_input;
+            
+            var subs = [];
+            subs[2] = [""At Noelle's"", ""Jackenstein fight""];
+            subs[3] = [""Proceed scene"", ""Titan's fight""];
+            dmenu_process_submenus(subs, dkeyboard_input);
+            dmenu_box = 1;
+            dbutton_layout = 1;
+            break;
+        
+        case ""new_debug_save"":
+            dmenu_title = ""New debug save"";
+            dbutton_options_2d = [[""Enter save name""], [""Save"", ""Cancel""]];
+            
+            if (global.dreading_custom_flag || dkeyboard_input != """")
+                dbutton_options_2d[0][0] = """";
+            else
                 dbutton_options[0][0] = ""Enter save name"";
-            }
+            
             dbutton_options[0][0] += dkeyboard_input;
             dmenu_box = 0;
             dbutton_layout = 3;
             break;
+        
         case ""debug_load"":
             dmenu_title = ""Debug Load"";
             dbutton_options = [scr_dmode_get_text(""btn_search"")];
             dbutton_indices = [-1];
+            
             if (global.dreading_custom_flag || dkeyboard_input != """")
-            {
                 dbutton_options[0] = scr_dmode_get_text(""ui_contains"");
-            }
             else
-            {
                 dbutton_options[0] = scr_dmode_get_text(""btn_search"");
-            }
+            
             dbutton_options[0] += dkeyboard_input;
             var my_ids = scr_get_debug_save_list();
+            
             for (var i = 0; i < array_length(my_ids); i++)
             {
                 var current_id = my_ids[i];
                 var current_save_name = debug_save_names[i];
+                
                 if (!string_pos(string_lower(dkeyboard_input), string_lower(current_save_name)))
-                {
                     continue;
-                }
+                
                 array_push(dbutton_options, current_save_name);
                 array_push(dbutton_indices, current_id);
             }
+            
             dmenu_box = 1;
             dbutton_layout = 1;
             break;
+        
         case ""debug_load_options"":
             dmenu_title = ""Debug Load Options"";
             dbutton_options = [""With current inventory: "", ""Load""];
@@ -4274,55 +4477,56 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             dmenu_box = 0;
             dbutton_layout = 1;
             break;
+        
         case ""warp"":
             dmenu_title = scr_dmode_get_text(""room_list"");
             dbutton_options = [scr_dmode_get_text(""btn_current_room""), scr_dmode_get_text(""btn_search"")];
             dbutton_indices = [-1, -1];
+            
             if (global.dreading_custom_flag || dkeyboard_input != """")
-            {
                 dbutton_options[1] = scr_dmode_get_text(""ui_contains"");
-            }
             else
-            {
                 dbutton_options[1] = scr_dmode_get_text(""btn_search"");
-            }
+            
             dbutton_options[1] += dkeyboard_input;
+            
             for (var i = 0; i < array_length(drooms); i++)
             {
                 if (!string_pos(dkeyboard_input, drooms[i]))
-                {
                     continue;
-                }
+                
                 var combined = drooms[i];
                 array_push(dbutton_options, combined);
                 array_push(dbutton_indices, drooms_id[i].room_index);
             }
+            
             dbutton_layout = 1;
             dmenu_box = 1;
             break;
+        
         case ""warp_options"":
             dmenu_title = scr_dmode_get_text(""warp_options"");
             dbutton_options = [scr_dmode_get_text(""btn_cancel""), scr_dmode_get_text(""ui_is_darkworld""), scr_dmode_get_text(""ui_plot_value""), scr_dmode_get_text(""ui_teammate2""), scr_dmode_get_text(""ui_teammate3""), scr_dmode_get_text(""btn_warp"")];
             dbutton_indices = [0, 1, 2, 3, 4, 5];
             dbutton_options[1] += drooms_options.target_is_darkzone ? scr_dmode_get_text(""opt_yes"") : scr_dmode_get_text(""opt_no"");
+            
             if (global.dreading_custom_flag)
-            {
                 dbutton_options[2] += dkeyboard_input;
-            }
             else
-            {
                 dbutton_options[2] += string(drooms_options.target_plot);
-            }
+            
             teammates = [scr_dmode_get_text(""ui_nobody""), ""Kris"", ""Susie"", ""Ralsei"", ""Noëlle""];
             dbutton_options[3] += teammates[drooms_options.target_member_2];
             dbutton_options[4] += teammates[drooms_options.target_member_3];
             break;
+        
         case ""give"":
             dmenu_title = scr_dmode_get_text(""item_type"");
             dbutton_options_2d = [[scr_dmode_get_text(""type_items""), scr_dmode_get_text(""type_armors""), scr_dmode_get_text(""type_weapons""), scr_dmode_get_text(""type_keyitems"")]];
             dmenu_box = 0;
             dbutton_layout = 0;
             break;
+        
         case ""objects"":
             dmenu_title = scr_dmode_get_text(""item_list"");
             dbutton_options = [scr_dmode_get_text(""ui_chapter"")];
@@ -4332,6 +4536,7 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             var _data = ditem_index_data(ditem_chap);
             var my_start = _data.start_id;
             var my_count = _data.count;
+            
             if (dhorizontal_page == 0)
             {
                 for (var i = my_start; i < (my_start + my_count); i++)
@@ -4339,10 +4544,10 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
                     scr_iteminfo(i);
                     var cleaned_desc = string_replace_all(itemdescb, ""#"", "" "");
                     var combined = itemnameb;
+                    
                     if (string_length(combined) > max_len)
-                    {
                         combined = string_copy(combined, 1, max_len - 3) + ""..."";
-                    }
+                    
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
                 }
@@ -4351,6 +4556,7 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             {
                 array_delete(dbutton_options, 0, 1);
                 array_delete(dbutton_indices, 0, 1);
+                
                 for (var i = 0; i < array_length(dlight_objects); i++)
                 {
                     scr_litemcheck(dlight_objects[i][0]);
@@ -4359,9 +4565,11 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
                     array_push(dbutton_indices, dlight_objects[i][0]);
                 }
             }
+            
             dmenu_box = 2;
             dbutton_layout = 1;
             break;
+        
         case ""armors"":
             dmenu_title = scr_dmode_get_text(""armor_list"");
             dbutton_options = [scr_dmode_get_text(""ui_chapter"")];
@@ -4371,6 +4579,7 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             var _data = darmor_index_data(ditem_chap);
             var my_start = _data.start_id;
             var my_count = _data.count;
+            
             if (dhorizontal_page == 0)
             {
                 for (var i = my_start; i < (my_start + my_count); i++)
@@ -4378,10 +4587,10 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
                     scr_armorinfo(i);
                     var cleaned_desc = string_replace_all(armordesctemp, ""#"", "" "");
                     var combined = armornametemp;
+                    
                     if (string_length(combined) > max_len)
-                    {
                         combined = string_copy(combined, 1, max_len - 3) + ""..."";
-                    }
+                    
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
                 }
@@ -4390,20 +4599,23 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             {
                 array_delete(dbutton_options, 0, 1);
                 array_delete(dbutton_indices, 0, 1);
+                
                 for (var i = 0; i < array_length(dlight_armors); i++)
                 {
                     var combined = dlight_armors[i][1];
+                    
                     if (global.larmor == dlight_armors[i][0])
-                    {
                         combined += ("" ("" + scr_dmode_get_text(""ui_equipped"") + "")"");
-                    }
+                    
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
                 }
             }
+            
             dmenu_box = 2;
             dbutton_layout = 1;
             break;
+        
         case ""weapons"":
             dmenu_title = scr_dmode_get_text(""weapon_list"");
             dbutton_options = [scr_dmode_get_text(""ui_chapter"")];
@@ -4413,6 +4625,7 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             var _data = dweapon_index_data(ditem_chap);
             var my_start = _data.start_id;
             var my_count = _data.count;
+            
             if (dhorizontal_page == 0)
             {
                 for (var i = my_start; i < (my_start + my_count); i++)
@@ -4420,10 +4633,10 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
                     scr_weaponinfo(i);
                     var cleaned_desc = string_replace_all(weapondesctemp, ""#"", "" "");
                     var combined = weaponnametemp;
+                    
                     if (string_length(combined) > max_len)
-                    {
                         combined = string_copy(combined, 1, max_len - 3) + ""..."";
-                    }
+                    
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
                 }
@@ -4432,20 +4645,23 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             {
                 array_delete(dbutton_options, 0, 1);
                 array_delete(dbutton_indices, 0, 1);
+                
                 for (var i = 0; i < array_length(dlight_weapons); i++)
                 {
                     var combined = dlight_weapons[i][1];
+                    
                     if (global.lweapon == dlight_weapons[i][0])
-                    {
                         combined += ("" ("" + scr_dmode_get_text(""ui_equipped"") + "")"");
-                    }
+                    
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
                 }
             }
+            
             dmenu_box = 2;
             dbutton_layout = 1;
             break;
+        
         case ""keyitems"":
             dmenu_title = scr_dmode_get_text(""keyitem_list"");
             dbutton_options = [scr_dmode_get_text(""ui_chapter"")];
@@ -4455,202 +4671,209 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             var _data = dkeyitem_index_data(ditem_chap);
             var my_start = _data.start_id;
             var my_count = _data.count;
+            
             for (var i = my_start; i < (my_start + my_count); i++)
             {
                 scr_keyiteminfo(i);
                 var cleaned_desc = string_replace_all(tempkeyitemdesc, ""#"", "" "");
                 var combined = tempkeyitemname;
+                
                 if (string_length(combined) > max_len)
-                {
                     combined = string_copy(combined, 1, max_len - 3) + ""..."";
-                }
+                
                 array_push(dbutton_options, combined);
                 array_push(dbutton_indices, i);
             }
+            
             dmenu_box = 2;
             dbutton_layout = 1;
             break;
+        
         case ""givertab"":
             dmenu_title = scr_dmode_get_text(""add_how_many"");
             dgiver_amount = 1;
             dmenu_box = 0;
             dbutton_layout = 2;
             break;
+        
         case ""recruits"":
             dmenu_title = scr_dmode_get_text(""recruit_list"");
             dbutton_options = [scr_dmode_get_text(""btn_presets"")];
             dbutton_indices = [scr_dmode_get_text(""btn_presets"")];
             var max_len = 40;
+            
             if (dhorizontal_page != 0)
             {
                 dbutton_options[0] = "" "" + dbutton_options[0];
                 dbutton_indices[0] = "" "" + dbutton_indices[0];
             }
+            
             if (dhorizontal_page != 0)
             {
                 var test_lst = scr_get_chapter_recruit_data(dhorizontal_page);
+                
                 for (var i = 0; i < array_length(test_lst); i++)
                 {
                     var enemy_id = test_lst[i];
                     scr_recruit_info(enemy_id);
                     var combined = _name + "" - ["" + string(max(floor(global.flag[enemy_id + 600] * _recruitcount), -1)) + ""/"" + string(_recruitcount) + ""]"";
+                    
                     if (string_length(combined) > max_len)
-                    {
                         combined = string_copy(combined, 1, max_len - 3) + ""..."";
-                    }
+                    
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, enemy_id);
                 }
             }
+            
             if (dhorizontal_page != 0)
-            {
                 dmenu_box = 1;
-            }
             else
-            {
                 dmenu_box = 0;
-            }
+            
             dbutton_layout = 1;
             break;
+        
         case ""recruit_presets"":
             dmenu_title = scr_dmode_get_text(""recruit_presets"");
             dbutton_options = [scr_dmode_get_text(""btn_recruit_all""), scr_dmode_get_text(""btn_lose_all"")];
+            
             if (dhorizontal_page)
             {
                 dmenu_title += ("" ("" + scr_dmode_get_text(""ui_chap_short"") + "" "" + string(dhorizontal_page) + "")"");
                 dbutton_options[0] += "" "" + scr_dmode_get_text(""ui_of_chapter"") + "" "" + string(dhorizontal_page);
                 dbutton_options[1] += "" "" + scr_dmode_get_text(""ui_of_chapter"") + "" "" + string(dhorizontal_page);
             }
+            
             dmenu_box = 0;
             dbutton_layout = 1;
             break;
+        
         case ""flag_categories"":
             dmenu_title = scr_dmode_get_text(""misc"");
             dbutton_options = [];
             dbutton_indices = [-1];
             categories_len = array_length(dother_categories);
             var max_len = 40;
+            
             if (!global.dreading_custom_flag)
-            {
                 array_push(dbutton_options, scr_dmode_get_text(""ui_custom""));
-            }
             else
-            {
                 array_push(dbutton_options, ""global.flag["" + dcustom_flag_text[0] + ""] = |"" + dcustom_flag_text[1] + ""|"");
-            }
+            
             for (var i = 0; i < categories_len; i++)
             {
                 if (dflag_categories_len[i] == 0)
-                {
                     continue;
-                }
+                
                 array_push(dbutton_options, dother_categories[i]);
                 array_push(dbutton_indices, i);
             }
+            
             dmenu_box = 1;
             dbutton_layout = 1;
             break;
+        
         case ""flag_misc"":
             dmenu_title = scr_dmode_get_text(""misc"");
             dbutton_options = [];
             dbutton_indices = [];
             other_len = array_length(dother_options);
             var max_len = 40;
+            
             for (var i = 0; i < other_len; i++)
             {
                 cur_option = dother_options[i];
                 flag_number = global.flag[cur_option[2]];
                 var combined = cur_option[1] + "" - "" + scr_dmode_get_text(""ui_problem"");
+                
                 if (i == dvertical_index)
-                {
                     option_index = dhorizontal_index;
-                }
                 else
-                {
                     option_index = find_subarray_index(cur_option[2], cur_option[3]);
-                }
+                
                 combined = cur_option[1] + "" -  "" + cur_option[3][option_index][0];
+                
                 if (string_length(combined) > max_len)
-                {
                     combined = string_copy(combined, 1, max_len - 3) + ""..."";
-                }
+                
                 array_push(dbutton_options, combined);
                 array_push(dbutton_indices, i);
             }
+            
             dmenu_box = 2;
             dbutton_layout = 1;
             break;
+        
         case ""globals_changer"":
             dmenu_title = ""Global changer"";
             dbutton_options = [];
             dmenu_box = 1;
             dbutton_layout = 1;
             reading_double_flag = dvertical_index == 0 && global.dreading_custom_flag;
+            
             for (var i = 0; i < array_length(dglobal_changer_options); i++)
             {
                 array_push(dbutton_indices, i);
                 name = dglobal_changer_options[i][0];
                 limit = dglobal_changer_options[i][2];
+                
                 if (i == 0 && reading_double_flag)
                 {
                     name = dcustom_flag_text[0];
                     is_good = parse_var_str(name, 0);
+                    
                     if (is_good)
                     {
                         name = dtemp_text;
                         limit = dtemp_num;
                     }
                 }
+                
                 text = name;
+                
                 if (i == 0 && reading_double_flag)
-                {
                     text = ""global."" + name;
-                }
+                
                 cur_global_value = """";
                 var_exist = variable_global_exists(name);
+                
                 if (var_exist)
-                {
                     cur_global_value = variable_global_get(name);
-                }
+                
                 if (limit != -1)
                 {
                     lookup_index = 0;
+                    
                     if (i == dvertical_index && i == 0)
-                    {
                         lookup_index = limit;
-                    }
                     else if (i == dvertical_index)
-                    {
                         lookup_index = dhorizontal_index;
-                    }
+                    
                     text += (""["" + string(lookup_index) + ""]"");
+                    
                     if (typeof(cur_global_value) != ""array"")
-                    {
                         cur_global_value = ""(Not an array)"";
-                    }
                     else if (lookup_index >= array_length(cur_global_value))
-                    {
                         cur_global_value = ""(Index too high)"";
-                    }
                     else
-                    {
                         cur_global_value = cur_global_value[lookup_index];
-                    }
                 }
+                
                 if (global.dreading_custom_flag && i == dvertical_index)
                 {
                     if (i != 0 || dcustom_flag_text[1] != """" || !var_exist)
-                    {
                         cur_global_value = dcustom_flag_text[reading_double_flag];
-                    }
                 }
+                
                 if (!(i == 0 && dvertical_index == 0 && !global.dreading_custom_flag))
-                {
                     text += ("" = |"" + string(cur_global_value) + ""|"");
-                }
+                
                 array_push(dbutton_options, text);
             }
+            
             break;
+        
         default:
             dmenu_box = 0;
             dbutton_layout = 0;
@@ -4661,18 +4884,17 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
 function dmenu_state_interact()
 {
     selected_name = """";
+    
     if (dbutton_layout != 0)
-    {
         selected_name = string(dbutton_options[dvertical_index]);
-    }
     else
-    {
         selected_name = string(dbutton_options_2d[dvertical_index][dhorizontal_index]);
-    }
+    
     switch (dmenu_state)
     {
         case ""debug"":
             dvertical_index = 0;
+            
             if (selected_name == scr_dmode_get_text(""warps""))
             {
                 dmenu_state = ""warp"";
@@ -4698,10 +4920,50 @@ function dmenu_state_interact()
             {
                 dmenu_state = ""globals_changer"";
             }
+            else if (selected_name == ""Test"")
+            {
+                dmenu_state = ""test"";
+            }
+            
             break;
-        case ""debug_save"":
+        
+        case ""test"":
             if (dvertical_index == 0)
             {
+                dmenu_state = ""new_debug_save"";
+                break;
+            }
+            
+            if (dvertical_index == 1)
+            {
+                dremove_false_history();
+                dmenu_skip_reindexing = true;
+                global.dreading_custom_flag = 1;
+                keyboard_string = """";
+                dkeyboard_input = """";
+                dmenu_state_update();
+                break;
+            }
+            
+            if (dmenu_interact_submenus(selected_name))
+                break;
+            
+            if (selected_name == ""- At Noelle's"")
+                scr_debug_print(""Triggered Noelle's Route!"");
+            else if (selected_name == ""- Jackenstein fight"")
+                scr_debug_print(""Triggered Jackenstein!"");
+            else if (selected_name == ""- Proceed scene"")
+                scr_debug_print(""Triggered Proceed scene!"");
+            else if (selected_name == ""- Titan's fight"")
+                scr_debug_print(""Triggered Titan's fight!"");
+            
+            break;
+        
+        case ""new_debug_save"":
+            if (dvertical_index == 0)
+            {
+                dremove_false_history();
+                dmenu_skip_reindexing = true;
                 global.dreading_custom_flag = 1;
                 keyboard_string = """";
                 dkeyboard_input = """";
@@ -4710,13 +4972,10 @@ function dmenu_state_interact()
             else if (dvertical_index == 1 && dhorizontal_index == 0)
             {
                 if (dkeyboard_input != """")
-                {
                     global.debug_save_name = dkeyboard_input;
-                }
                 else
-                {
                     global.debug_save_name = ""Untitled"";
-                }
+                
                 dkeyboard_input = """";
                 scr_debug_print(""Save created: "" + string(global.debug_save_name));
                 global.debug_saving = 1;
@@ -4726,7 +4985,7 @@ function dmenu_state_interact()
                 dbutton_layout = 0;
                 dbutton_options = dbutton_options_original;
                 dmenu_state_history = [];
-                dbutton_selected_history = [];
+                dmenu_vertical_index_history = [];
                 dvertical_index = 0;
                 dmenu_active = false;
                 global.interact = 0;
@@ -4739,15 +4998,19 @@ function dmenu_state_interact()
                 dbutton_layout = 0;
                 dbutton_options = dbutton_options_original;
                 dmenu_state_history = [];
-                dbutton_selected_history = [];
+                dmenu_vertical_index_history = [];
                 dvertical_index = 0;
                 dmenu_active = false;
                 global.interact = 0;
             }
+            
             break;
+        
         case ""debug_load"":
             if (dvertical_index == 0)
             {
+                dremove_false_history();
+                dmenu_skip_reindexing = true;
                 global.dreading_custom_flag = 1;
                 keyboard_string = """";
                 dkeyboard_input = """";
@@ -4756,19 +5019,23 @@ function dmenu_state_interact()
             else
             {
                 dload_options.target_save = -1;
+                
                 if (dvertical_index != 0)
-                {
                     dload_options.target_save = dbutton_indices[dvertical_index];
-                }
+                
                 dload_options.target_with_cur_inv = global.dload_cur_inv;
                 dmenu_state = ""debug_load_options"";
                 dvertical_index = 1;
                 dkeyboard_input = """";
             }
+            
             break;
+        
         case ""debug_load_options"":
             if (dvertical_index == 0)
             {
+                dremove_false_history();
+                dmenu_skip_reindexing = true;
                 dload_options.target_with_cur_inv ^= 1;
             }
             else if (dvertical_index == 1)
@@ -4778,7 +5045,7 @@ function dmenu_state_interact()
                 dmenu_state = ""debug"";
                 dbutton_options = dbutton_options_original;
                 dmenu_state_history = [];
-                dbutton_selected_history = [];
+                dmenu_vertical_index_history = [];
                 dvertical_index = 0;
                 dbutton_layout = 0;
                 dmenu_active = false;
@@ -4787,10 +5054,14 @@ function dmenu_state_interact()
                 global.interact = 0;
                 scr_debug_load(chosen_save_id);
             }
+            
             break;
+        
         case ""warp"":
             if (dvertical_index == 1)
             {
+                dremove_false_history();
+                dmenu_skip_reindexing = true;
                 global.dreading_custom_flag = 1;
                 keyboard_string = """";
                 dkeyboard_input = """";
@@ -4799,10 +5070,10 @@ function dmenu_state_interact()
             else
             {
                 drooms_options.target_room = -1;
+                
                 if (dvertical_index != 0)
-                {
                     drooms_options.target_room = dbutton_indices[dvertical_index];
-                }
+                
                 drooms_options.target_plot = global.plot;
                 drooms_options.target_is_darkzone = global.darkzone;
                 drooms_options.target_member_2 = global.char[1];
@@ -4810,7 +5081,9 @@ function dmenu_state_interact()
                 dmenu_state = ""warp_options"";
                 dkeyboard_input = """";
             }
+            
             break;
+        
         case ""warp_options"":
             if (dvertical_index == 0)
             {
@@ -4819,20 +5092,28 @@ function dmenu_state_interact()
             }
             else if (dvertical_index == 1)
             {
+                dremove_false_history();
+                dmenu_skip_reindexing = true;
                 drooms_options.target_is_darkzone ^= 1;
             }
-            else if (dvertical_index == 2)
+            else if (dvertical_index >= 2 && dvertical_index <= 4)
             {
-                global.dreading_custom_flag = 1;
-                keyboard_string = """";
+                dremove_false_history();
+                dmenu_skip_reindexing = true;
+                
+                if (dvertical_index == 2)
+                {
+                    global.dreading_custom_flag = 1;
+                    keyboard_string = """";
+                }
             }
             else if (dvertical_index == 5)
             {
                 new_room = drooms_options.target_room;
+                
                 if (new_room == -1)
-                {
                     new_room = room;
-                }
+                
                 global.plot = drooms_options.target_plot;
                 global.darkzone = drooms_options.target_is_darkzone;
                 global.char[1] = drooms_options.target_member_2;
@@ -4841,39 +5122,37 @@ function dmenu_state_interact()
                 dmenu_active = false;
                 room_goto(new_room);
             }
+            
             break;
+        
         case ""give"":
-            if (dvertical_index == 0)
-            {
+            if (dhorizontal_index == 0)
                 dmenu_state = ""objects"";
-            }
-            else if (dvertical_index == 1)
-            {
+            else if (dhorizontal_index == 1)
                 dmenu_state = ""armors"";
-            }
-            else if (dvertical_index == 2)
-            {
+            else if (dhorizontal_index == 2)
                 dmenu_state = ""weapons"";
-            }
-            else if (dvertical_index == 3)
-            {
+            else if (dhorizontal_index == 3)
                 dmenu_state = ""keyitems"";
-            }
+            
             dhorizontal_page = !global.darkzone;
-            if (dvertical_index == 3)
-            {
+            
+            if (dhorizontal_index == 3)
                 dhorizontal_page = 0;
-            }
+            
             dvertical_index = 0;
+            dhorizontal_index = 0;
             break;
+        
         case ""objects"":
             if (dhorizontal_page == 0 && dvertical_index == 0)
             {
+                dremove_false_history();
+                dmenu_skip_reindexing = true;
                 ditem_chap += 1;
+                
                 if (ditem_chap > global.chapter)
-                {
                     ditem_chap = 1;
-                }
             }
             else
             {
@@ -4883,20 +5162,26 @@ function dmenu_state_interact()
                 dmenu_state = ""givertab"";
                 dvertical_index = 0;
             }
+            
             break;
+        
         case ""armors"":
             if (dhorizontal_page == 1)
             {
+                dremove_false_history();
+                dmenu_skip_reindexing = true;
                 global.larmor = dlight_armors[dvertical_index][0];
                 break;
             }
+            
             if (dhorizontal_page == 0 && dvertical_index == 0)
             {
+                dremove_false_history();
+                dmenu_skip_reindexing = true;
                 ditem_chap += 1;
+                
                 if (ditem_chap > global.chapter)
-                {
                     ditem_chap = 1;
-                }
             }
             else
             {
@@ -4905,20 +5190,26 @@ function dmenu_state_interact()
                 dmenu_state = ""givertab"";
                 dvertical_index = 0;
             }
+            
             break;
+        
         case ""weapons"":
             if (dhorizontal_page == 1)
             {
+                dremove_false_history();
+                dmenu_skip_reindexing = true;
                 global.lweapon = dlight_weapons[dvertical_index][0];
                 break;
             }
+            
             if (dhorizontal_page == 0 && dvertical_index == 0)
             {
+                dremove_false_history();
+                dmenu_skip_reindexing = true;
                 ditem_chap += 1;
+                
                 if (ditem_chap > global.chapter)
-                {
                     ditem_chap = 1;
-                }
             }
             else
             {
@@ -4927,15 +5218,18 @@ function dmenu_state_interact()
                 dmenu_state = ""givertab"";
                 dvertical_index = 0;
             }
+            
             break;
+        
         case ""keyitems"":
             if (dvertical_index == 0)
             {
+                dremove_false_history();
+                dmenu_skip_reindexing = true;
                 ditem_chap += 1;
+                
                 if (ditem_chap > global.chapter)
-                {
                     ditem_chap = 1;
-                }
             }
             else
             {
@@ -4944,28 +5238,30 @@ function dmenu_state_interact()
                 dmenu_state = ""givertab"";
                 dvertical_index = 0;
             }
+            
             break;
+        
         case ""givertab"":
+            dremove_false_history();
+            
             if (dgiver_amount == 0)
             {
                 scr_debug_print(scr_dmode_get_text(""msg_cancelled""));
                 break;
             }
+            
             if (dgiver_menu_state == ""objects"")
             {
                 real_index = dbutton_indices[dgiver_button_selected - 1];
+                
                 for (var i = 0; i < abs(dgiver_amount); i++)
                 {
                     if (dgiver_amount < 0)
                     {
                         if (dhorizontal_page == 0)
-                        {
                             scr_itemremove(real_index);
-                        }
                         else
-                        {
                             scr_litemremove(real_index);
-                        }
                     }
                     else if (dhorizontal_page == 0)
                     {
@@ -4976,145 +5272,167 @@ function dmenu_state_interact()
                         scr_litemget(real_index);
                     }
                 }
+                
                 if (dgiver_amount < 0)
-                {
                     scr_debug_print(string(abs(dgiver_amount)) + "" "" + dgiver_bname + scr_dmode_get_text(""msg_removed_inv""));
-                }
                 else
-                {
                     scr_debug_print(string(dgiver_amount) + "" "" + dgiver_bname + scr_dmode_get_text(""msg_added_inv""));
-                }
             }
+            
             if (dgiver_menu_state == ""armors"")
             {
                 if (dgiver_amount > 0)
                 {
                     real_index = dbutton_indices[dgiver_button_selected - 1];
+                    
                     for (var i = 0; i < dgiver_amount; i++)
-                    {
                         scr_armorget(real_index);
-                    }
+                    
                     scr_debug_print(string(dgiver_amount) + "" "" + dgiver_bname + scr_dmode_get_text(""msg_added_inv""));
                 }
                 else if (dgiver_amount < 0)
                 {
                     real_index = dbutton_indices[dgiver_button_selected - 1];
+                    
                     for (var i = 0; i < abs(dgiver_amount); i++)
-                    {
                         scr_armorremove(real_index);
-                    }
+                    
                     scr_debug_print(string(abs(dgiver_amount)) + "" "" + dgiver_bname + scr_dmode_get_text(""msg_removed_inv""));
                 }
             }
+            
             if (dgiver_menu_state == ""weapons"")
             {
                 if (dgiver_amount > 0)
                 {
                     real_index = dbutton_indices[dgiver_button_selected - 1];
+                    
                     for (var i = 0; i < dgiver_amount; i++)
-                    {
                         scr_weaponget(real_index);
-                    }
+                    
                     scr_debug_print(string(dgiver_amount) + "" "" + dgiver_bname + scr_dmode_get_text(""msg_added_inv""));
                 }
                 else if (dgiver_amount < 0)
                 {
                     real_index = dbutton_indices[dgiver_button_selected - 1];
+                    
                     for (var i = 0; i < abs(dgiver_amount); i++)
-                    {
                         scr_weaponremove(real_index);
-                    }
+                    
                     scr_debug_print(string(abs(dgiver_amount)) + "" "" + dgiver_bname + scr_dmode_get_text(""msg_removed_inv""));
                 }
             }
+            
             if (dgiver_menu_state == ""keyitems"")
             {
                 if (dgiver_amount > 0)
                 {
                     real_index = dbutton_indices[dgiver_button_selected - 1];
+                    
                     for (var i = 0; i < dgiver_amount; i++)
-                    {
                         scr_keyitemget(real_index);
-                    }
+                    
                     scr_debug_print(string(dgiver_amount) + "" "" + dgiver_bname + scr_dmode_get_text(""msg_added_inv""));
                 }
                 else if (dgiver_amount < 0)
                 {
                     real_index = dbutton_indices[dgiver_button_selected - 1];
+                    
                     for (var i = 0; i < abs(dgiver_amount); i++)
-                    {
                         scr_keyitemremove(real_index);
-                    }
+                    
                     scr_debug_print(string(abs(dgiver_amount)) + "" "" + dgiver_bname + scr_dmode_get_text(""msg_removed_inv""));
                 }
             }
+            
             dpop_history();
             dmenu_active = false;
             global.interact = 0;
             break;
+        
         case ""flag_categories"":
             if (dvertical_index > 0)
             {
                 dother_options = [];
                 real_index = dbutton_indices[dvertical_index];
+                
                 for (var i = 0; i < array_length(dother_all_options); i++)
                 {
                     options = dother_all_options[i];
+                    
                     if (options[0] == real_index)
-                    {
                         array_push(dother_options, options);
-                    }
                 }
+                
                 dhorizontal_index = find_subarray_index(dother_options[0][2], dother_options[0][3]);
                 dmenu_state = ""flag_misc"";
                 dvertical_index = 0;
             }
-            break;
-        case ""flag_misc"":
-            break;
-        case ""recruits"":
-            if (dvertical_index == 0)
+            else
             {
-                dmenu_state = ""recruit_presets"";
+                dremove_false_history();
+                dmenu_skip_reindexing = true;
+                global.dreading_custom_flag = 1;
+                dhorizontal_index = 0;
+                keyboard_string = """";
             }
+            
             break;
+        
+        case ""flag_misc"":
+            dremove_false_history();
+            dmenu_skip_reindexing = true;
+            break;
+        
+        case ""recruits"":
+            dremove_false_history();
+            
+            if (dvertical_index != 0)
+                dmenu_skip_reindexing = true;
+            
+            if (dvertical_index == 0)
+                dmenu_state = ""recruit_presets"";
+            
+            break;
+        
         case ""recruit_presets"":
+            dremove_false_history();
+            dmenu_skip_reindexing = true;
+            
             for (var c = 1; c <= global.chapter; c++)
             {
                 if (dhorizontal_page != 0)
-                {
                     c = dhorizontal_page;
-                }
+                
                 var test_lst = scr_get_chapter_recruit_data(c);
+                
                 for (var i = 0; i < array_length(test_lst); i++)
                 {
                     var enemy_id = test_lst[i];
                     scr_recruit_info(enemy_id);
+                    
                     if (dvertical_index == 0)
-                    {
                         global.flag[enemy_id + 600] = 1;
-                    }
                     else
-                    {
                         global.flag[enemy_id + 600] = -1;
-                    }
                 }
+                
                 if (dhorizontal_page != 0)
-                {
                     break;
-                }
             }
+            
             if (dvertical_index == 0)
-            {
                 snd_play(snd_pirouette);
-            }
             else
-            {
                 snd_play(snd_weirdeffect);
-            }
+            
             dpop_history();
             break;
+        
         case ""globals_changer"":
+            dremove_false_history();
+            dmenu_skip_reindexing = true;
+            
             if (global.dreading_custom_flag)
             {
                 var value = 0;
@@ -5122,6 +5440,7 @@ function dmenu_state_interact()
                 reading_double_flag = dvertical_index == 0;
                 glob_name = cur_global_array[0];
                 glob_index = -1;
+                
                 if (reading_double_flag)
                 {
                     parse_var_str(dcustom_flag_text[0], 1);
@@ -5132,26 +5451,32 @@ function dmenu_state_interact()
                 {
                     glob_index = dhorizontal_index;
                 }
+                
                 scr_debug_print(string(cur_global_array));
+                
                 switch (cur_global_array[1])
                 {
                     case ""string"":
                         value = string(dcustom_flag_text[reading_double_flag]);
                         break;
+                    
                     case ""int"":
                     case ""uint"":
                     case ""real"":
                         value = real(dcustom_flag_text[reading_double_flag]);
                         break;
+                    
                     default:
                         scr_debug_print(""Unrecognized type |"" + string(cur_global_array[1]) + ""|"");
                 }
+                
                 if (glob_index != -1)
                 {
                     base = variable_global_get(glob_name);
                     base[glob_index] = value;
                     value = base;
                 }
+                
                 variable_global_set(glob_name, value);
                 scr_debug_print(""Changed global."" + string(glob_name) + "" to |"" + string(value) + ""|"");
             }
@@ -5159,20 +5484,22 @@ function dmenu_state_interact()
             {
                 dhorizontal_index = 0;
             }
+            
             set_keyboard_reader(global.dreading_custom_flag ^ 1);
             break;
+        
         default:
             snd_play(snd_error);
             scr_debug_print(scr_dmode_get_text(""msg_invalid""));
     }
-}
-");
+}");
 
 
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Draw, (uint)0, Data),
 @"xx = __view_get(e__VW.XView, 0);
 yy = __view_get(e__VW.YView, 0);
 d = global.darkzone + 1;
+
 if (dmenu_box == 0)
 {
     menu_width = 214;
@@ -5180,6 +5507,7 @@ if (dmenu_box == 0)
     xcenter = 160;
     ycenter = 105;
 }
+
 if (dmenu_box == 1)
 {
     menu_width = 214;
@@ -5187,6 +5515,7 @@ if (dmenu_box == 1)
     xcenter = 160;
     ycenter = 135;
 }
+
 if (dmenu_box == 2)
 {
     menu_width = 256;
@@ -5194,7 +5523,9 @@ if (dmenu_box == 2)
     xcenter = 160;
     ycenter = 135;
 }
+
 var x_start = 0;
+
 if (dbutton_layout == 0)
 {
     x_padding = 7 * d;
@@ -5203,6 +5534,7 @@ if (dbutton_layout == 0)
     y_spacing = 10 * d;
     x_start = ((xcenter - (menu_width / 2)) * d) + x_padding;
 }
+
 if (dbutton_layout == 1)
 {
     x_padding = 7 * d;
@@ -5211,12 +5543,14 @@ if (dbutton_layout == 1)
     y_spacing = 20 * d;
     x_start = ((xcenter - (menu_width / 2)) * d) + x_padding;
 }
+
 if (dbutton_layout == 2)
 {
     x_padding = 7 * d;
     y_start = 95 * d;
     x_start = ((xcenter - (menu_width / 2)) * d) + x_padding;
 }
+
 if (dbutton_layout == 3)
 {
     x_padding = 7 * d;
@@ -5225,23 +5559,24 @@ if (dbutton_layout == 3)
     y_spacing = 10 * d;
     x_start = ((xcenter - (menu_width / 2)) * d) + x_padding;
 }
+
 var button_count = array_length(dbutton_options);
+
 if (dmenu_active)
 {
     draw_set_color(c_white);
     draw_rectangle(((xcenter - (menu_width / 2) - 3) * d) + xx, ((ycenter - (menu_length / 2) - 3) * d) + yy, ((xcenter + (menu_width / 2) + 3) * d) + xx, ((ycenter + (menu_length / 2) + 3) * d) + yy, false);
     draw_set_color(c_black);
     draw_rectangle(((xcenter - (menu_width / 2)) * d) + xx, ((ycenter - (menu_length / 2)) * d) + yy, ((xcenter + (menu_width / 2)) * d) + xx, ((ycenter + (menu_length / 2)) * d) + yy, false);
+    
     if (global.darkzone == 1)
-    {
         draw_set_font(fnt_mainbig);
-    }
     else
-    {
         draw_set_font(fnt_main);
-    }
+    
     draw_set_color(c_white);
     draw_text(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, string(dmenu_title));
+    
     if (dmenu_state == ""debug"" && global.darkzone == 1)
     {
         draw_set_halign(fa_right);
@@ -5254,6 +5589,7 @@ if (dmenu_active)
         draw_set_font(fnt_mainbig);
         draw_set_halign(fa_left);
     }
+    
     if (global.dreading_custom_flag)
     {
         draw_set_halign(fa_right);
@@ -5265,6 +5601,7 @@ if (dmenu_active)
         draw_text(draw_x, draw_y, string(scr_dmode_get_text(""ui_esc_cancel"")));
         draw_set_halign(fa_left);
     }
+    
     if (global.dreading_custom_flag)
     {
         if (dmenu_state == ""flag_categories"")
@@ -5284,14 +5621,11 @@ if (dmenu_active)
             draw_set_color(c_yellow);
             var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
             var draw_w_value = (w_value == 0) ? (mono_spacing / 4) : w_value;
+            
             if (dhorizontal_index == 0)
-            {
                 draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
-            }
             else if (dhorizontal_index == 1)
-            {
                 draw_rectangle((x2_start + visual_offset) - cursor_padding - 2, base_y, (x2_start + draw_w_value + visual_offset + cursor_padding) - 2, base_y + thickness, false);
-            }
         }
         else if (dmenu_state == ""warp"")
         {
@@ -5307,10 +5641,9 @@ if (dmenu_active)
             var x2_start = x1_start + w_name;
             draw_set_color(c_yellow);
             var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
+            
             if (dhorizontal_index == 0)
-            {
                 draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
-            }
         }
         else if (dmenu_state == ""warp_options"")
         {
@@ -5326,12 +5659,11 @@ if (dmenu_active)
             var x2_start = x1_start + w_name;
             draw_set_color(c_yellow);
             var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
+            
             if (dhorizontal_index == 0)
-            {
                 draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
-            }
         }
-        else if (dmenu_state == ""debug_save"")
+        else if (dmenu_state == ""new_debug_save"")
         {
             var base_x = x_start + x_padding + xx;
             var base_y = y_start + (17 * d) + yy;
@@ -5361,12 +5693,15 @@ if (dmenu_active)
             draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
         }
     }
+    
     if (dbutton_layout == 0)
     {
         var draw_y = (100 * d) + yy;
+        
         for (var j = 0; j < array_length(dbutton_options_2d); j++)
         {
             var draw_x = x_start + xx;
+            
             for (var i = 0; i < array_length(dbutton_options_2d[j]); i++)
             {
                 var cur_btn = string(dbutton_options_2d[j][i]);
@@ -5375,20 +5710,25 @@ if (dmenu_active)
                 draw_text(draw_x, draw_y, cur_btn);
                 draw_x += (text_width + x_spacing);
             }
+            
             draw_y += 30;
         }
     }
+    
     side_arrows_mult = (global.darkzone == 1) ? [23, 10] : [12, 5];
     var dmenu_arrow_yoffset, darrow_scale;
+    
     if (dbutton_layout == 1)
     {
         var dcan_scroll_up = dmenu_start_index > 0;
         var dcan_scroll_down = (dmenu_start_index + dbutton_max_visible) < array_length(dbutton_options);
         dmenu_arrow_yoffset = 2 * sin(dmenu_arrow_timer / 10);
         darrow_scale = d / 2;
+        
         for (var i = 0; i < dbutton_max_visible; i++)
         {
             var button_index = dmenu_start_index + i;
+            
             if (button_index < array_length(dbutton_options))
             {
                 is_cur_line = dvertical_index == button_index;
@@ -5397,6 +5737,7 @@ if (dmenu_active)
                 var cur_btn = string(dbutton_options[button_index]);
                 draw_monospace(x_start + xx, y_start + (i * y_spacing) + yy, cur_btn);
                 var mono_spacing = (global.darkzone == 1) ? 15 : 8;
+                
                 if ((is_cur_line && dmenu_state == ""flag_misc"") || (dmenu_state == ""warp_options"" && (button_index == 3 || button_index == 4)))
                 {
                     if ((dmenu_state == ""flag_misc"" && dhorizontal_index != 0) || (dmenu_state == ""warp_options"" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != 0))
@@ -5404,56 +5745,48 @@ if (dmenu_active)
                         for (dash_pos = 0; 1; dash_pos++)
                         {
                             if (dash_pos > 4 && string_char_at(cur_btn, dash_pos) == ((dmenu_state == ""flag_misc"") ? ""-"" : "":""))
-                            {
                                 break;
-                            }
                         }
+                        
                         dash_pos++;
                         draw_sprite_ext(spr_morearrow, 0, x_start + ((dash_pos * mono_spacing) + floor(mono_spacing / 2)) + dmenu_arrow_yoffset + xx, y_start + (i * y_spacing) + side_arrows_mult[0] + yy, darrow_scale, -darrow_scale, 90, c_white, 1);
                     }
+                    
                     if ((dmenu_state == ""flag_misc"" && dhorizontal_index < (array_length(dother_options[dvertical_index][3]) - 1)) || (dmenu_state == ""warp_options"" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != (4 - (global.chapter == 1))))
-                    {
                         draw_sprite_ext(spr_morearrow, 0, (x_start + xx + ((string_length(cur_btn) + 1) * mono_spacing)) - floor(mono_spacing / 2) - dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[1], darrow_scale, -darrow_scale, 270, c_white, 1);
-                    }
                 }
                 else if (dmenu_state == ""recruits"" && button_index == 0)
                 {
                     if (dhorizontal_page != 0)
-                    {
                         draw_sprite_ext(spr_morearrow, 0, x_start + floor(mono_spacing / 2) + dmenu_arrow_yoffset + xx, y_start + (i * y_spacing) + side_arrows_mult[0] + yy, darrow_scale, -darrow_scale, 90, c_white, 1);
-                    }
+                    
                     if (dhorizontal_page != global.chapter)
-                    {
                         draw_sprite_ext(spr_morearrow, 0, ((x_start + ((string_length(cur_btn) + 1) * mono_spacing)) - floor(mono_spacing / 2) - dmenu_arrow_yoffset) + xx, y_start + (i * y_spacing) + side_arrows_mult[1] + yy, darrow_scale, -darrow_scale, 270, c_white, 1);
-                    }
                 }
             }
         }
+        
         draw_set_color(c_white);
+        
         if (dcan_scroll_up)
-        {
             draw_sprite_ext(spr_morearrow, 0, x_start + xx, y_start + (dbutton_max_visible * (y_spacing * -0.03)) + dmenu_arrow_yoffset + yy, darrow_scale, -darrow_scale, 0, c_white, 1);
-        }
+        
         if (dcan_scroll_down)
-        {
             draw_sprite_ext(spr_morearrow, 0, x_start + xx, ((y_start + (dbutton_max_visible * y_spacing)) - dmenu_arrow_yoffset) + yy, darrow_scale, darrow_scale, 0, c_white, 1);
-        }
     }
+    
     if (dmenu_state == ""recruits"" || dmenu_state == ""weapons"" || dmenu_state == ""armors"" || dmenu_state == ""objects"")
     {
         draw_set_halign(fa_right);
         var draw_y = (((ycenter - (menu_length / 2)) + 8) * d) + yy;
         var draw_x = x_start + (200 * d) + xx;
+        
         if (dmenu_state == ""recruits"")
         {
             if (dhorizontal_page != 0)
-            {
                 draw_text(draw_x, draw_y, ""("" + string(scr_dmode_get_text(""ui_chap_short"")) + "" "" + string(dhorizontal_page) + "")"");
-            }
             else
-            {
                 draw_text(draw_x, draw_y, string(scr_dmode_get_text(""ui_chap_all"")));
-            }
         }
         else if (dhorizontal_page == 0)
         {
@@ -5465,8 +5798,10 @@ if (dmenu_active)
             draw_text(draw_x + 30 + (global.darkzone * 30), draw_y, string(scr_dmode_get_text(""ui_world_light"")));
             draw_sprite_ext(spr_morearrow, 0, draw_x + -55 + (global.darkzone * -55) + dmenu_arrow_yoffset, draw_y + side_arrows_mult[0], darrow_scale, -darrow_scale, 90, c_white, 1);
         }
+        
         draw_set_halign(fa_left);
     }
+    
     if (dbutton_layout == 2)
     {
         dmenu_arrow_yoffset = 2 * sin(dmenu_arrow_timer / 10);
@@ -5474,44 +5809,48 @@ if (dmenu_active)
         draw_text(((xcenter - (string_length(string(dgiver_amount)) * 4)) * d) + xx, (ycenter * d) + yy, string(dgiver_amount));
         draw_set_color(c_white);
         var itemreminder = """";
+        
         if (dgiver_menu_state == ""objects"")
         {
             itemreminder = ""["" + string(dgiver_bname) + ""]"";
+            
             if (dhorizontal_page == 0)
-            {
                 scr_itemcheck(0);
-            }
             else
-            {
                 scr_litemcheck(0);
-            }
+            
             max_items = (dhorizontal_page == 0) ? 12 : 8;
             draw_text(x_start + xx, ((ycenter + 25) * d) + yy, string(scr_dmode_get_text(""ui_inv_items"")) + string(max_items - itemcount) + "" / "" + string(max_items));
         }
+        
         if (dgiver_menu_state == ""armors"")
         {
             itemreminder = ""["" + string(dgiver_bname) + ""]"";
             scr_armorcheck_inventory(0);
             draw_text(x_start + xx, ((ycenter + 25) * d) + yy, string(scr_dmode_get_text(""ui_inv_armors"")) + string(48 - itemcount) + "" / 48"");
         }
+        
         if (dgiver_menu_state == ""weapons"")
         {
             itemreminder = ""["" + string(dgiver_bname) + ""]"";
             scr_weaponcheck_inventory(0);
             draw_text(x_start + xx, ((ycenter + 25) * d) + yy, string(scr_dmode_get_text(""ui_inv_weapons"")) + string(48 - itemcount) + "" / 48"");
         }
+        
         if (dgiver_menu_state == ""keyitems"")
         {
             itemreminder = ""["" + string(dgiver_bname) + ""]"";
             scr_keyitemcheck(0);
             draw_text(x_start + xx, ((ycenter + 25) * d) + yy, string(scr_dmode_get_text(""ui_inv_keyitems"")) + string(12 - itemcount) + "" / 12"");
         }
+        
         var text_width = string_width(itemreminder);
         draw_text(((xcenter * d) - (text_width / 2)) + xx, ((ycenter - 22) * d) + yy, itemreminder);
         darrow_scale = d / 2;
         draw_sprite_ext(spr_morearrow, 0, ((xcenter - 15) * d) + xx + dmenu_arrow_yoffset, ((ycenter + 6) * d) + yy, darrow_scale, darrow_scale, 270, c_white, 1);
         draw_sprite_ext(spr_morearrow, 0, (((xcenter + 15) * d) + xx) - dmenu_arrow_yoffset, ((ycenter + 12) * d) + yy, darrow_scale, darrow_scale, 90, c_white, 1);
     }
+    
     if (dbutton_layout == 3)
     {
         for (var i = 0; i < array_length(dbutton_options_2d[1]); i++)
@@ -5526,54 +5865,44 @@ if (dmenu_active)
         inputbox = function(arg0, arg1, arg2, arg3)
         {
             border = 1 * d;
+            
             if (dvertical_index == 0 && !global.dreading_custom_flag)
-            {
                 draw_set_color(c_yellow);
-            }
             else
-            {
                 draw_set_color(c_white);
-            }
+            
             for (var i = 0; i < border; i++)
-            {
                 draw_rectangle((arg0 - border) + i, (arg1 - border) + i, (arg2 + border) - i, (arg3 + border) - i, true);
-            }
         };
         
         inputbox(x_start + xx, y_start + yy, (((xcenter + (menu_width / 2)) * d) - x_padding) + xx, y_start + (19 * d) + yy);
         var cur_btn = string(dbutton_options_2d[0][0]);
+        
         if (dkeyboard_input != """")
-        {
             cur_btn = dkeyboard_input;
-        }
+        
         if (dvertical_index == 0 && global.dreading_custom_flag)
-        {
             color = c_yellow;
-        }
         else if (dkeyboard_input != """")
-        {
             color = c_white;
-        }
         else
-        {
             color = c_gray;
-        }
+        
         draw_set_color(color);
         draw_text(x_start + x_padding + xx, y_start + yy, cur_btn);
+        
         if (d == 2)
-        {
             heartsprite = spr_heart;
-        }
+        
         if (d == 1)
-        {
             heartsprite = spr_heartsmall;
-        }
+        
         if (dvertical_index != 0)
-        {
             draw_sprite_ext(heartsprite, 0, x_start + (108 * dhorizontal_index * d) + xx, (130 * d) + yy, 1, 1, 0, c_white, 1);
-        }
     }
+    
     dhinter_active = true;
+    
     if (dhinter_active && dhinter_text != """" && (scr_array_contains(ditem_types, dmenu_state) || dmenu_state == ""warp_options""))
     {
         draw_set_color(c_white);
@@ -5585,6 +5914,7 @@ if (dmenu_active)
         draw_text_ext(x_start_desc + xx, (10 * d) + yy, string(dhinter_text), 18 * d, (menu_width - (x_padding * 2)) * d);
     }
 }
+
 if (dkeys_helper == 1)
 {
     dkeys_data = [string(scr_dmode_get_text(""key_0"")), string(scr_dmode_get_text(""key_1"")), string(scr_dmode_get_text(""key_2"")), string(scr_dmode_get_text(""key_3"")), string(scr_dmode_get_text(""key_4"")), string(scr_dmode_get_text(""key_5"")), string(scr_dmode_get_text(""key_6"")), string(scr_dmode_get_text(""key_7"")), string(scr_dmode_get_text(""key_8"")), string(scr_dmode_get_text(""key_9"")), string(scr_dmode_get_text(""key_10"")), string(scr_dmode_get_text(""key_11"")), string(scr_dmode_get_text(""key_12"")), string(scr_dmode_get_text(""key_13"")), string(scr_dmode_get_text(""key_14""))];
@@ -5612,6 +5942,7 @@ if (dkeys_helper == 1)
     draw_set_halign(fa_left);
     draw_set_color(c_white);
     draw_text(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, string(scr_dmode_get_text(""ui_keys_title"")));
+    
     for (var i = 0; i < array_length(dkeys_data); i++)
     {
         draw_set_font(fnt_main);
@@ -5639,8 +5970,7 @@ enum e__VW
     HPort,
     Camera,
     SurfaceID
-}
-");
+}");
 
 
 UndertaleScript scr_debug = Data.Scripts.ByName("scr_debug");
@@ -5758,7 +6088,12 @@ importGroup.QueueAppend(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint
     {
         obj_dmenu_system.dmenu_popup_launch = 1;
         obj_dmenu_system.dmenu_state = ""debug_load"";
-        obj_dmenu_system.dbutton_selected = 1;
+        obj_dmenu_system.dmenu_vertical_index = 0;
+        obj_dmenu_system.dmenu_horizontal_index = 0;
+        obj_dmenu_system.dmenu_state_history = [];
+        obj_dmenu_system.dmenu_horizontal_index_history = [];
+        obj_dmenu_system.dmenu_vertical_index_history = [];
+        obj_dmenu_system.dmenu_page_index_history = [];
         obj_dmenu_system.dmenu_active = true;
         snd_play(snd_egg);
     }
@@ -5797,7 +6132,12 @@ importGroup.QueueAppend("gml_Object_obj_overworldc_Step_0",
     {
         obj_dmenu_system.dmenu_popup_launch = 1;
         obj_dmenu_system.dmenu_state = ""debug_load"";
-        obj_dmenu_system.dbutton_selected = 1;
+        obj_dmenu_system.dmenu_vertical_index = 0;
+        obj_dmenu_system.dmenu_horizontal_index = 0;
+        obj_dmenu_system.dmenu_state_history = [];
+        obj_dmenu_system.dmenu_horizontal_index_history = [];
+        obj_dmenu_system.dmenu_vertical_index_history = [];
+        obj_dmenu_system.dmenu_page_index_history = [];
         obj_dmenu_system.dmenu_active = true;
         snd_play(snd_egg);
 }
