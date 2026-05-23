@@ -2235,37 +2235,30 @@ importGroup.QueueAppend("gml_Object_obj_savemenu_Step_0",
 
 importGroup.QueueRegexFindReplace("gml_Object_obj_savemenu_Draw_0",
 @"returntxt = stringsetloc\([^,]*, ""obj_savemenu_slash_Draw_0_gml_48_0""\);\s+var bo = 0;",
-@"    returntxt = stringsetloc(global.debug ? ""Create Debug Save"" : ""Return"", ""obj_savemenu_slash_Draw_0_gml_48_0"");
-    var bo = 0;");
+@"returntxt = stringsetloc(global.debug ? ""Create Debug Save"" : ""Return"", ""obj_savemenu_slash_Draw_0_gml_48_0"");
+var bo = 0;");
 
 
 importGroup.QueueRegexFindReplace("gml_Object_obj_savemenu_Draw_0",
-@"if\s*\(\s*button1_p\(\)\s*&&\s*buffer\s*<\s*0\s*\)\s*\{[\s\S]*?if\s*\(\s*mpos\s*==\s*3\s*\)\s*\{[\s\S]*?\}\s*else\s*if\s*\(\s*level_file\[mpos\]\s*!=\s*0\s*&&\s*mpos\s*!=\s*global\.filechoice\s*\)\s*\{[\s\S]*?\}\s*else",
+@"if\s*\(\s*button1_p\(\)\s*&&\s*buffer\s*<\s*0\s*\)\s*\{[\s\S]*?if\s*\(\s*mpos\s*==\s*3\s*\)\s*\{[\s\S]*?\}",
 @"if (button1_p() && buffer < 0)
+{
+    if (mpos == 3)
+    {
+        if (global.debug)
         {
-            if (mpos == 3)
-            {
-                if (global.debug)
-                {
-                    menuno = 98;
-                    buffer = 3;
-                    snd_play(snd_egg);
-                }
-                else
-                {
-                    menuno = 0;
-                    buffer = 3;
-                    mpos = global.filechoice;
-                    snd_play(snd_select);
-                }
-            }
-            else if (level_file[mpos] != 0 && mpos != global.filechoice)
-            {
-                overwrite = 0.5;
-                buffer = 3;
-                overcoord = 0;
-            }
-            else");
+            menuno = 98;
+            buffer = 3;
+            snd_play(snd_egg);
+        }
+        else
+        {
+            menuno = 0;
+            buffer = 3;
+            mpos = global.filechoice;
+            snd_play(snd_select);
+        }
+    }");
 
 
 UndertaleScript scr_saveprocess = Data.Scripts.ByName("scr_saveprocess");
@@ -2283,7 +2276,9 @@ importGroup.QueueReplace("gml_GlobalScript_scr_get_debug_save_list",
 {
     var save_array = [];
     var path = ""debug_save/debug.ini"";
+    debug_save_sections = [];
     debug_save_names = [];
+    debug_save_categories = [];
     
     if (!ossafe_file_exists(path))
         return save_array;
@@ -2308,11 +2303,43 @@ importGroup.QueueReplace("gml_GlobalScript_scr_get_debug_save_list",
     for (var i = 0; i < array_length(save_array); i++)
     {
         var save_name_val = ini_read_string(save_array[i], ""SaveName"", ""Unknown"");
+        var cat_val = ini_read_string(save_array[i], ""Category"", """");
         array_push(debug_save_names, save_name_val);
+        array_push(debug_save_categories, cat_val);
     }
     
+    debug_save_sections = save_array;
     ossafe_ini_close();
     return save_array;
+}");
+
+
+UndertaleScript scr_debug_modify_save_info = Data.Scripts.ByName("scr_debug_modify_save_info");
+importGroup.QueueReplace("gml_GlobalScript_scr_debug_modify_save_info",
+@"function scr_debug_modify_save_info(arg0, arg1, arg2)
+{
+    var path = ""debug_save/debug.ini"";
+    
+    if (!ossafe_file_exists(path))
+    {
+        scr_debug_print(""Error: debug.ini not found. Cannot modify save."");
+        return false;
+    }
+    
+    var section_str = string(arg0);
+    ossafe_ini_open(path);
+    
+    if (is_string(arg2))
+        ini_write_string(section_str, arg1, arg2);
+    else if (is_real(arg2) || is_bool(arg2))
+        ini_write_real(section_str, arg1, arg2);
+    else
+        ini_write_string(section_str, arg1, string(arg2));
+    
+    ossafe_ini_close();
+    ossafe_savedata_save();
+    scr_debug_print(""Successfully updated ["" + section_str + ""] - "" + string(arg1) + "" changed to: "" + string(arg2));
+    return true;
 }");
 
 
@@ -2332,8 +2359,14 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_save",
     else
         full_file_path = ""filech"" + string(global.chapter) + ""_"" + section_name;
     
+    var save_category = """";
+    
+    if (variable_global_exists(""debug_save_category"") && is_string(global.debug_save_category))
+        save_category = global.debug_save_category;
+    
     iniwrite = ossafe_ini_open(""debug_save/debug.ini"");
     ini_write_string(section_name, ""SaveName"", global.debug_save_name);
+    ini_write_string(section_name, ""Category"", save_category);
     ini_write_string(section_name, ""Name"", global.truename);
     ini_write_string(section_name, ""FileLocation"", full_file_path);
     var save_desc = ""Saved in room "" + string(scr_get_id_by_room_index(room)) + "" at "" + string(global.time);
@@ -2374,6 +2407,7 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_save",
     ossafe_ini_close();
     ossafe_savedata_save();
     global.debug_save_name = -1;
+    global.debug_save_category = """";
     global.debug_saving = 0;
 }");
 
@@ -3022,7 +3056,7 @@ dscroll_delay = 15;
 dscroll_speed = 5;
 dbackspace_timer = 0;
 dmenu_title = scr_dmode_get_text(""debug_menu"");
-dbutton_options_original = [[scr_dmode_get_text(""warps""), scr_dmode_get_text(""items""), scr_dmode_get_text(""recruits""), scr_dmode_get_text(""misc"")], [""Globals"", ""Test""]];
+dbutton_options_original = [[scr_dmode_get_text(""warps""), scr_dmode_get_text(""items""), scr_dmode_get_text(""recruits""), scr_dmode_get_text(""misc"")], [""Globals"", ""Debug save""]];
 dnumber_litems = [0, 11, 14, 14, 18];
 dlight_weapons = [];
 dlight_armors = [[3, scr_dmode_get_text(""bandage"")], [14, scr_dmode_get_text(""wristwatch"")]];
@@ -3535,7 +3569,7 @@ function dmenu_interact_submenus(arg0)
     {
         var _base_name = my_options[i];
         
-        if (arg0 == _base_name || arg0 == (_base_name + "" v"") || arg0 == (_base_name + "" ^""))
+        if (arg0 == (_base_name + "" v"") || arg0 == (_base_name + "" ^""))
         {
             _clicked_index = i;
             break;
@@ -4408,22 +4442,96 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             dbutton_layout = 0;
             break;
         
-        case ""test"":
+        case ""debug_save"":
             dmenu_title = ""Debug save"";
-            dbutton_options = [""New save"", ""Search"", ""Spare route"", ""Weird route""];
-            dbutton_indices = [-2, -2, -1, -1];
+            dbutton_options = [""New save"", ""Search""];
+            dbutton_indices = [-2, -2];
+            var subs = [];
             
             if (global.dreading_custom_flag || dkeyboard_input != """")
                 dbutton_options[1] = scr_dmode_get_text(""ui_contains"") + dkeyboard_input;
             else
                 dbutton_options[1] = scr_dmode_get_text(""btn_search"") + dkeyboard_input;
             
-            var subs = [];
-            subs[2] = [""At Noelle's"", ""Jackenstein fight""];
-            subs[3] = [""Proceed scene"", ""Titan's fight""];
+            scr_get_debug_save_list();
+            
+            for (var i = 0; i < array_length(debug_save_names); i++)
+            {
+                var s_name = debug_save_names[i];
+                var s_cat = debug_save_categories[i];
+                
+                if (s_cat != """")
+                {
+                    var cat_index = -1;
+                    
+                    for (var j = 0; j < array_length(dbutton_options); j++)
+                    {
+                        if (dbutton_options[j] == s_cat)
+                        {
+                            cat_index = j;
+                            break;
+                        }
+                    }
+                    
+                    if (cat_index == -1)
+                    {
+                        cat_index = array_length(dbutton_options);
+                        array_push(dbutton_options, s_cat);
+                        array_push(dbutton_indices, -1);
+                        subs[cat_index] = [];
+                    }
+                    
+                    array_push(subs[cat_index], s_name);
+                }
+                else
+                {
+                    array_push(dbutton_options, s_name);
+                    array_push(dbutton_indices, 0);
+                }
+            }
+            
             dmenu_process_submenus(subs, dkeyboard_input);
             dmenu_box = 1;
             dbutton_layout = 1;
+            break;
+        
+        case ""debug_save_options"":
+            dmenu_title = ""Options: "" + string(global.debug_selected_save_name);
+            dbutton_options = [""Save"", ""Load"", ""Delete"", ""Save management""];
+            dbutton_indices = [-2, -1, -2, -1];
+            var subs = [];
+            subs[1] = [""Normal load"", ""With current inventory""];
+            subs[3] = [""Rename"", ""Edit description"", ""Change category"", ""Replace to main""];
+            dmenu_process_submenus(subs, dkeyboard_input);
+            dmenu_box = 1;
+            dbutton_layout = 1;
+            break;
+        
+        case ""dsave_edit_name"":
+        case ""dsave_edit_desc"":
+        case ""dsave_edit_cat"":
+            if (dmenu_state == ""dsave_edit_name"")
+                dmenu_title = ""Rename save"";
+            else if (dmenu_state == ""dsave_edit_desc"")
+                dmenu_title = ""Edit description"";
+            else if (dmenu_state == ""dsave_edit_cat"")
+                dmenu_title = ""Change category"";
+            
+            dbutton_options_2d = [[""""], [""Save"", ""Cancel""]];
+            dbutton_options = ["""", """"];
+            
+            if (global.dreading_custom_flag || dkeyboard_input != """")
+                dbutton_options_2d[0][0] = """";
+            else if (dmenu_state == ""dsave_edit_name"")
+                dbutton_options_2d[0][0] = ""Enter save name"";
+            else if (dmenu_state == ""dsave_edit_desc"")
+                dbutton_options_2d[0][0] = ""Enter description"";
+            else if (dmenu_state == ""dsave_edit_cat"")
+                dbutton_options_2d[0][0] = ""Enter category"";
+            
+            dbutton_options_2d[0][0] += dkeyboard_input;
+            dmenu_box = 0;
+            dbutton_layout = 3;
             break;
         
         case ""new_debug_save"":
@@ -4885,10 +4993,15 @@ function dmenu_state_interact()
 {
     selected_name = """";
     
-    if (dbutton_layout != 0)
-        selected_name = string(dbutton_options[dvertical_index]);
+    if (dbutton_layout == 0 || dbutton_layout == 3)
+    {
+        var safe_h_index = min(dhorizontal_index, array_length(dbutton_options_2d[dvertical_index]) - 1);
+        selected_name = string(dbutton_options_2d[dvertical_index][safe_h_index]);
+    }
     else
-        selected_name = string(dbutton_options_2d[dvertical_index][dhorizontal_index]);
+    {
+        selected_name = string(dbutton_options[dvertical_index]);
+    }
     
     switch (dmenu_state)
     {
@@ -4920,14 +5033,14 @@ function dmenu_state_interact()
             {
                 dmenu_state = ""globals_changer"";
             }
-            else if (selected_name == ""Test"")
+            else if (selected_name == ""Debug save"")
             {
-                dmenu_state = ""test"";
+                dmenu_state = ""debug_save"";
             }
             
             break;
         
-        case ""test"":
+        case ""debug_save"":
             if (dvertical_index == 0)
             {
                 dmenu_state = ""new_debug_save"";
@@ -4948,14 +5061,120 @@ function dmenu_state_interact()
             if (dmenu_interact_submenus(selected_name))
                 break;
             
-            if (selected_name == ""- At Noelle's"")
-                scr_debug_print(""Triggered Noelle's Route!"");
-            else if (selected_name == ""- Jackenstein fight"")
-                scr_debug_print(""Triggered Jackenstein!"");
-            else if (selected_name == ""- Proceed scene"")
-                scr_debug_print(""Triggered Proceed scene!"");
-            else if (selected_name == ""- Titan's fight"")
-                scr_debug_print(""Triggered Titan's fight!"");
+            var actual_name = selected_name;
+            
+            if (string_copy(actual_name, 1, 2) == ""- "")
+                actual_name = string_copy(actual_name, 3, string_length(actual_name) - 2);
+            
+            var target_section = """";
+            
+            for (var i = 0; i < array_length(debug_save_names); i++)
+            {
+                if (debug_save_names[i] == actual_name)
+                {
+                    target_section = debug_save_sections[i];
+                    break;
+                }
+            }
+            
+            if (target_section != """")
+            {
+                global.debug_selected_save_section = target_section;
+                global.debug_selected_save_name = actual_name;
+                dmenu_state = ""debug_save_options"";
+                dmenu_state_update();
+            }
+            
+            break;
+        
+        case ""debug_save_options"":
+            var check_name = selected_name;
+            
+            if (string_ends_with(check_name, "" v"") || string_ends_with(check_name, "" ^""))
+                check_name = string_copy(check_name, 1, string_length(check_name) - 2);
+            
+            if (dmenu_interact_submenus(selected_name))
+                break;
+            
+            var target_sec = global.debug_selected_save_section;
+            var target_name = global.debug_selected_save_name;
+            
+            if (check_name == ""Save"")
+            {
+                scr_debug_print(""Overwriting save: "" + target_name);
+            }
+            else if (check_name == ""- Normal load"")
+            {
+                scr_debug_print(""Loading save normally: "" + target_name);
+            }
+            else if (check_name == ""- With current inventory"")
+            {
+                scr_debug_print(""Loading while keeping inventory..."");
+            }
+            else if (check_name == ""Delete"")
+            {
+                scr_debug_print(""Deleting save: "" + target_name);
+            }
+            else if (check_name == ""- Replace to main"")
+            {
+                scr_debug_print(""Replacing main save with this debug save."");
+            }
+            else if (check_name == ""- Rename"" || check_name == ""- Edit description"" || check_name == ""- Change category"")
+            {
+                if (check_name == ""- Rename"")
+                    dmenu_state = ""dsave_edit_name"";
+                
+                if (check_name == ""- Edit description"")
+                    dmenu_state = ""dsave_edit_desc"";
+                
+                if (check_name == ""- Change category"")
+                    dmenu_state = ""dsave_edit_cat"";
+            }
+            
+            break;
+        
+        case ""dsave_edit_name"":
+        case ""dsave_edit_desc"":
+        case ""dsave_edit_cat"":
+            if (dvertical_index == 0)
+            {
+                dremove_false_history();
+                dmenu_skip_reindexing = true;
+                global.dreading_custom_flag = 1;
+                keyboard_string = """";
+                dkeyboard_input = """";
+                dmenu_state_update();
+            }
+            else if (dvertical_index == 1 && dhorizontal_index == 0)
+            {
+                dremove_false_history();
+                var target_sec = global.debug_selected_save_section;
+                var final_text = dkeyboard_input;
+                var ini_key = """";
+                
+                if (dmenu_state == ""dsave_edit_name"")
+                    ini_key = ""SaveName"";
+                else if (dmenu_state == ""dsave_edit_desc"")
+                    ini_key = ""Description"";
+                else if (dmenu_state == ""dsave_edit_cat"")
+                    ini_key = ""Category"";
+                
+                scr_debug_modify_save_info(target_sec, ini_key, final_text);
+                
+                if (ini_key == ""SaveName"" && final_text != """")
+                    global.debug_selected_save_name = final_text;
+                
+                global.dreading_custom_flag = 0;
+                dkeyboard_input = """";
+                dpop_history();
+            }
+            else
+            {
+                dremove_false_history();
+                global.dreading_custom_flag = 0;
+                dkeyboard_input = """";
+                dpop_history();
+            }
             
             break;
         

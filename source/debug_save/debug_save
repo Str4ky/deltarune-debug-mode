@@ -12,8 +12,14 @@ function scr_debug_save()
     else
         full_file_path = "filech" + string(global.chapter) + "_" + section_name;
     
+    var save_category = "";
+    
+    if (variable_global_exists("debug_save_category") && is_string(global.debug_save_category))
+        save_category = global.debug_save_category;
+    
     iniwrite = ossafe_ini_open("debug_save/debug.ini");
     ini_write_string(section_name, "SaveName", global.debug_save_name);
+    ini_write_string(section_name, "Category", save_category);
     ini_write_string(section_name, "Name", global.truename);
     ini_write_string(section_name, "FileLocation", full_file_path);
     var save_desc = "Saved in room " + string(scr_get_id_by_room_index(room)) + " at " + string(global.time);
@@ -54,5 +60,6 @@ function scr_debug_save()
     ossafe_ini_close();
     ossafe_savedata_save();
     global.debug_save_name = -1;
+    global.debug_save_category = "";
     global.debug_saving = 0;
 }

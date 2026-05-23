@@ -2,7 +2,9 @@ function scr_get_debug_save_list()
 {
     var save_array = [];
     var path = "debug_save/debug.ini";
+    debug_save_sections = [];
     debug_save_names = [];
+    debug_save_categories = [];
     
     if (!ossafe_file_exists(path))
         return save_array;
@@ -27,9 +29,12 @@ function scr_get_debug_save_list()
     for (var i = 0; i < array_length(save_array); i++)
     {
         var save_name_val = ini_read_string(save_array[i], "SaveName", "Unknown");
+        var cat_val = ini_read_string(save_array[i], "Category", "");
         array_push(debug_save_names, save_name_val);
+        array_push(debug_save_categories, cat_val);
     }
     
+    debug_save_sections = save_array;
     ossafe_ini_close();
     return save_array;
 }

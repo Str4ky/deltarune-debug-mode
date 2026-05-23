@@ -1,0 +1,25 @@
+function scr_debug_modify_save_info(arg0, arg1, arg2)
+{
+    var path = "debug_save/debug.ini";
+    
+    if (!ossafe_file_exists(path))
+    {
+        scr_debug_print("Error: debug.ini not found. Cannot modify save.");
+        return false;
+    }
+    
+    var section_str = string(arg0);
+    ossafe_ini_open(path);
+    
+    if (is_string(arg2))
+        ini_write_string(section_str, arg1, arg2);
+    else if (is_real(arg2) || is_bool(arg2))
+        ini_write_real(section_str, arg1, arg2);
+    else
+        ini_write_string(section_str, arg1, string(arg2));
+    
+    ossafe_ini_close();
+    ossafe_savedata_save();
+    scr_debug_print("Successfully updated [" + section_str + "] - " + string(arg1) + " changed to: " + string(arg2));
+    return true;
+}

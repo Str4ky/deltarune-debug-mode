@@ -11,7 +11,7 @@ dscroll_delay = 15;
 dscroll_speed = 5;
 dbackspace_timer = 0;
 dmenu_title = scr_dmode_get_text("debug_menu");
-dbutton_options_original = [[scr_dmode_get_text("warps"), scr_dmode_get_text("items"), scr_dmode_get_text("recruits"), scr_dmode_get_text("misc")], ["Globals", "Test"]];
+dbutton_options_original = [[scr_dmode_get_text("warps"), scr_dmode_get_text("items"), scr_dmode_get_text("recruits"), scr_dmode_get_text("misc")], ["Globals", "Debug save"]];
 dnumber_litems = [0, 11, 14, 14, 18];
 dlight_weapons = [];
 dlight_armors = [[3, scr_dmode_get_text("bandage")], [14, scr_dmode_get_text("wristwatch")]];
@@ -524,7 +524,7 @@ function dmenu_interact_submenus(arg0)
     {
         var _base_name = my_options[i];
         
-        if (arg0 == _base_name || arg0 == (_base_name + " v") || arg0 == (_base_name + " ^"))
+        if (arg0 == (_base_name + " v") || arg0 == (_base_name + " ^"))
         {
             _clicked_index = i;
             break;
