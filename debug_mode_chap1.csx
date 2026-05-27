@@ -1719,6 +1719,10 @@ function dmenu_process_submenus(arg0, arg1 = """")
     my_options = array_create(array_length(dbutton_options));
     array_copy(my_options, 0, dbutton_options, 0, array_length(dbutton_options));
     var _state_tracker = variable_struct_exists(dmenu_expanded, dmenu_state) ? variable_struct_get(dmenu_expanded, dmenu_state) : array_create(array_length(dbutton_options), false);
+    
+    while (array_length(_state_tracker) < array_length(my_options))
+        array_push(_state_tracker, false);
+    
     var _search = string_lower(arg1);
     var _search_changed = dmenu_last_search != _search;
     dmenu_last_search = _search;
@@ -1844,6 +1848,12 @@ if (dmenu_popup_launch == 1)
 {
     dmenu_state_update();
     global.interact = 1;
+}
+
+if (dmenu_state == ""debug_save"")
+{
+    if (keyboard_check_pressed(ord(""I"")))
+        scr_debug_save_import();
 }
 
 if (dmenu_popup_launch != 1)
@@ -2567,12 +2577,12 @@ else if (dmenu_active)
     
     if (keyboard_check_pressed(global.input_k[5]) || keyboard_check_pressed(global.input_k[8]))
     {
-        if (dmenu_state != ""new_debug_save"" || array_length(dmenu_state_history) > 0)
+        if (dmenu_state != ""debug_save"" || array_length(dmenu_state_history) > 0)
             snd_play(snd_smallswing);
         
         if (dmenu_popup_launch == 1)
         {
-            if (dmenu_state == ""new_debug_save"")
+            if (dmenu_state == ""debug_save"")
             {
                 instance_create(0, 0, obj_savemenu);
                 obj_savemenu.menuno = 1;
@@ -2700,6 +2710,11 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             
             for (var i = 0; i < array_length(debug_save_names); i++)
             {
+                var s_chap = debug_save_chapters[i];
+                
+                if (s_chap != -1 && s_chap != global.chapter)
+                    continue;
+                
                 var s_name = debug_save_names[i];
                 var s_cat = debug_save_categories[i];
                 
@@ -2740,11 +2755,12 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
         
         case ""debug_save_options"":
             dmenu_title = ""Options: "" + string(global.debug_selected_save_name);
-            dbutton_options = [""Save"", ""Load"", ""Delete"", ""Save management""];
-            dbutton_indices = [-2, -1, -2, -1];
+            dbutton_options = [""Save"", ""Load"", ""Delete"", ""Export"", ""Save management""];
+            dbutton_indices = [-2, -1, -2, -1, -1];
             var subs = [];
             subs[1] = [""Normal load"", ""With current inventory""];
-            subs[3] = [""Rename"", ""Edit description"", ""Change category"", ""Replace to main""];
+            subs[3] = [""Debug mode save"", ""Default Deltarune save""];
+            subs[4] = [""Rename"", ""Edit description"", ""Change category""];
             dmenu_process_submenus(subs, dkeyboard_input);
             dmenu_box = 1;
             dbutton_layout = 1;
@@ -3344,23 +3360,211 @@ function dmenu_state_interact()
             
             if (check_name == ""Save"")
             {
-                scr_debug_print(""Overwriting save: "" + target_name);
+                var ini_path = ""debug_save/debug.ini"";
+                
+                if (ossafe_file_exists(ini_path))
+                {
+                    ossafe_ini_open(ini_path);
+                    global.debug_save_category = ini_read_string(target_sec, ""Category"", """");
+                    ossafe_ini_close();
+                }
+                
+                global.debug_overwrite_section = target_sec;
+                global.debug_save_name = target_name;
+                global.debug_saving = 1;
+                dmenu_popup_launch = 0;
+                dmenu_state = ""debug"";
+                dbutton_options = dbutton_options_original;
+                dmenu_state_history = [];
+                dmenu_vertical_index_history = [];
+                dvertical_index = 0;
+                dbutton_layout = 0;
+                dmenu_active = false;
+                dkeyboard_input = """";
+                global.interact = 0;
+                scr_debug_save();
+                scr_debug_print(""Overwrote save: "" + target_name);
+                snd_play(snd_save);
             }
             else if (check_name == ""- Normal load"")
             {
                 scr_debug_print(""Loading save normally: "" + target_name);
+                global.dload_cur_inv = 0;
+                dmenu_popup_launch = 0;
+                dmenu_state = ""debug"";
+                dbutton_options = dbutton_options_original;
+                dmenu_state_history = [];
+                dmenu_vertical_index_history = [];
+                dvertical_index = 0;
+                dbutton_layout = 0;
+                dmenu_active = false;
+                dkeyboard_input = """";
+                global.interact = 0;
+                scr_debug_load(real(target_sec));
             }
             else if (check_name == ""- With current inventory"")
             {
                 scr_debug_print(""Loading while keeping inventory..."");
+                global.dload_cur_inv = 1;
+                dmenu_popup_launch = 0;
+                dmenu_state = ""debug"";
+                dbutton_options = dbutton_options_original;
+                dmenu_state_history = [];
+                dmenu_vertical_index_history = [];
+                dvertical_index = 0;
+                dbutton_layout = 0;
+                dmenu_active = false;
+                dkeyboard_input = """";
+                global.interact = 0;
+                scr_debug_load(real(target_sec));
             }
             else if (check_name == ""Delete"")
             {
-                scr_debug_print(""Deleting save: "" + target_name);
+                dremove_false_history();
+                target_sec = global.debug_selected_save_section;
+                var ini_path = ""debug_save/debug.ini"";
+                var target_file = """";
+                
+                if (ossafe_file_exists(ini_path))
+                {
+                    ossafe_ini_open(ini_path);
+                    var fallback = ""debug_save/filech"" + string(global.chapter) + ""_"" + string(target_sec);
+                    target_file = ini_read_string(target_sec, ""FileLocation"", fallback);
+                    ini_section_delete(target_sec);
+                    ossafe_ini_close();
+                    ossafe_savedata_save();
+                }
+                
+                if (target_file != """" && file_exists(target_file))
+                    file_delete(target_file);
+                
+                var key_file = ""keyconfig_"" + string(target_sec) + "".ini"";
+                
+                if (file_exists(key_file))
+                    file_delete(key_file);
+                
+                scr_debug_print(""Deleted save: "" + target_name);
+                snd_play(snd_badexplosion);
+                dpop_history();
+                dvertical_index = 0;
+                dbutton_layout = 0;
             }
-            else if (check_name == ""- Replace to main"")
+            else if (check_name == ""- Debug mode save"")
             {
-                scr_debug_print(""Replacing main save with this debug save."");
+                dremove_false_history();
+                dmenu_skip_reindexing = true;
+                target_sec = global.debug_selected_save_section;
+                target_name = global.debug_selected_save_name;
+                var export_path = get_save_filename(""Debug save (*.save)|*.save"", string(target_name) + "".save"");
+                
+                if (export_path != """")
+                {
+                    ossafe_ini_open(""debug_save/debug.ini"");
+                    var source_file = ini_read_string(target_sec, ""FileLocation"", """");
+                    ossafe_ini_close();
+                    
+                    if (file_exists(source_file))
+                    {
+                        if (file_exists(export_path))
+                            file_delete(export_path);
+                        
+                        file_copy(source_file, export_path);
+                        scr_debug_print(""Exported custom .save successfully!"");
+                        snd_play(snd_shineselect);
+                    }
+                    else
+                    {
+                        scr_debug_print(""Error: Base save file not found."");
+                        snd_play(snd_error);
+                    }
+                }
+                else
+                {
+                    scr_debug_print(""Export cancelled."");
+                }
+            }
+            else if (check_name == ""- Default Deltarune save"")
+            {
+                dremove_false_history();
+                dmenu_skip_reindexing = true;
+                target_sec = global.debug_selected_save_section;
+                target_name = global.debug_selected_save_name;
+                var ini_path = ""debug_save/debug.ini"";
+                var source_file = """";
+                
+                if (ossafe_file_exists(ini_path))
+                {
+                    ossafe_ini_open(ini_path);
+                    var fallback = ""debug_save/filech"" + string(global.chapter) + ""_"" + string(target_sec);
+                    source_file = ini_read_string(string(target_sec), ""FileLocation"", fallback);
+                    ossafe_ini_close();
+                }
+                
+                if (file_exists(source_file) || ossafe_file_exists(source_file))
+                {
+                    var suggested_name = ""filech"" + string(global.chapter) + ""_0"";
+                    var export_path = get_save_filename(""Deltarune Save|*"", suggested_name);
+                    
+                    if (export_path != """")
+                    {
+                        if (file_exists(export_path))
+                            file_delete(export_path);
+                        
+                        if (string_copy(source_file, string_length(source_file) - 4, 5) == "".save"")
+                        {
+                            var file_id = file_text_open_read(source_file);
+                            var json_string = """";
+                            
+                            while (!file_text_eof(file_id))
+                            {
+                                json_string += file_text_read_string(file_id);
+                                file_text_readln(file_id);
+                                
+                                if (!file_text_eof(file_id))
+                                    json_string += ""\n"";
+                            }
+                            
+                            file_text_close(file_id);
+                            var parsed_data = -1;
+                            
+                            try
+                            {
+                                parsed_data = json_parse(json_string);
+                            }
+                            catch (e)
+                            {
+                            }
+                            
+                            if (is_struct(parsed_data) && variable_struct_exists(parsed_data, ""save_file""))
+                            {
+                                var raw_content = parsed_data.save_file;
+                                var out_file = file_text_open_write(export_path);
+                                file_text_write_string(out_file, raw_content);
+                                file_text_close(out_file);
+                            }
+                            else
+                            {
+                                file_copy(source_file, export_path);
+                            }
+                        }
+                        else
+                        {
+                            file_copy(source_file, export_path);
+                        }
+                        
+                        scr_debug_print(""Exported '"" + target_name + ""' successfully!"");
+                        snd_play(snd_shineselect);
+                    }
+                    else
+                    {
+                        scr_debug_print(""Export cancelled."");
+                    }
+                }
+                else
+                {
+                    scr_debug_print(""Error: Could not find the source save file."");
+                    snd_play(snd_error);
+                }
             }
             else if (check_name == ""- Rename"" || check_name == ""- Edit description"" || check_name == ""- Change category"")
             {
@@ -3402,7 +3606,7 @@ function dmenu_state_interact()
                 else if (dmenu_state == ""dsave_edit_cat"")
                     ini_key = ""Category"";
                 
-                scr_debug_modify_save_info(target_sec, ini_key, final_text);
+                scr_debug_save_modify_info(target_sec, ini_key, final_text);
                 
                 if (ini_key == ""SaveName"" && final_text != """")
                     global.debug_selected_save_name = final_text;

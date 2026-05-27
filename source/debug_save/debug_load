@@ -79,6 +79,45 @@ function scr_debug_load(arg0)
     if (file == "")
         file = "debug_save/filech" + string(global.chapter) + "_" + target_id;
     
+    if (string_copy(file, string_length(file) - 4, 5) == ".save")
+    {
+        if (file_exists(file) || ossafe_file_exists(file))
+        {
+            var temp_id = ossafe_file_text_open_read(file);
+            var json_string = "";
+            
+            while (!ossafe_file_text_eof(temp_id))
+            {
+                json_string += ossafe_file_text_read_string(temp_id);
+                ossafe_file_text_readln(temp_id);
+                
+                if (!ossafe_file_text_eof(temp_id))
+                    json_string += "\n";
+            }
+            
+            ossafe_file_text_close(temp_id);
+            var parsed_data = -1;
+            
+            try
+            {
+                parsed_data = json_parse(json_string);
+            }
+            catch (e)
+            {
+            }
+            
+            if (is_struct(parsed_data) && variable_struct_exists(parsed_data, "save_file"))
+            {
+                var raw_content = parsed_data.save_file;
+                var temp_raw_path = "filech" + string(global.chapter) + "_999";
+                var out_file = ossafe_file_text_open_write(temp_raw_path);
+                ossafe_file_text_write_string(out_file, raw_content);
+                ossafe_file_text_close(out_file);
+                file = temp_raw_path;
+            }
+        }
+    }
+    
     myfileid = ossafe_file_text_open_read(file);
     global.truename = ossafe_file_text_read_string(myfileid);
     ossafe_file_text_readln(myfileid);

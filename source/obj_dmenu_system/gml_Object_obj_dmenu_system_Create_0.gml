@@ -431,6 +431,10 @@ function dmenu_process_submenus(arg0, arg1 = "")
     my_options = array_create(array_length(dbutton_options));
     array_copy(my_options, 0, dbutton_options, 0, array_length(dbutton_options));
     var _state_tracker = variable_struct_exists(dmenu_expanded, dmenu_state) ? variable_struct_get(dmenu_expanded, dmenu_state) : array_create(array_length(dbutton_options), false);
+    
+    while (array_length(_state_tracker) < array_length(my_options))
+        array_push(_state_tracker, false);
+    
     var _search = string_lower(arg1);
     var _search_changed = dmenu_last_search != _search;
     dmenu_last_search = _search;

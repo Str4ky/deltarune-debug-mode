@@ -5,6 +5,7 @@ function scr_get_debug_save_list()
     debug_save_sections = [];
     debug_save_names = [];
     debug_save_categories = [];
+    debug_save_chapters = [];
     
     if (!ossafe_file_exists(path))
         return save_array;
@@ -30,8 +31,10 @@ function scr_get_debug_save_list()
     {
         var save_name_val = ini_read_string(save_array[i], "SaveName", "Unknown");
         var cat_val = ini_read_string(save_array[i], "Category", "");
+        var chap_val = ini_read_real(save_array[i], "Chapter", -1);
         array_push(debug_save_names, save_name_val);
         array_push(debug_save_categories, cat_val);
+        array_push(debug_save_chapters, chap_val);
     }
     
     debug_save_sections = save_array;

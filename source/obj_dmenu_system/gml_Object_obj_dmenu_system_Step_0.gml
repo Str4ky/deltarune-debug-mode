@@ -6,6 +6,12 @@ if (dmenu_popup_launch == 1)
     global.interact = 1;
 }
 
+if (dmenu_state == "debug_save")
+{
+    if (keyboard_check_pressed(ord("I")))
+        scr_debug_save_import();
+}
+
 if (dmenu_popup_launch != 1)
 {
     if (!global.dreading_custom_flag && keyboard_check_pressed(ord("D")))
@@ -727,12 +733,12 @@ else if (dmenu_active)
     
     if (keyboard_check_pressed(global.input_k[5]) || keyboard_check_pressed(global.input_k[8]))
     {
-        if (dmenu_state != "new_debug_save" || array_length(dmenu_state_history) > 0)
+        if (dmenu_state != "debug_save" || array_length(dmenu_state_history) > 0)
             snd_play(snd_smallswing);
         
         if (dmenu_popup_launch == 1)
         {
-            if (dmenu_state == "new_debug_save")
+            if (dmenu_state == "debug_save")
             {
                 instance_create(0, 0, obj_savemenu);
                 obj_savemenu.menuno = 1;
