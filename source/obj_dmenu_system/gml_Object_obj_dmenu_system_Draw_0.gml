@@ -129,7 +129,7 @@ if (dmenu_active)
             else if (dhorizontal_index == 1)
                 draw_rectangle((x2_start + visual_offset) - cursor_padding - 2, base_y, (x2_start + draw_w_value + visual_offset + cursor_padding) - 2, base_y + thickness, false);
         }
-        else if (dmenu_state == "warp")
+        else if (dmenu_state == "warp" || dmenu_state == "debug_save")
         {
             var base_x = x_start + xx;
             var base_y = (((130 - (dmenu_start_index * 20)) + 2) * d) + yy;
@@ -165,7 +165,7 @@ if (dmenu_active)
             if (dhorizontal_index == 0)
                 draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
         }
-        else if (dmenu_state == "new_debug_save")
+        else if (dmenu_state == "new_debug_save" || dmenu_state == "dsave_edit_name" || dmenu_state == "dsave_edit_desc" || dmenu_state == "dsave_edit_cat")
         {
             var base_x = x_start + x_padding + xx;
             var base_y = y_start + (17 * d) + yy;
@@ -175,21 +175,6 @@ if (dmenu_active)
             var cursor_padding = 3 * d;
             var w_name = string_length(string(dcustom_flag_text[0])) * mono_spacing;
             var x1_start = base_x;
-            draw_set_color(c_yellow);
-            var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
-            draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
-        }
-        else if (dmenu_state == "debug_load")
-        {
-            var base_x = x_start + xx;
-            var base_y = (((110 - (dmenu_start_index * 20)) + 2) * d) + yy;
-            var mono_spacing = (global.darkzone == 1) ? 15 : 8;
-            var thickness = 1 * d;
-            var visual_offset = -2;
-            var cursor_padding = 3 * d;
-            var w_prefix = string_length(string(scr_dmode_get_text("ui_contains"))) * mono_spacing;
-            var w_name = string_length(string(dcustom_flag_text[0])) * mono_spacing;
-            var x1_start = base_x + w_prefix;
             draw_set_color(c_yellow);
             var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
             draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
@@ -377,7 +362,8 @@ if (dmenu_active)
                 draw_rectangle((arg0 - border) + i, (arg1 - border) + i, (arg2 + border) - i, (arg3 + border) - i, true);
         };
         
-        inputbox(x_start + xx, y_start + yy, (((xcenter + (menu_width / 2)) * d) - x_padding) + xx, y_start + (19 * d) + yy);
+        var box_right_edge = (((xcenter + (menu_width / 2)) * d) - x_padding) + xx;
+        inputbox(x_start + xx, y_start + yy, box_right_edge, y_start + (19 * d) + yy);
         var cur_btn = string(dbutton_options_2d[0][0]);
         
         if (dkeyboard_input != "")
@@ -391,7 +377,11 @@ if (dmenu_active)
             color = c_gray;
         
         draw_set_color(color);
-        draw_text(x_start + x_padding + xx, y_start + yy, cur_btn);
+        var text_x = x_start + x_padding + xx;
+        var text_y = y_start + yy;
+        var max_width = box_right_edge - text_x;
+        var line_spacing = 16 * d;
+        draw_text_ext(text_x, text_y, cur_btn, line_spacing, max_width);
         
         if (d == 2)
             heartsprite = spr_heart;
@@ -405,7 +395,7 @@ if (dmenu_active)
     
     dhinter_active = true;
     
-    if (dhinter_active && dhinter_text != "" && (scr_array_contains(ditem_types, dmenu_state) || dmenu_state == "warp_options"))
+    if (dhinter_active && dhinter_text != "" && (scr_array_contains(ditem_types, dmenu_state) || dmenu_state == "warp_options" || dmenu_state == "debug_save" || dmenu_state == "debug_save_options"))
     {
         draw_set_color(c_white);
         draw_rectangle(((xcenter - (menu_width / 2) - 3) * d) + xx, (2 * d) + yy, ((xcenter + (menu_width / 2) + 3) * d) + xx, (51 * d) + yy, false);

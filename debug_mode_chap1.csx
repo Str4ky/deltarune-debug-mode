@@ -1852,8 +1852,16 @@ if (dmenu_popup_launch == 1)
 
 if (dmenu_state == ""debug_save"")
 {
-    if (keyboard_check_pressed(ord(""I"")))
+    if (keyboard_check_pressed(ord(""I"")) && keyboard_check(vk_alt) && !global.dreading_custom_flag)
+    {
+        scr_debug_save_scan_imports();
+        dmenu_state_update();
+    }
+    else if (keyboard_check_pressed(ord(""I"")) && !keyboard_check(vk_alt) && !global.dreading_custom_flag)
+    {
         scr_debug_save_import();
+        dmenu_state_update();
+    }
 }
 
 if (dmenu_popup_launch != 1)
@@ -2477,7 +2485,7 @@ else if (dmenu_active)
                         }
                         else
                         {
-                            for (i = 0; i < array_length(dlight_objects); i++)
+                            for (var i = 0; i < array_length(dlight_objects); i++)
                             {
                                 if (dlight_objects[i][0] == real_index)
                                 {
@@ -2604,6 +2612,51 @@ else if (dmenu_active)
                 new_room = room;
             
             dhinter_text = scr_dmode_get_text(""hint_room"") + room_get_name(new_room);
+        }
+        
+        if (dmenu_state == ""debug_save"")
+        {
+            if (dvertical_index == 0)
+            {
+                dhinter_text = ""[I] - Import individual   [Alt+I] - Batch import"";
+            }
+            else if (dvertical_index > 0 && dvertical_index < array_length(dbutton_options))
+            {
+                var hovered_text = dbutton_options[dvertical_index];
+                
+                if (string_copy(hovered_text, 1, 2) == ""- "")
+                    hovered_text = string_copy(hovered_text, 3, string_length(hovered_text) - 2);
+                
+                var found_desc = """";
+                
+                for (var i = 0; i < array_length(debug_save_names); i++)
+                {
+                    if (debug_save_names[i] == hovered_text)
+                    {
+                        found_desc = debug_save_descriptions[i];
+                        break;
+                    }
+                }
+                
+                dhinter_text = found_desc;
+            }
+        }
+        
+        if (dmenu_state == ""debug_save_options"")
+        {
+            var target_save_name = string(global.debug_selected_save_name);
+            var found_desc = ""No description available."";
+            
+            for (var i = 0; i < array_length(debug_save_names); i++)
+            {
+                if (debug_save_names[i] == target_save_name)
+                {
+                    found_desc = debug_save_descriptions[i];
+                    break;
+                }
+            }
+            
+            dhinter_text = found_desc;
         }
         
         if (scr_array_contains(ditem_types, dmenu_state))
@@ -2761,7 +2814,7 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             subs[1] = [""Normal load"", ""With current inventory""];
             subs[3] = [""Debug mode save"", ""Default Deltarune save""];
             subs[4] = [""Rename"", ""Edit description"", ""Change category""];
-            dmenu_process_submenus(subs, dkeyboard_input);
+            dmenu_process_submenus(subs, """");
             dmenu_box = 1;
             dbutton_layout = 1;
             break;
@@ -2780,13 +2833,23 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             dbutton_options = ["""", """"];
             
             if (global.dreading_custom_flag || dkeyboard_input != """")
+            {
                 dbutton_options_2d[0][0] = """";
-            else if (dmenu_state == ""dsave_edit_name"")
-                dbutton_options_2d[0][0] = ""Enter save name"";
-            else if (dmenu_state == ""dsave_edit_desc"")
-                dbutton_options_2d[0][0] = ""Enter description"";
-            else if (dmenu_state == ""dsave_edit_cat"")
-                dbutton_options_2d[0][0] = ""Enter category"";
+            }
+            else
+            {
+                var target_sec = string(global.debug_selected_save_section);
+                ossafe_ini_open(""debug_save/debug.ini"");
+                
+                if (dmenu_state == ""dsave_edit_name"")
+                    dbutton_options_2d[0][0] = ini_read_string(target_sec, ""SaveName"", ""Enter save name"");
+                else if (dmenu_state == ""dsave_edit_desc"")
+                    dbutton_options_2d[0][0] = ini_read_string(target_sec, ""Description"", ""Enter description"");
+                else if (dmenu_state == ""dsave_edit_cat"")
+                    dbutton_options_2d[0][0] = ini_read_string(target_sec, ""Category"", ""Enter category"");
+                
+                ossafe_ini_close();
+            }
             
             dbutton_options_2d[0][0] += dkeyboard_input;
             dmenu_box = 0;
@@ -2805,44 +2868,6 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             dbutton_options[0][0] += dkeyboard_input;
             dmenu_box = 0;
             dbutton_layout = 3;
-            break;
-        
-        case ""debug_load"":
-            dmenu_title = ""Debug Load"";
-            dbutton_options = [scr_dmode_get_text(""btn_search"")];
-            dbutton_indices = [-1];
-            
-            if (global.dreading_custom_flag || dkeyboard_input != """")
-                dbutton_options[0] = scr_dmode_get_text(""ui_contains"");
-            else
-                dbutton_options[0] = scr_dmode_get_text(""btn_search"");
-            
-            dbutton_options[0] += dkeyboard_input;
-            var my_ids = scr_get_debug_save_list();
-            
-            for (var i = 0; i < array_length(my_ids); i++)
-            {
-                var current_id = my_ids[i];
-                var current_save_name = debug_save_names[i];
-                
-                if (!string_pos(string_lower(dkeyboard_input), string_lower(current_save_name)))
-                    continue;
-                
-                array_push(dbutton_options, current_save_name);
-                array_push(dbutton_indices, current_id);
-            }
-            
-            dmenu_box = 1;
-            dbutton_layout = 1;
-            break;
-        
-        case ""debug_load_options"":
-            dmenu_title = ""Debug Load Options"";
-            dbutton_options = [""With current inventory: "", ""Load""];
-            dbutton_indices = [0, 1];
-            dbutton_options[0] += dload_options.target_with_cur_inv ? scr_dmode_get_text(""opt_yes"") : scr_dmode_get_text(""opt_no"");
-            dmenu_box = 0;
-            dbutton_layout = 1;
             break;
         
         case ""warp"":
@@ -3448,6 +3473,7 @@ function dmenu_state_interact()
                 dpop_history();
                 dvertical_index = 0;
                 dbutton_layout = 0;
+                dmenu_start_index = 0;
             }
             else if (check_name == ""- Debug mode save"")
             {
@@ -3477,10 +3503,6 @@ function dmenu_state_interact()
                         scr_debug_print(""Error: Base save file not found."");
                         snd_play(snd_error);
                     }
-                }
-                else
-                {
-                    scr_debug_print(""Export cancelled."");
                 }
             }
             else if (check_name == ""- Default Deltarune save"")
@@ -3668,57 +3690,6 @@ function dmenu_state_interact()
                 dvertical_index = 0;
                 dmenu_active = false;
                 global.interact = 0;
-            }
-            
-            break;
-        
-        case ""debug_load"":
-            if (dvertical_index == 0)
-            {
-                dremove_false_history();
-                dmenu_skip_reindexing = true;
-                global.dreading_custom_flag = 1;
-                keyboard_string = """";
-                dkeyboard_input = """";
-                dmenu_state_update();
-            }
-            else
-            {
-                dload_options.target_save = -1;
-                
-                if (dvertical_index != 0)
-                    dload_options.target_save = dbutton_indices[dvertical_index];
-                
-                dload_options.target_with_cur_inv = global.dload_cur_inv;
-                dmenu_state = ""debug_load_options"";
-                dvertical_index = 1;
-                dkeyboard_input = """";
-            }
-            
-            break;
-        
-        case ""debug_load_options"":
-            if (dvertical_index == 0)
-            {
-                dremove_false_history();
-                dmenu_skip_reindexing = true;
-                dload_options.target_with_cur_inv ^= 1;
-            }
-            else if (dvertical_index == 1)
-            {
-                var chosen_save_id = dload_options.target_save;
-                dmenu_popup_launch = 0;
-                dmenu_state = ""debug"";
-                dbutton_options = dbutton_options_original;
-                dmenu_state_history = [];
-                dmenu_vertical_index_history = [];
-                dvertical_index = 0;
-                dbutton_layout = 0;
-                dmenu_active = false;
-                dkeyboard_input = """";
-                global.dload_cur_inv = dload_options.target_with_cur_inv;
-                global.interact = 0;
-                scr_debug_load(chosen_save_id);
             }
             
             break;
@@ -4293,7 +4264,7 @@ if (dmenu_active)
             else if (dhorizontal_index == 1)
                 draw_rectangle((x2_start + visual_offset) - cursor_padding - 2, base_y, (x2_start + draw_w_value + visual_offset + cursor_padding) - 2, base_y + thickness, false);
         }
-        else if (dmenu_state == ""warp"")
+        else if (dmenu_state == ""warp"" || dmenu_state == ""debug_save"")
         {
             var base_x = x_start + xx;
             var base_y = (((130 - (dmenu_start_index * 20)) + 2) * d) + yy;
@@ -4329,7 +4300,7 @@ if (dmenu_active)
             if (dhorizontal_index == 0)
                 draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
         }
-        else if (dmenu_state == ""new_debug_save"")
+        else if (dmenu_state == ""new_debug_save"" || dmenu_state == ""dsave_edit_name"" || dmenu_state == ""dsave_edit_desc"" || dmenu_state == ""dsave_edit_cat"")
         {
             var base_x = x_start + x_padding + xx;
             var base_y = y_start + (17 * d) + yy;
@@ -4339,21 +4310,6 @@ if (dmenu_active)
             var cursor_padding = 3 * d;
             var w_name = string_length(string(dcustom_flag_text[0])) * mono_spacing;
             var x1_start = base_x;
-            draw_set_color(c_yellow);
-            var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
-            draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
-        }
-        else if (dmenu_state == ""debug_load"")
-        {
-            var base_x = x_start + xx;
-            var base_y = (((110 - (dmenu_start_index * 20)) + 2) * d) + yy;
-            var mono_spacing = (global.darkzone == 1) ? 15 : 8;
-            var thickness = 1 * d;
-            var visual_offset = -2;
-            var cursor_padding = 3 * d;
-            var w_prefix = string_length(string(scr_dmode_get_text(""ui_contains""))) * mono_spacing;
-            var w_name = string_length(string(dcustom_flag_text[0])) * mono_spacing;
-            var x1_start = base_x + w_prefix;
             draw_set_color(c_yellow);
             var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
             draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
@@ -4541,7 +4497,8 @@ if (dmenu_active)
                 draw_rectangle((arg0 - border) + i, (arg1 - border) + i, (arg2 + border) - i, (arg3 + border) - i, true);
         };
         
-        inputbox(x_start + xx, y_start + yy, (((xcenter + (menu_width / 2)) * d) - x_padding) + xx, y_start + (19 * d) + yy);
+        var box_right_edge = (((xcenter + (menu_width / 2)) * d) - x_padding) + xx;
+        inputbox(x_start + xx, y_start + yy, box_right_edge, y_start + (19 * d) + yy);
         var cur_btn = string(dbutton_options_2d[0][0]);
         
         if (dkeyboard_input != """")
@@ -4555,7 +4512,11 @@ if (dmenu_active)
             color = c_gray;
         
         draw_set_color(color);
-        draw_text(x_start + x_padding + xx, y_start + yy, cur_btn);
+        var text_x = x_start + x_padding + xx;
+        var text_y = y_start + yy;
+        var max_width = box_right_edge - text_x;
+        var line_spacing = 16 * d;
+        draw_text_ext(text_x, text_y, cur_btn, line_spacing, max_width);
         
         if (d == 2)
             heartsprite = spr_heart;
@@ -4569,7 +4530,7 @@ if (dmenu_active)
     
     dhinter_active = true;
     
-    if (dhinter_active && dhinter_text != """" && (scr_array_contains(ditem_types, dmenu_state) || dmenu_state == ""warp_options""))
+    if (dhinter_active && dhinter_text != """" && (scr_array_contains(ditem_types, dmenu_state) || dmenu_state == ""warp_options"" || dmenu_state == ""debug_save"" || dmenu_state == ""debug_save_options""))
     {
         draw_set_color(c_white);
         draw_rectangle(((xcenter - (menu_width / 2) - 3) * d) + xx, (2 * d) + yy, ((xcenter + (menu_width / 2) + 3) * d) + xx, (51 * d) + yy, false);
@@ -4745,10 +4706,11 @@ importGroup.QueueAppend(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint
     if (keyboard_check_pressed(ord(""S"")))
         instance_create(0, 0, obj_savemenu);
 
-    if (keyboard_check_pressed(ord(""L"")) && keyboard_check(vk_shift))
+    if (keyboard_check_pressed(ord(""L"")) && keyboard_check(vk_alt))
     {
         obj_dmenu_system.dmenu_popup_launch = 1;
-        obj_dmenu_system.dmenu_state = ""debug_load"";
+        obj_dmenu_system.dmenu_state = ""debug_save"";
+        obj_dmenu_system.dmenu_start_index = 0;
         obj_dmenu_system.dmenu_vertical_index = 0;
         obj_dmenu_system.dmenu_horizontal_index = 0;
         obj_dmenu_system.dmenu_state_history = [];
@@ -4759,7 +4721,7 @@ importGroup.QueueAppend(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint
         snd_play(snd_egg);
     }
 
-    if (keyboard_check_pressed(ord(""L"")))
+    if (keyboard_check_pressed(ord(""L"")) && !keyboard_check(vk_alt))
         scr_load();
 
     if (keyboard_check_pressed(ord(""R"")) && keyboard_check(vk_backspace))
@@ -4783,10 +4745,11 @@ importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, 
 {
     if (keyboard_check_pressed(ord(""S"")))
         instance_create(0, 0, obj_savemenu);
-    if (keyboard_check_pressed(ord(""L"")) && keyboard_check(vk_shift))
+    if (keyboard_check_pressed(ord(""L"")) && keyboard_check(vk_alt))
     {
         obj_dmenu_system.dmenu_popup_launch = 1;
-        obj_dmenu_system.dmenu_state = ""debug_load"";
+        obj_dmenu_system.dmenu_state = ""debug_save"";
+        obj_dmenu_system.dmenu_start_index = 0;
         obj_dmenu_system.dmenu_vertical_index = 0;
         obj_dmenu_system.dmenu_horizontal_index = 0;
         obj_dmenu_system.dmenu_state_history = [];
@@ -4796,7 +4759,7 @@ importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, 
         obj_dmenu_system.dmenu_active = true;
         snd_play(snd_egg);
     }
-    if (keyboard_check_pressed(ord(""L"")) && !keyboard_check(vk_shift))
+    if (keyboard_check_pressed(ord(""L"")) && !keyboard_check(vk_alt))
         scr_load();
     if (keyboard_check_pressed(ord(""R"")) && keyboard_check(vk_backspace))
         game_restart_true();
@@ -4814,10 +4777,11 @@ importGroup.QueueAppend("gml_Object_obj_overworldc_Step_0",
 {
     if (keyboard_check_pressed(ord(""S"")))
         instance_create(0, 0, obj_savemenu);
-    if (keyboard_check_pressed(ord(""L"")) && keyboard_check(vk_shift))
+    if (keyboard_check_pressed(ord(""L"")) && keyboard_check(vk_alt))
     {
         obj_dmenu_system.dmenu_popup_launch = 1;
-        obj_dmenu_system.dmenu_state = ""debug_load"";
+        obj_dmenu_system.dmenu_state = ""debug_save"";
+        obj_dmenu_system.dmenu_start_index = 0;
         obj_dmenu_system.dmenu_vertical_index = 0;
         obj_dmenu_system.dmenu_horizontal_index = 0;
         obj_dmenu_system.dmenu_state_history = [];
@@ -4827,7 +4791,7 @@ importGroup.QueueAppend("gml_Object_obj_overworldc_Step_0",
         obj_dmenu_system.dmenu_active = true;
         snd_play(snd_egg);
     }
-    if (keyboard_check_pressed(ord(""L"")) && !keyboard_check(vk_shift))
+    if (keyboard_check_pressed(ord(""L"")) && !keyboard_check(vk_alt))
         scr_load();
     if (keyboard_check_pressed(ord(""R"")) && keyboard_check(vk_backspace))
         game_restart_true();

@@ -75,7 +75,7 @@ function dmenu_state_update()
             subs[1] = ["Normal load", "With current inventory"];
             subs[3] = ["Debug mode save", "Default Deltarune save"];
             subs[4] = ["Rename", "Edit description", "Change category"];
-            dmenu_process_submenus(subs, dkeyboard_input);
+            dmenu_process_submenus(subs, "");
             dmenu_box = 1;
             dbutton_layout = 1;
             break;
@@ -94,13 +94,23 @@ function dmenu_state_update()
             dbutton_options = ["", ""];
             
             if (global.dreading_custom_flag || dkeyboard_input != "")
+            {
                 dbutton_options_2d[0][0] = "";
-            else if (dmenu_state == "dsave_edit_name")
-                dbutton_options_2d[0][0] = "Enter save name";
-            else if (dmenu_state == "dsave_edit_desc")
-                dbutton_options_2d[0][0] = "Enter description";
-            else if (dmenu_state == "dsave_edit_cat")
-                dbutton_options_2d[0][0] = "Enter category";
+            }
+            else
+            {
+                var target_sec = string(global.debug_selected_save_section);
+                ossafe_ini_open("debug_save/debug.ini");
+                
+                if (dmenu_state == "dsave_edit_name")
+                    dbutton_options_2d[0][0] = ini_read_string(target_sec, "SaveName", "Enter save name");
+                else if (dmenu_state == "dsave_edit_desc")
+                    dbutton_options_2d[0][0] = ini_read_string(target_sec, "Description", "Enter description");
+                else if (dmenu_state == "dsave_edit_cat")
+                    dbutton_options_2d[0][0] = ini_read_string(target_sec, "Category", "Enter category");
+                
+                ossafe_ini_close();
+            }
             
             dbutton_options_2d[0][0] += dkeyboard_input;
             dmenu_box = 0;
@@ -119,44 +129,6 @@ function dmenu_state_update()
             dbutton_options[0][0] += dkeyboard_input;
             dmenu_box = 0;
             dbutton_layout = 3;
-            break;
-        
-        case "debug_load":
-            dmenu_title = "Debug Load";
-            dbutton_options = [scr_dmode_get_text("btn_search")];
-            dbutton_indices = [-1];
-            
-            if (global.dreading_custom_flag || dkeyboard_input != "")
-                dbutton_options[0] = scr_dmode_get_text("ui_contains");
-            else
-                dbutton_options[0] = scr_dmode_get_text("btn_search");
-            
-            dbutton_options[0] += dkeyboard_input;
-            var my_ids = scr_get_debug_save_list();
-            
-            for (var i = 0; i < array_length(my_ids); i++)
-            {
-                var current_id = my_ids[i];
-                var current_save_name = debug_save_names[i];
-                
-                if (!string_pos(string_lower(dkeyboard_input), string_lower(current_save_name)))
-                    continue;
-                
-                array_push(dbutton_options, current_save_name);
-                array_push(dbutton_indices, current_id);
-            }
-            
-            dmenu_box = 1;
-            dbutton_layout = 1;
-            break;
-        
-        case "debug_load_options":
-            dmenu_title = "Debug Load Options";
-            dbutton_options = ["With current inventory: ", "Load"];
-            dbutton_indices = [0, 1];
-            dbutton_options[0] += dload_options.target_with_cur_inv ? scr_dmode_get_text("opt_yes") : scr_dmode_get_text("opt_no");
-            dmenu_box = 0;
-            dbutton_layout = 1;
             break;
         
         case "warp":
@@ -762,6 +734,7 @@ function dmenu_state_interact()
                 dpop_history();
                 dvertical_index = 0;
                 dbutton_layout = 0;
+                dmenu_start_index = 0;
             }
             else if (check_name == "- Debug mode save")
             {
@@ -791,10 +764,6 @@ function dmenu_state_interact()
                         scr_debug_print("Error: Base save file not found.");
                         snd_play(snd_error);
                     }
-                }
-                else
-                {
-                    scr_debug_print("Export cancelled.");
                 }
             }
             else if (check_name == "- Default Deltarune save")
@@ -982,57 +951,6 @@ function dmenu_state_interact()
                 dvertical_index = 0;
                 dmenu_active = false;
                 global.interact = 0;
-            }
-            
-            break;
-        
-        case "debug_load":
-            if (dvertical_index == 0)
-            {
-                dremove_false_history();
-                dmenu_skip_reindexing = true;
-                global.dreading_custom_flag = 1;
-                keyboard_string = "";
-                dkeyboard_input = "";
-                dmenu_state_update();
-            }
-            else
-            {
-                dload_options.target_save = -1;
-                
-                if (dvertical_index != 0)
-                    dload_options.target_save = dbutton_indices[dvertical_index];
-                
-                dload_options.target_with_cur_inv = global.dload_cur_inv;
-                dmenu_state = "debug_load_options";
-                dvertical_index = 1;
-                dkeyboard_input = "";
-            }
-            
-            break;
-        
-        case "debug_load_options":
-            if (dvertical_index == 0)
-            {
-                dremove_false_history();
-                dmenu_skip_reindexing = true;
-                dload_options.target_with_cur_inv ^= 1;
-            }
-            else if (dvertical_index == 1)
-            {
-                var chosen_save_id = dload_options.target_save;
-                dmenu_popup_launch = 0;
-                dmenu_state = "debug";
-                dbutton_options = dbutton_options_original;
-                dmenu_state_history = [];
-                dmenu_vertical_index_history = [];
-                dvertical_index = 0;
-                dbutton_layout = 0;
-                dmenu_active = false;
-                dkeyboard_input = "";
-                global.dload_cur_inv = dload_options.target_with_cur_inv;
-                global.interact = 0;
-                scr_debug_load(chosen_save_id);
             }
             
             break;

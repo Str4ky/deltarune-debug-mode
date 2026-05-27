@@ -8,8 +8,16 @@ if (dmenu_popup_launch == 1)
 
 if (dmenu_state == "debug_save")
 {
-    if (keyboard_check_pressed(ord("I")))
+    if (keyboard_check_pressed(ord("I")) && keyboard_check(vk_alt) && !global.dreading_custom_flag)
+    {
+        scr_debug_save_scan_imports();
+        dmenu_state_update();
+    }
+    else if (keyboard_check_pressed(ord("I")) && !keyboard_check(vk_alt) && !global.dreading_custom_flag)
+    {
         scr_debug_save_import();
+        dmenu_state_update();
+    }
 }
 
 if (dmenu_popup_launch != 1)
@@ -633,7 +641,7 @@ else if (dmenu_active)
                         }
                         else
                         {
-                            for (i = 0; i < array_length(dlight_objects); i++)
+                            for (var i = 0; i < array_length(dlight_objects); i++)
                             {
                                 if (dlight_objects[i][0] == real_index)
                                 {
@@ -760,6 +768,51 @@ else if (dmenu_active)
                 new_room = room;
             
             dhinter_text = scr_dmode_get_text("hint_room") + room_get_name(new_room);
+        }
+        
+        if (dmenu_state == "debug_save")
+        {
+            if (dvertical_index == 0)
+            {
+                dhinter_text = "[I] - Import individual   [Alt+I] - Batch import";
+            }
+            else if (dvertical_index > 0 && dvertical_index < array_length(dbutton_options))
+            {
+                var hovered_text = dbutton_options[dvertical_index];
+                
+                if (string_copy(hovered_text, 1, 2) == "- ")
+                    hovered_text = string_copy(hovered_text, 3, string_length(hovered_text) - 2);
+                
+                var found_desc = "";
+                
+                for (var i = 0; i < array_length(debug_save_names); i++)
+                {
+                    if (debug_save_names[i] == hovered_text)
+                    {
+                        found_desc = debug_save_descriptions[i];
+                        break;
+                    }
+                }
+                
+                dhinter_text = found_desc;
+            }
+        }
+        
+        if (dmenu_state == "debug_save_options")
+        {
+            var target_save_name = string(global.debug_selected_save_name);
+            var found_desc = "No description available.";
+            
+            for (var i = 0; i < array_length(debug_save_names); i++)
+            {
+                if (debug_save_names[i] == target_save_name)
+                {
+                    found_desc = debug_save_descriptions[i];
+                    break;
+                }
+            }
+            
+            dhinter_text = found_desc;
         }
         
         if (scr_array_contains(ditem_types, dmenu_state))

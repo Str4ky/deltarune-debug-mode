@@ -2,10 +2,11 @@ if (scr_debug())
 {
     if (keyboard_check_pressed(ord("S")))
         instance_create(0, 0, obj_savemenu);
-    if (keyboard_check_pressed(ord("L")) && keyboard_check(vk_shift))
+    if (keyboard_check_pressed(ord("L")) && keyboard_check(vk_alt))
     {
         obj_dmenu_system.dmenu_popup_launch = 1;
-        obj_dmenu_system.dmenu_state = "debug_load";
+        obj_dmenu_system.dmenu_state = "debug_save";
+        obj_dmenu_system.dmenu_start_index = 0;
         obj_dmenu_system.dmenu_vertical_index = 0;
         obj_dmenu_system.dmenu_horizontal_index = 0;
         obj_dmenu_system.dmenu_state_history = [];
@@ -15,7 +16,7 @@ if (scr_debug())
         obj_dmenu_system.dmenu_active = true;
         snd_play(snd_egg);
     }
-    if (keyboard_check_pressed(ord("L")) && !keyboard_check(vk_shift))
+    if (keyboard_check_pressed(ord("L")) && !keyboard_check(vk_alt))
         scr_load();
     if (keyboard_check_pressed(ord("R")) && keyboard_check(vk_backspace))
         game_restart_true();

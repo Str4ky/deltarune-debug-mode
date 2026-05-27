@@ -63,6 +63,16 @@
       }
     ]
   },
+  ".debug_save_scan_imports": {
+    "gml_name": "gml_GlobalScript_scr_debug_save_scan_imports",
+    "actions": [
+      {
+        "replace": {
+          "content_file": "debug_save_scan_imports"
+        }
+      }
+    ]
+  },
     ".debug_save__modifyinfo": {
     "gml_name": "gml_GlobalScript_scr_debug_save_modify_info",
     "actions": [
