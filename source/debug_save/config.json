@@ -1,6 +1,6 @@
 {
-  "chapters": [-1],
   ".savemenu_step_append": {
+    "chapters": [-1],
     "gml_name": "gml_Object_obj_savemenu_Step_0",
     "actions": [
       {
@@ -11,6 +11,7 @@
     ]
   },
   ".save_debug_button": {
+    "chapters": [-1],
     "gml_name": "gml_Object_obj_savemenu_Draw_0",
     "actions": [
       {
@@ -22,6 +23,7 @@
     ]
   },
   ".savemenu_draw_findreplace": {
+    "chapters": [-1],
     "gml_name": "gml_Object_obj_savemenu_Draw_0",
     "actions": [
       {
@@ -33,6 +35,7 @@
     ]
   },
   ".saveprocess": {
+    "chapters": [-1],
     "gml_name": "gml_GlobalScript_scr_saveprocess",
     "actions": [
       {
@@ -43,64 +46,40 @@
       }
     ]
   },
-  ".get_debug_save_list": {
-    "gml_name": "gml_GlobalScript_scr_get_debug_save_list",
+  ".saveprocess_ch1": {
+    "chapters": [1],
+    "gml_name": "gml_GlobalScript_scr_saveprocess",
     "actions": [
       {
-        "replace": {
-          "content_file": "get_debug_save_list"
+        "find_replace": {
+          "find": "file = \"filech1_\" + string(arg0);",
+          "replace_file": "saveprocess_ch1_replace"
         }
       }
     ]
   },
-  ".debug_save_import": {
-    "gml_name": "gml_GlobalScript_scr_debug_save_import",
-    "actions": [
-      {
-        "replace": {
-          "content_file": "debug_save_import"
-        }
-      }
-    ]
+  "get_debug_save_list": {
+    "mode": "replace",
+    "gml_name": "gml_GlobalScript_scr_get_debug_save_list"
   },
-  ".debug_save_scan_imports": {
-    "gml_name": "gml_GlobalScript_scr_debug_save_scan_imports",
-    "actions": [
-      {
-        "replace": {
-          "content_file": "debug_save_scan_imports"
-        }
-      }
-    ]
+  "debug_save_import": {
+    "mode": "replace",
+    "gml_name": "gml_GlobalScript_scr_debug_save_import"
   },
-    ".debug_save__modifyinfo": {
-    "gml_name": "gml_GlobalScript_scr_debug_save_modify_info",
-    "actions": [
-      {
-        "replace": {
-          "content_file": "debug_save_modify_info"
-        }
-      }
-    ]
+  "debug_save_scan_imports": {
+    "mode": "replace",
+    "gml_name": "gml_GlobalScript_scr_debug_save_scan_imports"
   },
-  ".debug_save": {
-    "gml_name": "gml_GlobalScript_scr_debug_save",
-    "actions": [
-      {
-        "replace": {
-          "content_file": "debug_save"
-        }
-      }
-    ]
+  "debug_save_modify_info": {
+    "mode": "replace",
+    "gml_name": "gml_GlobalScript_scr_debug_save_modify_info"
   },
-  ".debug_load": {
-    "gml_name": "gml_GlobalScript_scr_debug_load",
-    "actions": [
-      {
-        "replace": {
-          "content_file": "debug_load"
-        }
-      }
-    ]
+  "debug_save": {
+    "mode": "replace",
+    "gml_name": "gml_GlobalScript_scr_debug_save"
+  },
+  "debug_load": {
+    "mode": "replace",
+    "gml_name": "gml_GlobalScript_scr_debug_load"
   }
 }

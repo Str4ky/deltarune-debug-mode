@@ -138,7 +138,7 @@ if (dmenu_active)
             var visual_offset = -2;
             var cursor_padding = 3 * d;
             var w_prefix = string_length(string(scr_dmode_get_text("ui_contains"))) * mono_spacing;
-            var w_name = string_length(string(dcustom_flag_text[0])) * mono_spacing;
+            var w_name = string_length(string(dkeyboard_input)) * mono_spacing;
             var x1_start = base_x + w_prefix;
             var x2_start = x1_start + w_name;
             draw_set_color(c_yellow);
@@ -156,7 +156,7 @@ if (dmenu_active)
             var visual_offset = -2;
             var cursor_padding = 3 * d;
             var w_prefix = string_length(string(scr_dmode_get_text("ui_plot_value"))) * mono_spacing;
-            var w_name = string_length(string(dcustom_flag_text[0])) * mono_spacing;
+            var w_name = string_length(string(dkeyboard_input)) * mono_spacing;
             var x1_start = base_x + w_prefix;
             var x2_start = x1_start + w_name;
             draw_set_color(c_yellow);
@@ -173,7 +173,7 @@ if (dmenu_active)
             var thickness = 1 * d;
             var visual_offset = -2;
             var cursor_padding = 3 * d;
-            var w_name = string_length(string(dcustom_flag_text[0])) * mono_spacing;
+            var w_name = string_length(string(dkeyboard_input)) * mono_spacing;
             var x1_start = base_x;
             draw_set_color(c_yellow);
             var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
@@ -224,22 +224,52 @@ if (dmenu_active)
                 var cur_btn = string(dbutton_options[button_index]);
                 draw_monospace(x_start + xx, y_start + (i * y_spacing) + yy, cur_btn);
                 var mono_spacing = (global.darkzone == 1) ? 15 : 8;
+                var needs_arrows = (is_cur_line && dmenu_state == "flag_misc") || (dmenu_state == "warp_options" && (button_index == 3 || button_index == 4)) || (dmenu_state == "debug_save_options" && button_index == 1);
                 
-                if ((is_cur_line && dmenu_state == "flag_misc") || (dmenu_state == "warp_options" && (button_index == 3 || button_index == 4)))
+                if (needs_arrows)
                 {
-                    if ((dmenu_state == "flag_misc" && dhorizontal_index != 0) || (dmenu_state == "warp_options" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != 0))
+                    var show_left = false;
+                    
+                    if (dmenu_state == "flag_misc" && dhorizontal_index != 0)
+                        show_left = true;
+                    else if (dmenu_state == "warp_options" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != 0)
+                        show_left = true;
+                    else if (dmenu_state == "debug_save_options" && global.dload_cur_inv != 0)
+                        show_left = true;
+                    
+                    if (show_left)
                     {
                         for (dash_pos = 0; 1; dash_pos++)
                         {
-                            if (dash_pos > 4 && string_char_at(cur_btn, dash_pos) == ((dmenu_state == "flag_misc") ? "-" : ":"))
+                            var check_char = "-";
+                            
+                            if (dmenu_state == "warp_options")
+                                check_char = ":";
+                            else if (dmenu_state == "debug_save_options")
+                                check_char = "(";
+                            
+                            if (dash_pos > 4 && string_char_at(cur_btn, dash_pos) == check_char)
                                 break;
                         }
                         
-                        dash_pos++;
+                        if (dmenu_state != "debug_save_options")
+                            dash_pos++;
+                        else
+                            dash_pos -= 2;
+                        
                         draw_sprite_ext(spr_morearrow, 0, x_start + ((dash_pos * mono_spacing) + floor(mono_spacing / 2)) + dmenu_arrow_yoffset + xx, y_start + (i * y_spacing) + side_arrows_mult[0] + yy, darrow_scale, -darrow_scale, 90, c_white, 1);
                     }
                     
-                    if ((dmenu_state == "flag_misc" && dhorizontal_index < (array_length(dother_options[dvertical_index][3]) - 1)) || (dmenu_state == "warp_options" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != (4 - (global.chapter == 1))))
+                    var show_right = false;
+                    
+                    if (dmenu_state == "flag_misc" && dhorizontal_index < (array_length(dother_options[dvertical_index][3]) - 1))
+                        show_right = true;
+                    else if (dmenu_state == "warp_options" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != (4 - (global.chapter == 1)))
+                        show_right = true;
+                    else if (dmenu_state == "debug_save_options" && global.dload_cur_inv != 1)
+                        show_right = true;
+                    
+                    if (show_right)
                         draw_sprite_ext(spr_morearrow, 0, (x_start + xx + ((string_length(cur_btn) + 1) * mono_spacing)) - floor(mono_spacing / 2) - dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[1], darrow_scale, -darrow_scale, 270, c_white, 1);
                 }
                 else if (dmenu_state == "recruits" && button_index == 0)
@@ -381,7 +411,7 @@ if (dmenu_active)
         var text_y = y_start + yy;
         var max_width = box_right_edge - text_x;
         var line_spacing = 16 * d;
-        draw_text_ext(text_x, text_y, cur_btn, line_spacing, max_width);
+        draw_monospace_ext(text_x, text_y, cur_btn, line_spacing, max_width);
         
         if (d == 2)
             heartsprite = spr_heart;

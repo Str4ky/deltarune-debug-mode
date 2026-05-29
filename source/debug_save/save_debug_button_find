@@ -1,1 +1,2 @@
-returntxt = stringsetloc\([^,]*, "obj_savemenu_slash_Draw_0_gml_48_0"\);\s+var bo = 0;
+    if \(mpos == 3\)
+        draw_set_color\(c_yellow\);

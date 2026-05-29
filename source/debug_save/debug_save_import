@@ -10,13 +10,20 @@ function scr_debug_save_import()
     
     var clean_path = string_replace_all(import_path, "\\", "/");
     var file_only_name = filename_name(clean_path);
-    var chapter_num = 0;
+    var chapter_num = global.chapter;
     var pos_underscore = string_pos("_", file_only_name);
     
     if (pos_underscore > 6)
     {
         var chapter_str = string_copy(file_only_name, 7, pos_underscore - 7);
-        chapter_num = real(chapter_str);
+        
+        try
+        {
+            chapter_num = real(chapter_str);
+        }
+        catch (e)
+        {
+        }
     }
     
     var file_id = file_text_open_read(import_path);
@@ -60,6 +67,9 @@ function scr_debug_save_import()
         
         if (!variable_struct_exists(meta, "Category") || meta.Category == "")
             meta.Category = "Imported";
+        
+        if (!variable_struct_exists(meta, "Chapter"))
+            meta.Chapter = chapter_num;
     }
     else
     {
@@ -76,43 +86,33 @@ function scr_debug_save_import()
         save_content_out = file_content;
     }
     
-    var debug_saves = scr_get_debug_save_list();
-    var highest_id = 0;
+    var safe_name = scr_debug_sanitize_filename(meta.SaveName);
+    var safe_cat = scr_debug_sanitize_filename(meta.Category, true);
+    var target_chap = variable_struct_exists(meta, "Chapter") ? meta.Chapter : global.chapter;
+    var base_dir = "debug_save/ch" + string(target_chap) + "/";
     
-    for (var j = 0; j < array_length(debug_saves); j++)
+    if (!directory_exists(base_dir))
+        directory_create(base_dir);
+    
+    var cat_dir = base_dir;
+    
+    if (safe_cat != "")
     {
-        var check_id = real(debug_saves[j]);
+        cat_dir += (safe_cat + "/");
         
-        if (check_id > highest_id)
-            highest_id = check_id;
+        if (!directory_exists(cat_dir))
+            directory_create(cat_dir);
     }
     
-    var section_name = string(highest_id + 1);
-    var new_file_path = "debug_save/dsave_" + string(chapter_num) + "_" + section_name + ".save";
+    var new_file_path = cat_dir + safe_name + ".save";
     var export_data = 
     {
         metadata: meta,
         save_file: save_content_out
     };
-    var json_string = json_stringify(export_data, true);
     var out_file = file_text_open_write(new_file_path);
-    file_text_write_string(out_file, json_string);
+    file_text_write_string(out_file, json_stringify(export_data, true));
     file_text_close(out_file);
-    var ini_path = "debug_save/debug.ini";
-    ossafe_ini_open(ini_path);
-    ini_write_string(section_name, "SaveName", variable_struct_exists(meta, "SaveName") ? meta.SaveName : file_only_name);
-    ini_write_string(section_name, "Category", variable_struct_exists(meta, "Category") ? meta.Category : "Imported");
-    ini_write_real(section_name, "Chapter", variable_struct_exists(meta, "Chapter") ? meta.Chapter : chapter_num);
-    ini_write_string(section_name, "Description", variable_struct_exists(meta, "Description") ? meta.Description : "Imported save.");
-    ini_write_string(section_name, "Name", variable_struct_exists(meta, "Name") ? meta.Name : "Unknown");
-    ini_write_real(section_name, "Level", variable_struct_exists(meta, "Level") ? meta.Level : 1);
-    ini_write_real(section_name, "Love", variable_struct_exists(meta, "Love") ? meta.Love : 1);
-    ini_write_real(section_name, "Room", variable_struct_exists(meta, "Room") ? meta.Room : 0);
-    ini_write_real(section_name, "Time", variable_struct_exists(meta, "Time") ? meta.Time : 0);
-    ini_write_real(section_name, "UraBoss", variable_struct_exists(meta, "UraBoss") ? meta.UraBoss : 0);
-    ini_write_string(section_name, "FileLocation", new_file_path);
-    ossafe_ini_close();
-    ossafe_savedata_save();
     scr_debug_print("Save file '" + file_only_name + "' imported successfully!");
     snd_play(snd_shineselect);
 }

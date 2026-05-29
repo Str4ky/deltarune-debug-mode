@@ -2228,37 +2228,41 @@ importGroup.QueueAppend("gml_Object_obj_savemenu_Step_0",
     obj_dmenu_system.dmenu_vertical_index_history = [];
     obj_dmenu_system.dmenu_page_index_history = [];
     obj_dmenu_system.dmenu_active = true;
-    endme = 2;
-    menuno = -1;
+    instance_destroy();
 }");
 
 
 importGroup.QueueRegexFindReplace("gml_Object_obj_savemenu_Draw_0",
-@"returntxt = stringsetloc\([^,]*, ""obj_savemenu_slash_Draw_0_gml_48_0""\);\s+var bo = 0;",
-@"returntxt = stringsetloc(global.debug ? ""Debug saves"" : ""Return"", ""obj_savemenu_slash_Draw_0_gml_48_0"");
-var bo = 0;");
+@"    if \(mpos == 3\)
+        draw_set_color\(c_yellow\);",
+@"if (mpos == 3)
+    draw_set_color(c_yellow);
+
+if (global.debug)
+    returntxt = stringsetloc(""Debug saves"", ""obj_savemenu_slash_Draw_0_gml_48_0"");
+else");
 
 
 importGroup.QueueRegexFindReplace("gml_Object_obj_savemenu_Draw_0",
 @"if\s*\(\s*button1_p\(\)\s*&&\s*buffer\s*<\s*0\s*\)\s*\{[\s\S]*?if\s*\(\s*mpos\s*==\s*3\s*\)\s*\{[\s\S]*?\}",
-@"if (button1_p() && buffer < 0)
-{
-    if (mpos == 3)
-    {
-        if (global.debug)
+@"        if (button1_p() && buffer < 0)
         {
-            menuno = 98;
-            buffer = 3;
-            snd_play(snd_egg);
-        }
-        else
-        {
-            menuno = 0;
-            buffer = 3;
-            mpos = global.filechoice;
-            snd_play(snd_select);
-        }
-    }");
+            if (mpos == 3)
+            {
+                if (global.debug)
+                {
+                    menuno = 98;
+                    buffer = 3;
+                    snd_play(snd_egg);
+                }
+                else
+                {
+                    menuno = 0;
+                    buffer = 3;
+                    mpos = global.filechoice;
+                    snd_play(snd_select);
+                }
+            }");
 
 
 UndertaleScript scr_saveprocess = Data.Scripts.ByName("scr_saveprocess");
@@ -2274,49 +2278,163 @@ UndertaleScript scr_get_debug_save_list = Data.Scripts.ByName("scr_get_debug_sav
 importGroup.QueueReplace("gml_GlobalScript_scr_get_debug_save_list",
 @"function scr_get_debug_save_list()
 {
-    var save_array = [];
-    var path = ""debug_save/debug.ini"";
     debug_save_sections = [];
     debug_save_names = [];
     debug_save_categories = [];
     debug_save_chapters = [];
     debug_save_descriptions = [];
+    var base_dir = ""debug_save/"";
     
-    if (!ossafe_file_exists(path))
-        return save_array;
+    if (!directory_exists(base_dir))
+        return debug_save_sections;
     
-    var file_id = ossafe_file_text_open_read(path);
+    var dirs_to_scan = [base_dir];
+    var files_to_read = [];
     
-    while (!ossafe_file_text_eof(file_id))
+    while (array_length(dirs_to_scan) > 0)
     {
-        var line = ossafe_file_text_read_string(file_id);
-        ossafe_file_text_readln(file_id);
+        var current_dir = array_pop(dirs_to_scan);
+        var f_name = file_find_first(current_dir + ""*"", 16);
         
-        if (string_char_at(line, 1) == ""["" && string_char_at(line, string_length(line)) == ""]"")
+        while (f_name != """")
         {
-            var section = string_copy(line, 2, string_length(line) - 2);
-            array_push(save_array, section);
+            if (f_name != ""."" && f_name != "".."")
+            {
+                var full_path = current_dir + f_name;
+                
+                if (directory_exists(full_path))
+                    array_push(dirs_to_scan, full_path + ""/"");
+                else if (string_ends_with(string_lower(f_name), "".save""))
+                    array_push(files_to_read, full_path);
+            }
+            
+            f_name = file_find_next();
+        }
+        
+        file_find_close();
+    }
+    
+    var unsorted_saves = [];
+    
+    for (var i = 0; i < array_length(files_to_read); i++)
+    {
+        var save_path = files_to_read[i];
+        var file_id = file_text_open_read(save_path);
+        var file_content = """";
+        
+        while (!file_text_eof(file_id))
+        {
+            file_content += file_text_read_string(file_id);
+            file_text_readln(file_id);
+            
+            if (!file_text_eof(file_id))
+                file_content += ""\n"";
+        }
+        
+        file_text_close(file_id);
+        
+        try
+        {
+            var save_struct = json_parse(file_content);
+            
+            if (is_struct(save_struct) && variable_struct_exists(save_struct, ""metadata""))
+            {
+                var meta = save_struct.metadata;
+                var clean_path = string_replace_all(save_path, ""\\"", ""/"");
+                var actual_file = filename_name(clean_path);
+                var actual_name = string_replace(actual_file, "".save"", """");
+                var parent_dir = filename_dir(clean_path);
+                var actual_cat_folder = filename_name(parent_dir);
+                var actual_cat = """";
+                var is_chapter_folder = string_length(actual_cat_folder) >= 3 && string_copy(actual_cat_folder, 1, 2) == ""ch"" && string_digits(actual_cat_folder) != """";
+                
+                if (!is_chapter_folder && actual_cat_folder != ""debug_save"")
+                    actual_cat = actual_cat_folder;
+                
+                var needs_healing = false;
+                
+                if (!variable_struct_exists(meta, ""SaveName"") || meta.SaveName != actual_name)
+                {
+                    meta.SaveName = actual_name;
+                    needs_healing = true;
+                }
+                
+                if (!variable_struct_exists(meta, ""Category"") || meta.Category != actual_cat)
+                {
+                    meta.Category = actual_cat;
+                    needs_healing = true;
+                }
+                
+                if (needs_healing)
+                {
+                    var out_file = file_text_open_write(save_path);
+                    file_text_write_string(out_file, json_stringify(save_struct, true));
+                    file_text_close(out_file);
+                }
+                
+                var s_name = meta.SaveName;
+                var s_cat = meta.Category;
+                var s_chap = variable_struct_exists(meta, ""Chapter"") ? meta.Chapter : -1;
+                var s_desc = variable_struct_exists(meta, ""Description"") ? meta.Description : ""No description."";
+                array_push(unsorted_saves, 
+                {
+                    path: save_path,
+                    name: s_name,
+                    cat: s_cat,
+                    chap: s_chap,
+                    desc: s_desc
+                });
+            }
+        }
+        catch (e)
+        {
+            scr_debug_print(""Error parsing save file: "" + filename_name(save_path));
         }
     }
     
-    ossafe_file_text_close(file_id);
-    ossafe_ini_open(path);
-    
-    for (var i = 0; i < array_length(save_array); i++)
+    array_sort(unsorted_saves, function(arg0, arg1)
     {
-        var save_name_val = ini_read_string(save_array[i], ""SaveName"", ""Unknown"");
-        var cat_val = ini_read_string(save_array[i], ""Category"", """");
-        var chap_val = ini_read_real(save_array[i], ""Chapter"", -1);
-        var desc_val = ini_read_string(save_array[i], ""Description"", ""No description available."");
-        array_push(debug_save_names, save_name_val);
-        array_push(debug_save_categories, cat_val);
-        array_push(debug_save_chapters, chap_val);
-        array_push(debug_save_descriptions, desc_val);
+        if (arg0.cat == """" && arg1.cat != """")
+            return -1;
+        
+        if (arg0.cat != """" && arg1.cat == """")
+            return 1;
+        
+        if (arg0.cat != arg1.cat)
+        {
+            var cat_a = string_lower(arg0.cat);
+            var cat_b = string_lower(arg1.cat);
+            
+            if (cat_a < cat_b)
+                return -1;
+            
+            if (cat_a > cat_b)
+                return 1;
+        }
+        
+        var name_a = string_lower(arg0.name);
+        var name_b = string_lower(arg1.name);
+        
+        if (name_a < name_b)
+            return -1;
+        
+        if (name_a > name_b)
+            return 1;
+        
+        return 0;
+    });
+    
+    for (var i = 0; i < array_length(unsorted_saves); i++)
+    {
+        var s = unsorted_saves[i];
+        array_push(debug_save_sections, s.path);
+        array_push(debug_save_names, s.name);
+        array_push(debug_save_categories, s.cat);
+        array_push(debug_save_chapters, s.chap);
+        array_push(debug_save_descriptions, s.desc);
     }
     
-    debug_save_sections = save_array;
-    ossafe_ini_close();
-    return save_array;
+    return debug_save_sections;
 }");
 
 
@@ -2334,13 +2452,20 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_save_import",
     
     var clean_path = string_replace_all(import_path, ""\\"", ""/"");
     var file_only_name = filename_name(clean_path);
-    var chapter_num = 0;
+    var chapter_num = global.chapter;
     var pos_underscore = string_pos(""_"", file_only_name);
     
     if (pos_underscore > 6)
     {
         var chapter_str = string_copy(file_only_name, 7, pos_underscore - 7);
-        chapter_num = real(chapter_str);
+        
+        try
+        {
+            chapter_num = real(chapter_str);
+        }
+        catch (e)
+        {
+        }
     }
     
     var file_id = file_text_open_read(import_path);
@@ -2384,6 +2509,9 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_save_import",
         
         if (!variable_struct_exists(meta, ""Category"") || meta.Category == """")
             meta.Category = ""Imported"";
+        
+        if (!variable_struct_exists(meta, ""Chapter""))
+            meta.Chapter = chapter_num;
     }
     else
     {
@@ -2400,43 +2528,33 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_save_import",
         save_content_out = file_content;
     }
     
-    var debug_saves = scr_get_debug_save_list();
-    var highest_id = 0;
+    var safe_name = scr_debug_sanitize_filename(meta.SaveName);
+    var safe_cat = scr_debug_sanitize_filename(meta.Category, true);
+    var target_chap = variable_struct_exists(meta, ""Chapter"") ? meta.Chapter : global.chapter;
+    var base_dir = ""debug_save/ch"" + string(target_chap) + ""/"";
     
-    for (var j = 0; j < array_length(debug_saves); j++)
+    if (!directory_exists(base_dir))
+        directory_create(base_dir);
+    
+    var cat_dir = base_dir;
+    
+    if (safe_cat != """")
     {
-        var check_id = real(debug_saves[j]);
+        cat_dir += (safe_cat + ""/"");
         
-        if (check_id > highest_id)
-            highest_id = check_id;
+        if (!directory_exists(cat_dir))
+            directory_create(cat_dir);
     }
     
-    var section_name = string(highest_id + 1);
-    var new_file_path = ""debug_save/dsave_"" + string(chapter_num) + ""_"" + section_name + "".save"";
+    var new_file_path = cat_dir + safe_name + "".save"";
     var export_data = 
     {
         metadata: meta,
         save_file: save_content_out
     };
-    var json_string = json_stringify(export_data, true);
     var out_file = file_text_open_write(new_file_path);
-    file_text_write_string(out_file, json_string);
+    file_text_write_string(out_file, json_stringify(export_data, true));
     file_text_close(out_file);
-    var ini_path = ""debug_save/debug.ini"";
-    ossafe_ini_open(ini_path);
-    ini_write_string(section_name, ""SaveName"", variable_struct_exists(meta, ""SaveName"") ? meta.SaveName : file_only_name);
-    ini_write_string(section_name, ""Category"", variable_struct_exists(meta, ""Category"") ? meta.Category : ""Imported"");
-    ini_write_real(section_name, ""Chapter"", variable_struct_exists(meta, ""Chapter"") ? meta.Chapter : chapter_num);
-    ini_write_string(section_name, ""Description"", variable_struct_exists(meta, ""Description"") ? meta.Description : ""Imported save."");
-    ini_write_string(section_name, ""Name"", variable_struct_exists(meta, ""Name"") ? meta.Name : ""Unknown"");
-    ini_write_real(section_name, ""Level"", variable_struct_exists(meta, ""Level"") ? meta.Level : 1);
-    ini_write_real(section_name, ""Love"", variable_struct_exists(meta, ""Love"") ? meta.Love : 1);
-    ini_write_real(section_name, ""Room"", variable_struct_exists(meta, ""Room"") ? meta.Room : 0);
-    ini_write_real(section_name, ""Time"", variable_struct_exists(meta, ""Time"") ? meta.Time : 0);
-    ini_write_real(section_name, ""UraBoss"", variable_struct_exists(meta, ""UraBoss"") ? meta.UraBoss : 0);
-    ini_write_string(section_name, ""FileLocation"", new_file_path);
-    ossafe_ini_close();
-    ossafe_savedata_save();
     scr_debug_print(""Save file '"" + file_only_name + ""' imported successfully!"");
     snd_play(snd_shineselect);
 }");
@@ -2611,19 +2729,25 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_save_scan_imports",
             save_content = file_content;
         }
         
-        var debug_saves = scr_get_debug_save_list();
-        var highest_id = 0;
+        var safe_name = scr_debug_sanitize_filename(meta.SaveName);
+        var safe_cat = scr_debug_sanitize_filename(meta.Category, true);
+        var target_chap = variable_struct_exists(meta, ""Chapter"") ? meta.Chapter : global.chapter;
+        var base_dir = ""debug_save/ch"" + string(target_chap) + ""/"";
         
-        for (var j = 0; j < array_length(debug_saves); j++)
+        if (!directory_exists(base_dir))
+            directory_create(base_dir);
+        
+        var cat_dir = base_dir;
+        
+        if (safe_cat != """")
         {
-            var check_id = real(debug_saves[j]);
+            cat_dir += (safe_cat + ""/"");
             
-            if (check_id > highest_id)
-                highest_id = check_id;
+            if (!directory_exists(cat_dir))
+                directory_create(cat_dir);
         }
         
-        var section_name = string(highest_id + 1);
-        var new_file_path = ""debug_save/dsave_"" + string(chapter_num) + ""_"" + section_name + "".save"";
+        var new_file_path = cat_dir + safe_name + "".save"";
         var export_data = 
         {
             metadata: meta,
@@ -2632,24 +2756,9 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_save_scan_imports",
         var out_file = file_text_open_write(new_file_path);
         file_text_write_string(out_file, json_stringify(export_data, true));
         file_text_close(out_file);
-        ossafe_ini_open(""debug_save/debug.ini"");
-        ini_write_string(section_name, ""SaveName"", variable_struct_exists(meta, ""SaveName"") ? meta.SaveName : ext_name);
-        ini_write_string(section_name, ""Category"", variable_struct_exists(meta, ""Category"") ? meta.Category : ext_cat);
-        ini_write_real(section_name, ""Chapter"", variable_struct_exists(meta, ""Chapter"") ? meta.Chapter : chapter_num);
-        ini_write_string(section_name, ""Description"", variable_struct_exists(meta, ""Description"") ? meta.Description : ""Imported save."");
-        ini_write_string(section_name, ""Name"", variable_struct_exists(meta, ""Name"") ? meta.Name : ""Unknown"");
-        ini_write_real(section_name, ""Level"", variable_struct_exists(meta, ""Level"") ? meta.Level : 1);
-        ini_write_real(section_name, ""Love"", variable_struct_exists(meta, ""Love"") ? meta.Love : 1);
-        ini_write_real(section_name, ""Room"", variable_struct_exists(meta, ""Room"") ? meta.Room : 0);
-        ini_write_real(section_name, ""Time"", variable_struct_exists(meta, ""Time"") ? meta.Time : 0);
-        ini_write_real(section_name, ""UraBoss"", variable_struct_exists(meta, ""UraBoss"") ? meta.UraBoss : 0);
-        ini_write_string(section_name, ""FileLocation"", new_file_path);
-        ossafe_ini_close();
         file_delete(target_path);
         success_count++;
     }
-    
-    ossafe_savedata_save();
     
     if (directory_exists(import_dir))
         directory_destroy(import_dir);
@@ -2663,110 +2772,140 @@ UndertaleScript scr_debug_save_modify_info = Data.Scripts.ByName("scr_debug_save
 importGroup.QueueReplace("gml_GlobalScript_scr_debug_save_modify_info",
 @"function scr_debug_save_modify_info(arg0, arg1, arg2)
 {
-    var path = ""debug_save/debug.ini"";
-    
-    if (!ossafe_file_exists(path))
+    if (!file_exists(arg0))
     {
-        scr_debug_print(""Error: debug.ini not found. Cannot modify save."");
-        return false;
+        scr_debug_print(""Error: Save file not found on disk."");
+        return """";
     }
     
-    var section_str = string(arg0);
-    ossafe_ini_open(path);
+    var file_id = file_text_open_read(arg0);
+    var json_string = """";
     
-    if (is_string(arg2))
-        ini_write_string(section_str, arg1, arg2);
-    else if (is_real(arg2) || is_bool(arg2))
-        ini_write_real(section_str, arg1, arg2);
-    else
-        ini_write_string(section_str, arg1, string(arg2));
-    
-    var file_loc = ini_read_string(section_str, ""FileLocation"", """");
-    ossafe_ini_close();
-    ossafe_savedata_save();
-    
-    if (file_loc != """" && string_copy(file_loc, string_length(file_loc) - 4, 5) == "".save"")
+    while (!file_text_eof(file_id))
     {
-        if (file_exists(file_loc) || ossafe_file_exists(file_loc))
-        {
-            var file_id = file_text_open_read(file_loc);
-            var json_string = """";
-            
-            while (!file_text_eof(file_id))
-            {
-                json_string += file_text_read_string(file_id);
-                file_text_readln(file_id);
-                
-                if (!file_text_eof(file_id))
-                    json_string += ""\n"";
-            }
-            
-            file_text_close(file_id);
-            var parsed_data = -1;
-            
-            try
-            {
-                parsed_data = json_parse(json_string);
-            }
-            catch (e)
-            {
-            }
-            
-            if (is_struct(parsed_data) && variable_struct_exists(parsed_data, ""metadata""))
-            {
-                variable_struct_set(parsed_data.metadata, arg1, arg2);
-                var new_json_string = json_stringify(parsed_data, true);
-                var out_file = file_text_open_write(file_loc);
-                file_text_write_string(out_file, new_json_string);
-                file_text_close(out_file);
-            }
-        }
+        json_string += file_text_read_string(file_id);
+        file_text_readln(file_id);
+        
+        if (!file_text_eof(file_id))
+            json_string += ""\n"";
     }
     
-    scr_debug_print(""Successfully updated ["" + section_str + ""] - "" + string(arg1) + "" changed to: "" + string(arg2));
-    return true;
+    file_text_close(file_id);
+    var parsed_data = -1;
+    
+    try
+    {
+        parsed_data = json_parse(json_string);
+    }
+    catch (e)
+    {
+        scr_debug_print(""Error: JSON is corrupted."");
+        return """";
+    }
+    
+    if (!is_struct(parsed_data) || !variable_struct_exists(parsed_data, ""metadata""))
+    {
+        scr_debug_print(""Error: Invalid save structure."");
+        return """";
+    }
+    
+    variable_struct_set(parsed_data.metadata, arg1, arg2);
+    var meta = parsed_data.metadata;
+    var safe_name = scr_debug_sanitize_filename(variable_struct_exists(meta, ""SaveName"") ? meta.SaveName : ""Untitled"");
+    var safe_cat = scr_debug_sanitize_filename(variable_struct_exists(meta, ""Category"") ? meta.Category : """", true);
+    var chapter_num = variable_struct_exists(meta, ""Chapter"") ? meta.Chapter : global.chapter;
+    var base_dir = ""debug_save/ch"" + string(chapter_num) + ""/"";
+    
+    if (!directory_exists(base_dir))
+        directory_create(base_dir);
+    
+    var cat_dir = base_dir;
+    
+    if (safe_cat != """")
+    {
+        cat_dir += (safe_cat + ""/"");
+        
+        if (!directory_exists(cat_dir))
+            directory_create(cat_dir);
+    }
+    
+    var new_path = cat_dir + safe_name + "".save"";
+    var out_file = file_text_open_write(new_path);
+    file_text_write_string(out_file, json_stringify(parsed_data, true));
+    file_text_close(out_file);
+    
+    if (arg0 != new_path)
+    {
+        file_delete(arg0);
+        scr_debug_cleanup_folder(arg0);
+    }
+    
+    snd_play(snd_save);
+    scr_debug_print(""Updated "" + arg1 + "" to: "" + string(arg2));
+    return new_path;
 }");
 
 
 UndertaleScript scr_debug_save = Data.Scripts.ByName("scr_debug_save");
 importGroup.QueueReplace("gml_GlobalScript_scr_debug_save",
-@"function scr_debug_save()
+@"function scr_debug_sanitize_filename(arg0, arg1 = false)
 {
-    var debug_save_current_id = 1;
+    var bad_chars = [""\\"", ""/"", "":"", ""*"", ""?"", ""\"""", ""<"", "">"", ""|""];
+    var clean_name = arg0;
     
-    if (variable_global_exists(""debug_overwrite_section"") && global.debug_overwrite_section != """")
+    for (var i = 0; i < array_length(bad_chars); i++)
+        clean_name = string_replace_all(clean_name, bad_chars[i], ""_"");
+    
+    clean_name = string_trim(clean_name);
+    
+    if (clean_name == """")
     {
-        debug_save_current_id = real(global.debug_overwrite_section);
-    }
-    else
-    {
-        var debug_saves = scr_get_debug_save_list();
-        
-        for (var i = 0; i < array_length(debug_saves); i++)
-        {
-            var check_id = real(debug_saves[i]);
-            
-            if (check_id >= debug_save_current_id)
-                debug_save_current_id = check_id + 1;
-        }
+        if (arg1)
+            return """";
+        else
+            return ""Untitled_Save"";
     }
     
-    scr_saveprocess(debug_save_current_id);
-    debug_save_name_bk2 = global.debug_save_name;
-    var section_name = string(debug_save_current_id);
+    return clean_name;
+}
+
+function scr_debug_save()
+{
+    if (!variable_global_exists(""debug_save_name""))
+        global.debug_save_name = ""Untitled_Save"";
+    
+    if (!variable_global_exists(""debug_save_category""))
+        global.debug_save_category = """";
+    
+    if (!variable_global_exists(""debug_save_description""))
+        global.debug_save_description = ""No description available."";
+    
+    var temp_id = 999;
+    scr_saveprocess(temp_id);
     var raw_file_path = """";
     
     if (global.debug_saving == 1)
-        raw_file_path = ""debug_save/filech"" + string(global.chapter) + ""_"" + section_name;
+        raw_file_path = ""debug_save/filech"" + string(global.chapter) + ""_"" + string(temp_id);
     else
-        raw_file_path = ""filech"" + string(global.chapter) + ""_"" + section_name;
+        raw_file_path = ""filech"" + string(global.chapter) + ""_"" + string(temp_id);
     
-    var json_file_path = ""debug_save/dsave_"" + string(global.chapter) + ""_"" + section_name + "".save"";
-    var save_category = """";
+    var safe_name = scr_debug_sanitize_filename(global.debug_save_name);
+    var safe_cat = scr_debug_sanitize_filename(global.debug_save_category, true);
+    var target_dir = ""debug_save/ch"" + string(global.chapter) + ""/"";
     
-    if (variable_global_exists(""debug_save_category"") && is_string(global.debug_save_category))
-        save_category = global.debug_save_category;
+    if (!directory_exists(target_dir))
+        directory_create(target_dir);
     
+    if (safe_cat != """")
+    {
+        target_dir += (safe_cat + ""/"");
+        
+        if (!directory_exists(target_dir))
+            directory_create(target_dir);
+    }
+    
+    var full_path = target_dir + safe_name + "".save"";
+    json_file_path = full_path;
     var uraboss = 0;
     
     if (global.chapter == 1)
@@ -2781,19 +2920,6 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_save",
         uraboss = scr_get_secret_boss_result(global.chapter);
     }
     
-    var meta_struct = 
-    {
-        SaveName: global.debug_save_name,
-        Category: save_category,
-        Chapter: global.chapter,
-        Name: global.truename,
-        Level: global.lv,
-        Love: global.llv,
-        Room: scr_get_id_by_room_index(room),
-        Time: global.time,
-        UraBoss: uraboss,
-        Description: ""Saved in room "" + string(scr_get_id_by_room_index(room)) + "" at "" + string(global.time)
-    };
     var save_content = """";
     
     if (file_exists(raw_file_path))
@@ -2810,33 +2936,38 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_save",
         file_delete(raw_file_path);
     }
     
+    var current_version = ""Unknown"";
+    
+    if (variable_global_exists(""versionno""))
+        current_version = string(global.versionno);
+    else if (variable_global_exists(""version""))
+        current_version = string(global.version);
+    
     var export_data = 
     {
-        metadata: meta_struct,
+        metadata: 
+        {
+            SaveName: global.debug_save_name,
+            Category: global.debug_save_category,
+            Chapter: global.chapter,
+            Description: global.debug_save_description,
+            Name: global.truename,
+            Level: global.lv,
+            Love: global.llv,
+            Room: scr_get_id_by_room_index(room),
+            Time: global.time,
+            UraBoss: uraboss,
+            Date: date_current_datetime(),
+            InitLang: global.flag[912],
+            Version: current_version
+        },
         save_file: save_content
     };
-    var json_string = json_stringify(export_data, true);
-    var out_file = file_text_open_write(json_file_path);
-    file_text_write_string(out_file, json_string);
+    var out_file = file_text_open_write(full_path);
+    file_text_write_string(out_file, json_stringify(export_data, true));
     file_text_close(out_file);
-    iniwrite = ossafe_ini_open(""debug_save/debug.ini"");
-    ini_write_string(section_name, ""SaveName"", meta_struct.SaveName);
-    ini_write_string(section_name, ""Category"", meta_struct.Category);
-    ini_write_real(section_name, ""Chapter"", meta_struct.Chapter);
-    ini_write_string(section_name, ""Name"", meta_struct.Name);
-    ini_write_string(section_name, ""FileLocation"", json_file_path);
-    ini_write_string(section_name, ""Description"", meta_struct.Description);
-    ini_write_real(section_name, ""Level"", meta_struct.Level);
-    ini_write_real(section_name, ""Love"", meta_struct.Love);
-    ini_write_real(section_name, ""Time"", meta_struct.Time);
-    ini_write_real(section_name, ""Date"", date_current_datetime());
-    ini_write_real(section_name, ""Room"", meta_struct.Room);
-    ini_write_real(section_name, ""InitLang"", global.flag[912]);
-    ini_write_real(section_name, ""UraBoss"", meta_struct.UraBoss);
-    ini_write_string(section_name, ""Version"", string(global.versionno));
-    ossafe_ini_close();
     scr_store_ura_result(global.chapter, 999, uraboss);
-    ossafe_ini_open(""keyconfig_"" + section_name + "".ini"");
+    ossafe_ini_open(""keyconfig_debug.ini"");
     
     for (var i = 0; i < 10; i += 1)
         ini_write_real(""KEYBOARD_CONTROLS"", string(i), global.input_k[i]);
@@ -2851,6 +2982,37 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_save",
     global.debug_save_category = """";
     global.debug_overwrite_section = """";
     global.debug_saving = 0;
+}
+
+function scr_debug_cleanup_folder(arg0)
+{
+    var folder_path = filename_dir(arg0) + ""/"";
+    var folder_name = filename_name(filename_dir(arg0));
+    
+    if (string_copy(folder_name, 1, 2) == ""ch"" && string_digits(folder_name) != """")
+        exit;
+    
+    if (folder_name == ""debug_save"")
+        exit;
+    
+    var is_empty = true;
+    var file = file_find_first(folder_path + ""*"", 16);
+    
+    while (file != """")
+    {
+        if (file != ""."" && file != "".."")
+        {
+            is_empty = false;
+            break;
+        }
+        
+        file = file_find_next();
+    }
+    
+    file_find_close();
+    
+    if (is_empty && directory_exists(folder_path))
+        directory_destroy(folder_path);
 }");
 
 
@@ -2920,22 +3082,22 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
         for (var idx = 0; idx < len_a; idx++)
             cache_armor[idx] = global.armor[idx];
         
-        var len_p = array_length(global.pocketitem);
-        
-        for (var idx = 0; idx < len_p; idx++)
-            cache_pocketitem[idx] = global.pocketitem[idx];
+        if (variable_global_exists(""pocketitem""))
+        {
+            var len_p = array_length(global.pocketitem);
+            
+            for (var idx = 0; idx < len_p; idx++)
+                cache_pocketitem[idx] = global.pocketitem[idx];
+        }
     }
     
-    var filechoice_bk = global.filechoice;
-    scr_gamestart();
-    global.filechoice = filechoice_bk;
-    var target_id = string(arg0);
-    ossafe_ini_open(""debug_save/debug.ini"");
-    var file = ini_read_string(target_id, ""FileLocation"", """");
-    ossafe_ini_close();
+    var file = string(arg0);
     
-    if (file == """")
-        file = ""debug_save/filech"" + string(global.chapter) + ""_"" + target_id;
+    if (file == """" || string_length(file) < 3)
+        file = ""debug_save/filech"" + string(global.chapter) + ""_"" + string(arg0);
+    
+    var raw_file_to_read = file;
+    var target_chapter = global.chapter;
     
     if (string_copy(file, string_length(file) - 4, 5) == "".save"")
     {
@@ -2964,19 +3126,42 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
             {
             }
             
-            if (is_struct(parsed_data) && variable_struct_exists(parsed_data, ""save_file""))
+            if (is_struct(parsed_data))
             {
-                var raw_content = parsed_data.save_file;
-                var temp_raw_path = ""filech"" + string(global.chapter) + ""_999"";
-                var out_file = ossafe_file_text_open_write(temp_raw_path);
-                ossafe_file_text_write_string(out_file, raw_content);
-                ossafe_file_text_close(out_file);
-                file = temp_raw_path;
+                if (variable_struct_exists(parsed_data, ""metadata"") && variable_struct_exists(parsed_data.metadata, ""Chapter""))
+                    target_chapter = parsed_data.metadata.Chapter;
+                
+                if (variable_struct_exists(parsed_data, ""save_file""))
+                {
+                    var raw_content = parsed_data.save_file;
+                    var temp_raw_path = ""filech"" + string(target_chapter) + ""_999"";
+                    var out_file = ossafe_file_text_open_write(temp_raw_path);
+                    ossafe_file_text_write_string(out_file, raw_content);
+                    ossafe_file_text_close(out_file);
+                    raw_file_to_read = temp_raw_path;
+                }
             }
         }
     }
+    else
+    {
+        var fn = filename_name(file);
+        
+        if (string_pos(""ch1"", fn) > 0)
+            target_chapter = 1;
+        else if (string_pos(""ch2"", fn) > 0)
+            target_chapter = 2;
+        else if (string_pos(""ch3"", fn) > 0)
+            target_chapter = 3;
+        else if (string_pos(""ch4"", fn) > 0)
+            target_chapter = 4;
+    }
     
-    myfileid = ossafe_file_text_open_read(file);
+    global.chapter = target_chapter;
+    var filechoice_bk = global.filechoice;
+    scr_gamestart();
+    global.filechoice = filechoice_bk;
+    myfileid = ossafe_file_text_open_read(raw_file_to_read);
     global.truename = ossafe_file_text_read_string(myfileid);
     ossafe_file_text_readln(myfileid);
     
@@ -3092,7 +3277,12 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
         ossafe_file_text_readln(myfileid);
     }
     
-    for (i = 0; i < 5; i += 1)
+    var char_limit = 5;
+    
+    if (global.chapter == 1)
+        char_limit = 4;
+    
+    for (i = 0; i < char_limit; i += 1)
     {
         if (!global.is_console)
         {
@@ -3114,7 +3304,12 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
             ossafe_file_text_readln(myfileid);
             global.chararmor2[i] = ossafe_file_text_read_real(myfileid);
             ossafe_file_text_readln(myfileid);
-            global.weaponstyle[i] = ossafe_file_text_read_real(myfileid);
+            
+            if (global.chapter == 1)
+                global.weaponstyle[i] = ossafe_file_text_read_string(myfileid);
+            else
+                global.weaponstyle[i] = ossafe_file_text_read_real(myfileid);
+            
             ossafe_file_text_readln(myfileid);
         }
         
@@ -3136,10 +3331,14 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
             ossafe_file_text_readln(myfileid);
             global.itemspecial[i][q] = ossafe_file_text_read_real(myfileid);
             ossafe_file_text_readln(myfileid);
-            global.itemelement[i][q] = ossafe_file_text_read_real(myfileid);
-            ossafe_file_text_readln(myfileid);
-            global.itemelementamount[i][q] = ossafe_file_text_read_real(myfileid);
-            ossafe_file_text_readln(myfileid);
+            
+            if (global.chapter != 1)
+            {
+                global.itemelement[i][q] = ossafe_file_text_read_real(myfileid);
+                ossafe_file_text_readln(myfileid);
+                global.itemelementamount[i][q] = ossafe_file_text_read_real(myfileid);
+                ossafe_file_text_readln(myfileid);
+            }
         }
         
         for (j = 0; j < 12; j += 1)
@@ -3186,36 +3385,61 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
         
         ds_list_destroy(armor_list);
         ossafe_file_text_readln(myfileid);
-        var pocket_list = scr_ds_list_read(myfileid);
         
-        for (i = 0; i < ds_list_size(pocket_list); i += 1)
-            global.pocketitem[i] = ds_list_find_value(pocket_list, i);
-        
-        ds_list_destroy(pocket_list);
-        ossafe_file_text_readln(myfileid);
+        if (global.chapter != 1)
+        {
+            var pocket_list = scr_ds_list_read(myfileid);
+            
+            for (i = 0; i < ds_list_size(pocket_list); i += 1)
+                global.pocketitem[i] = ds_list_find_value(pocket_list, i);
+            
+            ds_list_destroy(pocket_list);
+            ossafe_file_text_readln(myfileid);
+        }
     }
     else
     {
-        for (j = 0; j < 13; j += 1)
+        switch (global.chapter)
         {
-            global.item[j] = ossafe_file_text_read_real(myfileid);
-            ossafe_file_text_readln(myfileid);
-            global.keyitem[j] = ossafe_file_text_read_real(myfileid);
-            ossafe_file_text_readln(myfileid);
-        }
-        
-        for (j = 0; j < 48; j += 1)
-        {
-            global.weapon[j] = ossafe_file_text_read_real(myfileid);
-            ossafe_file_text_readln(myfileid);
-            global.armor[j] = ossafe_file_text_read_real(myfileid);
-            ossafe_file_text_readln(myfileid);
-        }
-        
-        for (j = 0; j < 72; j += 1)
-        {
-            global.pocketitem[j] = ossafe_file_text_read_real(myfileid);
-            ossafe_file_text_readln(myfileid);
+            case 1:
+                for (j = 0; j < 13; j += 1)
+                {
+                    global.item[j] = ossafe_file_text_read_real(myfileid);
+                    ossafe_file_text_readln(myfileid);
+                    global.keyitem[j] = ossafe_file_text_read_real(myfileid);
+                    ossafe_file_text_readln(myfileid);
+                    global.weapon[j] = ossafe_file_text_read_real(myfileid);
+                    ossafe_file_text_readln(myfileid);
+                    global.armor[j] = ossafe_file_text_read_real(myfileid);
+                    ossafe_file_text_readln(myfileid);
+                }
+                
+                break;
+            
+            default:
+                for (j = 0; j < 13; j += 1)
+                {
+                    global.item[j] = ossafe_file_text_read_real(myfileid);
+                    ossafe_file_text_readln(myfileid);
+                    global.keyitem[j] = ossafe_file_text_read_real(myfileid);
+                    ossafe_file_text_readln(myfileid);
+                }
+                
+                for (j = 0; j < 48; j += 1)
+                {
+                    global.weapon[j] = ossafe_file_text_read_real(myfileid);
+                    ossafe_file_text_readln(myfileid);
+                    global.armor[j] = ossafe_file_text_read_real(myfileid);
+                    ossafe_file_text_readln(myfileid);
+                }
+                
+                for (j = 0; j < 72; j += 1)
+                {
+                    global.pocketitem[j] = ossafe_file_text_read_real(myfileid);
+                    ossafe_file_text_readln(myfileid);
+                }
+                
+                break;
         }
     }
     
@@ -3280,7 +3504,9 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
             ossafe_file_text_readln(myfileid);
         }
         
-        for (i = 0; i < 2500; i += 1)
+        var flag_limit = (global.chapter == 1) ? 9999 : 2500;
+        
+        for (i = 0; i < flag_limit; i += 1)
         {
             global.flag[i] = ossafe_file_text_read_real(myfileid);
             ossafe_file_text_readln(myfileid);
@@ -3324,30 +3550,168 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
         for (var idx = 0; idx < array_length(cache_armor); idx++)
             global.armor[idx] = cache_armor[idx];
         
-        for (var idx = 0; idx < array_length(cache_pocketitem); idx++)
-            global.pocketitem[idx] = cache_pocketitem[idx];
+        if (global.chapter != 1 && variable_global_exists(""pocketitem""))
+        {
+            for (var idx = 0; idx < array_length(cache_pocketitem); idx++)
+                global.pocketitem[idx] = cache_pocketitem[idx];
+        }
     }
     
     global.lastsavedtime = global.time;
     global.lastsavedlv = global.lv;
     audio_group_set_gain(1, global.flag[15], 0);
     audio_set_master_gain(0, global.flag[17]);
-    var room_id = global.currentroom;
     
-    if (room_id < 10000)
+    switch (global.chapter)
     {
-        room_id = scr_get_id_by_room_index(global.currentroom);
+        case 1:
+            if (global.plot >= 156)
+            {
+                for (i = 0; i < 4; i += 1)
+                    global.charauto[i] = 0;
+            }
+            
+            var room_id = global.currentroom;
+            
+            if (room_id < 10000)
+            {
+                if (global.flag[279] == 0)
+                {
+                    global.flag[279] = 1;
+                    var room_index = room_id;
+                    var room_offset = room_index;
+                    
+                    if (room_index < 281)
+                        room_offset = 281 + room_index;
+                    
+                    room_id = room_offset;
+                }
+                
+                room_id += (global.chapter * 10000);
+                global.currentroom = room_id;
+                
+                if (global.filechoice != 9)
+                {
+                    var valid_room_index = scr_get_valid_room(global.chapter, global.currentroom);
+                    global.currentroom = scr_get_id_by_room_index(valid_room_index);
+                    
+                    if (global.currentroom == scr_get_id_by_room_index(45) && global.plot >= 33)
+                        global.currentroom = scr_get_id_by_room_index(49);
+                    
+                    if (global.currentroom == scr_get_id_by_room_index(96) && global.plot >= 130)
+                        global.currentroom = scr_get_id_by_room_index(97);
+                }
+            }
+            
+            global.invc = 1;
+            break;
         
-        if (room_id == room_gms_debug_failsafe)
-            room_id += (global.chapter * 10000);
+        case 2:
+            var room_id = global.currentroom;
+            
+            if (room_id < 10000)
+            {
+                room_id += (global.chapter * 10000);
+                global.currentroom = room_id;
+                
+                if (global.filechoice != 9)
+                {
+                    var valid_room_index = scr_get_valid_room(global.chapter, global.currentroom);
+                    global.currentroom = scr_get_id_by_room_index(valid_room_index);
+                    
+                    if (global.currentroom == scr_get_id_by_room_index(61) && global.plot >= 11)
+                        global.currentroom = scr_get_id_by_room_index(62);
+                    
+                    if (global.currentroom == scr_get_id_by_room_index(200))
+                        global.currentroom = scr_get_id_by_room_index(199);
+                }
+            }
+            
+            break;
         
-        global.currentroom = room_id;
+        case 3:
+            if (global.lang == ""en"")
+            {
+                if (global.flag[1273] == 1)
+                {
+                    global.flag[1012] = 10;
+                    global.flag[1013] = 17;
+                    global.flag[1014] = 18;
+                }
+                else
+                {
+                    global.flag[1012] = global.flag[1274];
+                    global.flag[1013] = global.flag[1275];
+                    global.flag[1014] = global.flag[1276];
+                }
+            }
+            else if (global.flag[1273] == 1)
+            {
+                global.flag[1012] = global.flag[1274];
+                global.flag[1013] = global.flag[1275];
+                global.flag[1014] = global.flag[1276];
+            }
+            else
+            {
+                global.flag[1012] = 0;
+                global.flag[1013] = 0;
+                global.flag[1014] = 0;
+            }
+            
+            var room_id = global.currentroom;
+            
+            if (room_id < 10000)
+            {
+                room_id = scr_get_id_by_room_index(global.currentroom);
+                
+                if (room_id == -1)
+                    room_id += (global.currentroom + (global.chapter * 10000));
+                
+                global.currentroom = room_id;
+            }
+            
+            break;
+        
+        case 4:
+            var room_id = global.currentroom;
+            
+            if (room_id < 10000)
+            {
+                room_id = scr_get_id_by_room_index(global.currentroom);
+                
+                if (room_id == room_gms_debug_failsafe)
+                    room_id += (global.chapter * 10000);
+                
+                global.currentroom = room_id;
+            }
+            
+            if (global.filechoice != 9)
+            {
+                if (scr_completed_chapter_any_slot(4) && global.plot >= 243)
+                {
+                    global.flag[1658] = 1;
+                    
+                    if (global.flag[1659] == 0)
+                        global.currentroom = scr_get_id_by_room_index(261);
+                }
+            }
+            
+            break;
     }
     
     __loadedroom = scr_get_room_by_id(global.currentroom);
     
     if (scr_dogcheck())
-        __loadedroom = 92;
+    {
+        if (global.chapter == 1)
+            __loadedroom = 131;
+        else if (global.chapter == 2)
+            __loadedroom = choose(226, 271);
+        else if (global.chapter == 3)
+            __loadedroom = 83;
+        else
+            __loadedroom = 92;
+    }
     
     scr_tempsave();
     
@@ -3618,6 +3982,9 @@ dpop_history = function()
     }
     else
     {
+        if (!(dmenu_popup_launch == 1 && dmenu_state == ""debug_save""))
+            global.interact = 0;
+        
         dmenu_popup_launch = 0;
         dmenu_active = !dmenu_active;
         dmenu_state = ""debug"";
@@ -3627,7 +3994,6 @@ dpop_history = function()
         dmenu_horizontal_index_history = [];
         dmenu_page_index_history = [];
         dvertical_index = 0;
-        global.interact = 0;
         dmenu_state_update();
     }
     
@@ -3895,6 +4261,67 @@ draw_monospace = function(arg0, arg1, arg2)
     }
 };
 
+draw_monospace_ext = function(arg0, arg1, arg2, arg3, arg4)
+{
+    var _start_x = arg0;
+    var _start_y = arg1;
+    var _text = string(arg2);
+    var _line_sep = arg3;
+    var _max_width = arg4;
+    var _char_sep = (global.darkzone == 1) ? 15 : 8;
+    var _draw_x = _start_x;
+    var _draw_y = _start_y;
+    var _current_word = """";
+    var _text_len = string_length(_text);
+    
+    for (var i = 1; i <= _text_len; i++)
+    {
+        var _char = string_char_at(_text, i);
+        
+        if (_char != "" "" && _char != ""\n"")
+            _current_word += _char;
+        
+        if (_char == "" "" || _char == ""\n"" || i == _text_len)
+        {
+            var _word_width = string_length(_current_word) * _char_sep;
+            
+            if (_max_width > 0 && ((_draw_x + _word_width) - _start_x) > _max_width)
+            {
+                if (_draw_x != _start_x)
+                {
+                    _draw_x = _start_x;
+                    _draw_y += _line_sep;
+                }
+            }
+            
+            for (var w = 1; w <= string_length(_current_word); w++)
+            {
+                if (_max_width > 0 && ((_draw_x + _char_sep) - _start_x) > _max_width)
+                {
+                    _draw_x = _start_x;
+                    _draw_y += _line_sep;
+                }
+                
+                draw_text(_draw_x, _draw_y, string_char_at(_current_word, w));
+                _draw_x += _char_sep;
+            }
+            
+            _current_word = """";
+            
+            if (_char == "" "")
+            {
+                if (_draw_x != _start_x)
+                    _draw_x += _char_sep;
+            }
+            else if (_char == ""\n"")
+            {
+                _draw_x = _start_x;
+                _draw_y += _line_sep;
+            }
+        }
+    }
+};
+
 set_keyboard_reader = function(arg0)
 {
     global.dreading_custom_flag = arg0;
@@ -3979,6 +4406,7 @@ function dmenu_process_submenus(arg0, arg1 = """")
     
     var _temp_options = [];
     var _temp_indices = [];
+    var _temp_base_indices = [];
     var _needs_struct_save = false;
     
     for (var i = 0; i < array_length(my_options); i++)
@@ -4023,17 +4451,21 @@ function dmenu_process_submenus(arg0, arg1 = """")
         
         array_push(_temp_options, _display_name);
         array_push(_temp_indices, _original_index);
+        array_push(_temp_base_indices, i);
         
         if (_is_open)
         {
             var _submenu = arg0[i];
+            var _subindices = (array_length(arg0) > (i + 1000) && is_array(arg0[i + 1000])) ? arg0[i + 1000] : [];
             
             for (var j = 0; j < array_length(_submenu); j++)
             {
                 if (_search == """" || _cat_match || string_pos(_search, string_lower(_submenu[j])) > 0)
                 {
                     array_push(_temp_options, ""- "" + _submenu[j]);
-                    array_push(_temp_indices, -1);
+                    var exact_index = (array_length(_subindices) > j) ? _subindices[j] : -1;
+                    array_push(_temp_indices, exact_index);
+                    array_push(_temp_base_indices, i);
                 }
             }
         }
@@ -4044,6 +4476,7 @@ function dmenu_process_submenus(arg0, arg1 = """")
     
     dbutton_options = _temp_options;
     dbutton_indices = _temp_indices;
+    dbutton_base_indices = _temp_base_indices;
 }
 
 function dmenu_interact_submenus(arg0)
@@ -4093,11 +4526,13 @@ if (dmenu_state == ""debug_save"")
     if (keyboard_check_pressed(ord(""I"")) && keyboard_check(vk_alt) && !global.dreading_custom_flag)
     {
         scr_debug_save_scan_imports();
+        scr_get_debug_save_list();
         dmenu_state_update();
     }
     else if (keyboard_check_pressed(ord(""I"")) && !keyboard_check(vk_alt) && !global.dreading_custom_flag)
     {
         scr_debug_save_import();
+        scr_get_debug_save_list();
         dmenu_state_update();
     }
 }
@@ -4236,6 +4671,41 @@ function evaluate_custom_flag(arg0, arg1)
     }
     
     return proper_exit;
+}
+
+if (keyboard_check_pressed(vk_left) && !global.dreading_custom_flag)
+{
+    if (variable_instance_exists(id, ""dbutton_base_indices"") && array_length(dbutton_base_indices) > dvertical_index)
+    {
+        var target_base_index = dbutton_base_indices[dvertical_index];
+        var state_tracker = variable_struct_get(dmenu_expanded, dmenu_state);
+        
+        if (is_array(state_tracker) && state_tracker[target_base_index] == true)
+        {
+            state_tracker[target_base_index] = false;
+            variable_struct_set(dmenu_expanded, dmenu_state, state_tracker);
+            
+            for (var idx = 0; idx < array_length(dbutton_base_indices); idx++)
+            {
+                if (dbutton_base_indices[idx] == target_base_index)
+                {
+                    dvertical_index = idx;
+                    break;
+                }
+            }
+            
+            if (dvertical_index < dmenu_start_index)
+                dmenu_start_index = dvertical_index;
+            
+            dmenu_state_update();
+            
+            if (variable_instance_exists(id, ""dbutton_max_visible""))
+                dmenu_start_index = clamp(dmenu_start_index, 0, max(0, array_length(dbutton_options) - dbutton_max_visible));
+            
+            snd_play(snd_select);
+            keyboard_clear(vk_left);
+        }
+    }
 }
 
 if (dmenu_active && global.dreading_custom_flag)
@@ -4467,7 +4937,7 @@ else if (dmenu_active)
             {
                 if (dvertical_index != 0)
                 {
-                    real_index = dbutton_indices[dvertical_index];
+                    var real_index = dbutton_indices[dvertical_index];
                     scr_recruit_info(real_index);
                     recruit_count = global.flag[real_index + 600];
                     to_add = 1 / _recruitcount;
@@ -4526,6 +4996,22 @@ else if (dmenu_active)
                     else
                         drooms_options.target_member_3 = new_party;
                     
+                    snd_play(snd_menumove);
+                    dmenu_state_update();
+                }
+            }
+            else if (dmenu_state == ""debug_save_options"" && dvertical_index == 1)
+            {
+                var new_setting = -1;
+                
+                if (pressed_left && global.dload_cur_inv != 0)
+                    new_setting = 0;
+                else if (pressed_right && global.dload_cur_inv != 1)
+                    new_setting = 1;
+                
+                if (new_setting != -1)
+                {
+                    global.dload_cur_inv = new_setting;
                     snd_play(snd_menumove);
                     dmenu_state_update();
                 }
@@ -4714,7 +5200,7 @@ else if (dmenu_active)
                 case ""objects"":
                     if (dhorizontal_page != 0 || dvertical_index != 0)
                     {
-                        real_index = dbutton_indices[dvertical_index];
+                        var real_index = dbutton_indices[dvertical_index];
                         
                         if (dhorizontal_page == 0)
                         {
@@ -4743,7 +5229,7 @@ else if (dmenu_active)
                 case ""armors"":
                     if (dhorizontal_page != 0 || dvertical_index != 0)
                     {
-                        real_index = dbutton_indices[dvertical_index];
+                        var real_index = dbutton_indices[dvertical_index];
                         
                         if (dhorizontal_page == 0)
                         {
@@ -4763,7 +5249,7 @@ else if (dmenu_active)
                 case ""weapons"":
                     if (dhorizontal_page != 0 || dvertical_index != 0)
                     {
-                        real_index = dbutton_indices[dvertical_index];
+                        var real_index = dbutton_indices[dvertical_index];
                         
                         if (dhorizontal_page == 0)
                         {
@@ -4783,7 +5269,7 @@ else if (dmenu_active)
                 case ""keyitems"":
                     if (dvertical_index != 0)
                     {
-                        real_index = dbutton_indices[dvertical_index];
+                        var real_index = dbutton_indices[dvertical_index];
                         scr_keyiteminfo(real_index);
                         dgiver_bname = tempkeyitemname;
                         scr_debug_print(string(dgiver_bname) + scr_dmode_get_text(""msg_selected""));
@@ -4823,17 +5309,19 @@ else if (dmenu_active)
     
     if (keyboard_check_pressed(global.input_k[5]) || keyboard_check_pressed(global.input_k[8]))
     {
-        if (dmenu_state != ""debug_save"" || array_length(dmenu_state_history) > 0)
-            snd_play(snd_smallswing);
+        snd_play(snd_smallswing);
         
-        if (dmenu_popup_launch == 1)
+        if (dmenu_state == ""debug_save"")
         {
-            if (dmenu_state == ""debug_save"")
+            if (dmenu_popup_launch == 1)
             {
-                instance_create(0, 0, obj_savemenu);
-                obj_savemenu.menuno = 1;
-                obj_savemenu.mpos = 3;
-                global.interact = 1;
+                if (!instance_exists(obj_savemenu))
+                {
+                    instance_create(0, 0, obj_savemenu);
+                    obj_savemenu.menuno = 1;
+                    obj_savemenu.mpos = 3;
+                    global.interact = 1;
+                }
             }
         }
         
@@ -4860,34 +5348,23 @@ else if (dmenu_active)
             }
             else if (dvertical_index > 0 && dvertical_index < array_length(dbutton_options))
             {
-                var hovered_text = dbutton_options[dvertical_index];
+                var real_index = (dvertical_index < array_length(dbutton_indices)) ? dbutton_indices[dvertical_index] : -1;
                 
-                if (string_copy(hovered_text, 1, 2) == ""- "")
-                    hovered_text = string_copy(hovered_text, 3, string_length(hovered_text) - 2);
-                
-                var found_desc = """";
-                
-                for (var i = 0; i < array_length(debug_save_names); i++)
-                {
-                    if (debug_save_names[i] == hovered_text)
-                    {
-                        found_desc = debug_save_descriptions[i];
-                        break;
-                    }
-                }
-                
-                dhinter_text = found_desc;
+                if (real_index >= 0 && real_index < array_length(debug_save_descriptions))
+                    dhinter_text = debug_save_descriptions[real_index];
+                else
+                    dhinter_text = """";
             }
         }
         
         if (dmenu_state == ""debug_save_options"")
         {
-            var target_save_name = string(global.debug_selected_save_name);
+            var target_path = global.debug_selected_save_section;
             var found_desc = ""No description available."";
             
-            for (var i = 0; i < array_length(debug_save_names); i++)
+            for (var i = 0; i < array_length(debug_save_sections); i++)
             {
-                if (debug_save_names[i] == target_save_name)
+                if (debug_save_sections[i] == target_path)
                 {
                     found_desc = debug_save_descriptions[i];
                     break;
@@ -4939,13 +5416,23 @@ else if (dmenu_active)
                     var line_sep = 18 * d;
                     var max_h = line_sep * 2;
                     
-                    if (string_height_ext(dhinter_text, line_sep, max_w) > max_h)
+                    if (!variable_instance_exists(id, ""dhinter_cached_raw"") || dhinter_cached_raw != dhinter_text)
                     {
-                        while (string_height_ext(dhinter_text + ""..."", line_sep, max_w) > max_h && string_length(dhinter_text) > 0)
-                            dhinter_text = string_delete(dhinter_text, string_length(dhinter_text), 1);
+                        dhinter_cached_raw = dhinter_text;
+                        var temp_text = dhinter_text;
                         
-                        dhinter_text += ""..."";
+                        if (string_height_ext(temp_text, line_sep, max_w) > max_h)
+                        {
+                            while (string_height_ext(temp_text + ""..."", line_sep, max_w) > max_h && string_length(temp_text) > 0)
+                                temp_text = string_delete(temp_text, string_length(temp_text), 1);
+                            
+                            temp_text += ""..."";
+                        }
+                        
+                        dhinter_cached_display = temp_text;
                     }
+                    
+                    dhinter_text = dhinter_cached_display;
                 }
                 else
                 {
@@ -4997,8 +5484,6 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             else
                 dbutton_options[1] = scr_dmode_get_text(""btn_search"") + dkeyboard_input;
             
-            scr_get_debug_save_list();
-            
             for (var i = 0; i < array_length(debug_save_names); i++)
             {
                 var s_chap = debug_save_chapters[i];
@@ -5028,14 +5513,16 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
                         array_push(dbutton_options, s_cat);
                         array_push(dbutton_indices, -1);
                         subs[cat_index] = [];
+                        subs[cat_index + 1000] = [];
                     }
                     
                     array_push(subs[cat_index], s_name);
+                    array_push(subs[cat_index + 1000], i);
                 }
                 else
                 {
                     array_push(dbutton_options, s_name);
-                    array_push(dbutton_indices, 0);
+                    array_push(dbutton_indices, i);
                 }
             }
             
@@ -5046,13 +5533,18 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
         
         case ""debug_save_options"":
             dmenu_title = ""Options: "" + string(global.debug_selected_save_name);
-            dbutton_options = [""Save"", ""Load"", ""Delete"", ""Export"", ""Save management""];
-            dbutton_indices = [-2, -1, -2, -1, -1];
-            var subs = [];
-            subs[1] = [""Normal load"", ""With current inventory""];
-            subs[3] = [""Debug mode save"", ""Default Deltarune save""];
-            subs[4] = [""Rename"", ""Edit description"", ""Change category""];
+            dbutton_options = [""Save"", ""Load"", ""Export"", ""Save management"", ""Delete""];
+            dbutton_indices = [-2, -2, -1, -1, -2];
+            var subs = array_create(array_length(dbutton_options), 0);
+            subs[2] = [""Debug mode save"", ""Default Deltarune save""];
+            subs[3] = [""Rename"", ""Edit description"", ""Change category""];
             dmenu_process_submenus(subs, """");
+            
+            if (!variable_global_exists(""dload_cur_inv""))
+                global.dload_cur_inv = 0;
+            
+            var load_options = ["" (Normal)"", ""  (Current inventory)""];
+            dbutton_options[1] += load_options[global.dload_cur_inv];
             dmenu_box = 1;
             dbutton_layout = 1;
             break;
@@ -5076,17 +5568,32 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             }
             else
             {
-                var target_sec = string(global.debug_selected_save_section);
-                ossafe_ini_open(""debug_save/debug.ini"");
+                var target_path = global.debug_selected_save_section;
+                var default_text = """";
                 
                 if (dmenu_state == ""dsave_edit_name"")
-                    dbutton_options_2d[0][0] = ini_read_string(target_sec, ""SaveName"", ""Enter save name"");
+                    default_text = ""Enter save name"";
                 else if (dmenu_state == ""dsave_edit_desc"")
-                    dbutton_options_2d[0][0] = ini_read_string(target_sec, ""Description"", ""Enter description"");
+                    default_text = ""Enter description"";
                 else if (dmenu_state == ""dsave_edit_cat"")
-                    dbutton_options_2d[0][0] = ini_read_string(target_sec, ""Category"", ""Enter category"");
+                    default_text = ""Enter category"";
                 
-                ossafe_ini_close();
+                dbutton_options_2d[0][0] = default_text;
+                
+                for (var i = 0; i < array_length(debug_save_sections); i++)
+                {
+                    if (debug_save_sections[i] == target_path)
+                    {
+                        if (dmenu_state == ""dsave_edit_name"")
+                            dbutton_options_2d[0][0] = debug_save_names[i];
+                        else if (dmenu_state == ""dsave_edit_desc"")
+                            dbutton_options_2d[0][0] = debug_save_descriptions[i];
+                        else if (dmenu_state == ""dsave_edit_cat"")
+                            dbutton_options_2d[0][0] = debug_save_categories[i];
+                        
+                        break;
+                    }
+                }
             }
             
             dbutton_options_2d[0][0] += dkeyboard_input;
@@ -5557,6 +6064,7 @@ function dmenu_state_interact()
             }
             else if (selected_name == ""Debug save"")
             {
+                scr_get_debug_save_list();
                 dmenu_state = ""debug_save"";
             }
             
@@ -5583,26 +6091,12 @@ function dmenu_state_interact()
             if (dmenu_interact_submenus(selected_name))
                 break;
             
-            var actual_name = selected_name;
+            var real_index = dbutton_indices[dvertical_index];
             
-            if (string_copy(actual_name, 1, 2) == ""- "")
-                actual_name = string_copy(actual_name, 3, string_length(actual_name) - 2);
-            
-            var target_section = """";
-            
-            for (var i = 0; i < array_length(debug_save_names); i++)
+            if (real_index >= 0)
             {
-                if (debug_save_names[i] == actual_name)
-                {
-                    target_section = debug_save_sections[i];
-                    break;
-                }
-            }
-            
-            if (target_section != """")
-            {
-                global.debug_selected_save_section = target_section;
-                global.debug_selected_save_name = actual_name;
+                global.debug_selected_save_section = debug_save_sections[real_index];
+                global.debug_selected_save_name = debug_save_names[real_index];
                 dmenu_state = ""debug_save_options"";
                 dmenu_state_update();
             }
@@ -5623,17 +6117,45 @@ function dmenu_state_interact()
             
             if (check_name == ""Save"")
             {
-                var ini_path = ""debug_save/debug.ini"";
+                var target_path = global.debug_selected_save_section;
+                global.debug_save_category = """";
+                global.debug_save_name = target_name;
+                global.debug_save_description = ""No description available."";
                 
-                if (ossafe_file_exists(ini_path))
+                if (file_exists(target_path))
                 {
-                    ossafe_ini_open(ini_path);
-                    global.debug_save_category = ini_read_string(target_sec, ""Category"", """");
-                    ossafe_ini_close();
+                    var file_id = file_text_open_read(target_path);
+                    var file_content = """";
+                    
+                    while (!file_text_eof(file_id))
+                    {
+                        file_content += file_text_read_string(file_id);
+                        file_text_readln(file_id);
+                    }
+                    
+                    file_text_close(file_id);
+                    
+                    try
+                    {
+                        var parsed_struct = json_parse(file_content);
+                        
+                        if (is_struct(parsed_struct) && variable_struct_exists(parsed_struct, ""metadata""))
+                        {
+                            var meta = parsed_struct.metadata;
+                            
+                            if (variable_struct_exists(meta, ""Category""))
+                                global.debug_save_category = meta.Category;
+                            
+                            if (variable_struct_exists(meta, ""Description""))
+                                global.debug_save_description = meta.Description;
+                        }
+                    }
+                    catch (e)
+                    {
+                    }
                 }
                 
-                global.debug_overwrite_section = target_sec;
-                global.debug_save_name = target_name;
+                global.debug_overwrite_section = target_path;
                 global.debug_saving = 1;
                 dmenu_popup_launch = 0;
                 dmenu_state = ""debug"";
@@ -5649,65 +6171,48 @@ function dmenu_state_interact()
                 scr_debug_print(""Overwrote save: "" + target_name);
                 snd_play(snd_save);
             }
-            else if (check_name == ""- Normal load"")
+            else if (string_copy(check_name, 1, 4) == ""Load"")
             {
-                scr_debug_print(""Loading save normally: "" + target_name);
-                global.dload_cur_inv = 0;
-                dmenu_popup_launch = 0;
-                dmenu_state = ""debug"";
-                dbutton_options = dbutton_options_original;
-                dmenu_state_history = [];
-                dmenu_vertical_index_history = [];
-                dvertical_index = 0;
-                dbutton_layout = 0;
-                dmenu_active = false;
-                dkeyboard_input = """";
-                global.interact = 0;
-                scr_debug_load(real(target_sec));
-            }
-            else if (check_name == ""- With current inventory"")
-            {
-                scr_debug_print(""Loading while keeping inventory..."");
-                global.dload_cur_inv = 1;
-                dmenu_popup_launch = 0;
-                dmenu_state = ""debug"";
-                dbutton_options = dbutton_options_original;
-                dmenu_state_history = [];
-                dmenu_vertical_index_history = [];
-                dvertical_index = 0;
-                dbutton_layout = 0;
-                dmenu_active = false;
-                dkeyboard_input = """";
-                global.interact = 0;
-                scr_debug_load(real(target_sec));
+                var target_path = global.debug_selected_save_section;
+                
+                if (file_exists(target_path))
+                {
+                    dmenu_popup_launch = 0;
+                    dmenu_state = ""debug"";
+                    dbutton_options = dbutton_options_original;
+                    dmenu_state_history = [];
+                    dmenu_vertical_index_history = [];
+                    dvertical_index = 0;
+                    dbutton_layout = 0;
+                    dmenu_active = false;
+                    dkeyboard_input = """";
+                    global.interact = 0;
+                    scr_debug_load(target_path);
+                }
+                else
+                {
+                    snd_play(snd_error);
+                    scr_debug_print(""Error: Save file '"" + target_name + ""' could not be found on disk."");
+                }
             }
             else if (check_name == ""Delete"")
             {
                 dremove_false_history();
-                target_sec = global.debug_selected_save_section;
-                var ini_path = ""debug_save/debug.ini"";
-                var target_file = """";
+                var target_path = global.debug_selected_save_section;
                 
-                if (ossafe_file_exists(ini_path))
+                if (file_exists(target_path))
                 {
-                    ossafe_ini_open(ini_path);
-                    var fallback = ""debug_save/filech"" + string(global.chapter) + ""_"" + string(target_sec);
-                    target_file = ini_read_string(target_sec, ""FileLocation"", fallback);
-                    ini_section_delete(target_sec);
-                    ossafe_ini_close();
-                    ossafe_savedata_save();
+                    file_delete(target_path);
+                    scr_debug_cleanup_folder(target_path);
+                    scr_debug_print(""Save file permanently deleted."");
+                    snd_play(snd_badexplosion);
+                    scr_get_debug_save_list();
+                }
+                else
+                {
+                    scr_debug_print(""Error: File already missing."");
                 }
                 
-                if (target_file != """" && file_exists(target_file))
-                    file_delete(target_file);
-                
-                var key_file = ""keyconfig_"" + string(target_sec) + "".ini"";
-                
-                if (file_exists(key_file))
-                    file_delete(key_file);
-                
-                scr_debug_print(""Deleted save: "" + target_name);
-                snd_play(snd_badexplosion);
                 dpop_history();
                 dvertical_index = 0;
                 dbutton_layout = 0;
@@ -5717,16 +6222,12 @@ function dmenu_state_interact()
             {
                 dremove_false_history();
                 dmenu_skip_reindexing = true;
-                target_sec = global.debug_selected_save_section;
+                var source_file = global.debug_selected_save_section;
                 target_name = global.debug_selected_save_name;
                 var export_path = get_save_filename(""Debug save (*.save)|*.save"", string(target_name) + "".save"");
                 
                 if (export_path != """")
                 {
-                    ossafe_ini_open(""debug_save/debug.ini"");
-                    var source_file = ini_read_string(target_sec, ""FileLocation"", """");
-                    ossafe_ini_close();
-                    
                     if (file_exists(source_file))
                     {
                         if (file_exists(export_path))
@@ -5747,18 +6248,8 @@ function dmenu_state_interact()
             {
                 dremove_false_history();
                 dmenu_skip_reindexing = true;
-                target_sec = global.debug_selected_save_section;
+                var source_file = global.debug_selected_save_section;
                 target_name = global.debug_selected_save_name;
-                var ini_path = ""debug_save/debug.ini"";
-                var source_file = """";
-                
-                if (ossafe_file_exists(ini_path))
-                {
-                    ossafe_ini_open(ini_path);
-                    var fallback = ""debug_save/filech"" + string(global.chapter) + ""_"" + string(target_sec);
-                    source_file = ini_read_string(string(target_sec), ""FileLocation"", fallback);
-                    ossafe_ini_close();
-                }
                 
                 if (file_exists(source_file) || ossafe_file_exists(source_file))
                 {
@@ -5812,7 +6303,7 @@ function dmenu_state_interact()
                             file_copy(source_file, export_path);
                         }
                         
-                        scr_debug_print(""Exported '"" + target_name + ""' successfully!"");
+                        scr_debug_print(""Exported '"" + string(target_name) + ""' successfully!"");
                         snd_play(snd_shineselect);
                     }
                     else
@@ -5866,13 +6357,17 @@ function dmenu_state_interact()
                 else if (dmenu_state == ""dsave_edit_cat"")
                     ini_key = ""Category"";
                 
-                scr_debug_save_modify_info(target_sec, ini_key, final_text);
+                var new_path = scr_debug_save_modify_info(target_sec, ini_key, final_text);
                 
                 if (ini_key == ""SaveName"" && final_text != """")
                     global.debug_selected_save_name = final_text;
                 
+                if (new_path != """")
+                    global.debug_selected_save_section = new_path;
+                
                 global.dreading_custom_flag = 0;
                 dkeyboard_input = """";
+                scr_get_debug_save_list();
                 dpop_history();
             }
             else
@@ -5919,6 +6414,7 @@ function dmenu_state_interact()
             }
             else
             {
+                dkeyboard_input = """";
                 dmenu_popup_launch = 0;
                 dmenu_state = ""debug"";
                 dbutton_layout = 0;
@@ -6127,7 +6623,7 @@ function dmenu_state_interact()
             
             if (dgiver_menu_state == ""objects"")
             {
-                real_index = dbutton_indices[dgiver_button_selected - 1];
+                var real_index = dbutton_indices[dgiver_button_selected - 1];
                 
                 for (var i = 0; i < abs(dgiver_amount); i++)
                 {
@@ -6158,7 +6654,7 @@ function dmenu_state_interact()
             {
                 if (dgiver_amount > 0)
                 {
-                    real_index = dbutton_indices[dgiver_button_selected - 1];
+                    var real_index = dbutton_indices[dgiver_button_selected - 1];
                     
                     for (var i = 0; i < dgiver_amount; i++)
                         scr_armorget(real_index);
@@ -6167,7 +6663,7 @@ function dmenu_state_interact()
                 }
                 else if (dgiver_amount < 0)
                 {
-                    real_index = dbutton_indices[dgiver_button_selected - 1];
+                    var real_index = dbutton_indices[dgiver_button_selected - 1];
                     
                     for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_armorremove(real_index);
@@ -6180,7 +6676,7 @@ function dmenu_state_interact()
             {
                 if (dgiver_amount > 0)
                 {
-                    real_index = dbutton_indices[dgiver_button_selected - 1];
+                    var real_index = dbutton_indices[dgiver_button_selected - 1];
                     
                     for (var i = 0; i < dgiver_amount; i++)
                         scr_weaponget(real_index);
@@ -6189,7 +6685,7 @@ function dmenu_state_interact()
                 }
                 else if (dgiver_amount < 0)
                 {
-                    real_index = dbutton_indices[dgiver_button_selected - 1];
+                    var real_index = dbutton_indices[dgiver_button_selected - 1];
                     
                     for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_weaponremove(real_index);
@@ -6202,7 +6698,7 @@ function dmenu_state_interact()
             {
                 if (dgiver_amount > 0)
                 {
-                    real_index = dbutton_indices[dgiver_button_selected - 1];
+                    var real_index = dbutton_indices[dgiver_button_selected - 1];
                     
                     for (var i = 0; i < dgiver_amount; i++)
                         scr_keyitemget(real_index);
@@ -6211,7 +6707,7 @@ function dmenu_state_interact()
                 }
                 else if (dgiver_amount < 0)
                 {
-                    real_index = dbutton_indices[dgiver_button_selected - 1];
+                    var real_index = dbutton_indices[dgiver_button_selected - 1];
                     
                     for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_keyitemremove(real_index);
@@ -6229,7 +6725,7 @@ function dmenu_state_interact()
             if (dvertical_index > 0)
             {
                 dother_options = [];
-                real_index = dbutton_indices[dvertical_index];
+                var real_index = dbutton_indices[dvertical_index];
                 
                 for (var i = 0; i < array_length(dother_all_options); i++)
                 {
@@ -6511,7 +7007,7 @@ if (dmenu_active)
             var visual_offset = -2;
             var cursor_padding = 3 * d;
             var w_prefix = string_length(string(scr_dmode_get_text(""ui_contains""))) * mono_spacing;
-            var w_name = string_length(string(dcustom_flag_text[0])) * mono_spacing;
+            var w_name = string_length(string(dkeyboard_input)) * mono_spacing;
             var x1_start = base_x + w_prefix;
             var x2_start = x1_start + w_name;
             draw_set_color(c_yellow);
@@ -6529,7 +7025,7 @@ if (dmenu_active)
             var visual_offset = -2;
             var cursor_padding = 3 * d;
             var w_prefix = string_length(string(scr_dmode_get_text(""ui_plot_value""))) * mono_spacing;
-            var w_name = string_length(string(dcustom_flag_text[0])) * mono_spacing;
+            var w_name = string_length(string(dkeyboard_input)) * mono_spacing;
             var x1_start = base_x + w_prefix;
             var x2_start = x1_start + w_name;
             draw_set_color(c_yellow);
@@ -6546,7 +7042,7 @@ if (dmenu_active)
             var thickness = 1 * d;
             var visual_offset = -2;
             var cursor_padding = 3 * d;
-            var w_name = string_length(string(dcustom_flag_text[0])) * mono_spacing;
+            var w_name = string_length(string(dkeyboard_input)) * mono_spacing;
             var x1_start = base_x;
             draw_set_color(c_yellow);
             var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
@@ -6597,22 +7093,52 @@ if (dmenu_active)
                 var cur_btn = string(dbutton_options[button_index]);
                 draw_monospace(x_start + xx, y_start + (i * y_spacing) + yy, cur_btn);
                 var mono_spacing = (global.darkzone == 1) ? 15 : 8;
+                var needs_arrows = (is_cur_line && dmenu_state == ""flag_misc"") || (dmenu_state == ""warp_options"" && (button_index == 3 || button_index == 4)) || (dmenu_state == ""debug_save_options"" && button_index == 1);
                 
-                if ((is_cur_line && dmenu_state == ""flag_misc"") || (dmenu_state == ""warp_options"" && (button_index == 3 || button_index == 4)))
+                if (needs_arrows)
                 {
-                    if ((dmenu_state == ""flag_misc"" && dhorizontal_index != 0) || (dmenu_state == ""warp_options"" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != 0))
+                    var show_left = false;
+                    
+                    if (dmenu_state == ""flag_misc"" && dhorizontal_index != 0)
+                        show_left = true;
+                    else if (dmenu_state == ""warp_options"" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != 0)
+                        show_left = true;
+                    else if (dmenu_state == ""debug_save_options"" && global.dload_cur_inv != 0)
+                        show_left = true;
+                    
+                    if (show_left)
                     {
                         for (dash_pos = 0; 1; dash_pos++)
                         {
-                            if (dash_pos > 4 && string_char_at(cur_btn, dash_pos) == ((dmenu_state == ""flag_misc"") ? ""-"" : "":""))
+                            var check_char = ""-"";
+                            
+                            if (dmenu_state == ""warp_options"")
+                                check_char = "":"";
+                            else if (dmenu_state == ""debug_save_options"")
+                                check_char = ""("";
+                            
+                            if (dash_pos > 4 && string_char_at(cur_btn, dash_pos) == check_char)
                                 break;
                         }
                         
-                        dash_pos++;
+                        if (dmenu_state != ""debug_save_options"")
+                            dash_pos++;
+                        else
+                            dash_pos -= 2;
+                        
                         draw_sprite_ext(spr_morearrow, 0, x_start + ((dash_pos * mono_spacing) + floor(mono_spacing / 2)) + dmenu_arrow_yoffset + xx, y_start + (i * y_spacing) + side_arrows_mult[0] + yy, darrow_scale, -darrow_scale, 90, c_white, 1);
                     }
                     
-                    if ((dmenu_state == ""flag_misc"" && dhorizontal_index < (array_length(dother_options[dvertical_index][3]) - 1)) || (dmenu_state == ""warp_options"" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != (4 - (global.chapter == 1))))
+                    var show_right = false;
+                    
+                    if (dmenu_state == ""flag_misc"" && dhorizontal_index < (array_length(dother_options[dvertical_index][3]) - 1))
+                        show_right = true;
+                    else if (dmenu_state == ""warp_options"" && array_get([drooms_options.target_member_2, drooms_options.target_member_3], button_index - 3) != (4 - (global.chapter == 1)))
+                        show_right = true;
+                    else if (dmenu_state == ""debug_save_options"" && global.dload_cur_inv != 1)
+                        show_right = true;
+                    
+                    if (show_right)
                         draw_sprite_ext(spr_morearrow, 0, (x_start + xx + ((string_length(cur_btn) + 1) * mono_spacing)) - floor(mono_spacing / 2) - dmenu_arrow_yoffset, y_start + yy + (i * y_spacing) + side_arrows_mult[1], darrow_scale, -darrow_scale, 270, c_white, 1);
                 }
                 else if (dmenu_state == ""recruits"" && button_index == 0)
@@ -6754,7 +7280,7 @@ if (dmenu_active)
         var text_y = y_start + yy;
         var max_width = box_right_edge - text_x;
         var line_spacing = 16 * d;
-        draw_text_ext(text_x, text_y, cur_btn, line_spacing, max_width);
+        draw_monospace_ext(text_x, text_y, cur_btn, line_spacing, max_width);
         
         if (d == 2)
             heartsprite = spr_heart;
@@ -7240,132 +7766,5 @@ importGroup.QueueAppend(obj_spritecomparer.EventHandlerFor(EventType.Draw, (uint
 importGroup.QueueFindReplace("gml_Object_obj_spritecomparer_Draw_0",
 @"if (keyboard_check_pressed(ord(""D"")))",
 @"if (keyboard_check_pressed(vk_f2))");
-
-
-UndertaleGameObject obj_writer = Data.GameObjects.ByName("obj_writer");
-importGroup.QueueReplace("gml_Object_obj_writer_Step_0",
-@"if (!variable_instance_exists(id, ""qa_tracked_string""))
-    qa_tracked_string = """";
-
-var _my_text = variable_instance_exists(id, ""originalstring"") ? originalstring : mystring;
-
-if (_my_text != """" && _my_text != qa_tracked_string)
-{
-    qa_tracked_string = _my_text;
-    
-    if (variable_global_exists(""qa_id_dictionary""))
-    {
-        var _current_id = variable_struct_get(global.qa_id_dictionary, _my_text);
-        
-        if (!is_undefined(_current_id))
-        {
-            if (!variable_global_exists(""qa_last_id""))
-                global.qa_last_id = """";
-            
-            if (_current_id != global.qa_last_id)
-            {
-                global.qa_last_id = _current_id;
-                var _fc = variable_global_exists(""fc"") ? global.fc : 0;
-                var _fe = variable_global_exists(""fe"") ? global.fe : 0;
-                var _darkzone = variable_global_exists(""darkzone"") ? global.darkzone : 0;
-                var _chapter = variable_global_exists(""chapter"") ? global.chapter : 0;
-                var _plot = variable_global_exists(""plot"") ? global.plot : 0;
-                var _flag = variable_global_exists(""flag"") ? global.flag : [];
-                var _export_data = 
-                {
-                    dialogue_id: _current_id,
-                    fc: _fc,
-                    fe: _fe,
-                    darkzone: _darkzone,
-                    chapter: _chapter,
-                    plot: _plot,
-                    flag: _flag,
-                    text_preview: _my_text
-                };
-                var _file = file_text_open_write(""qa_live_context.json"");
-                
-                if (_file != -1)
-                {
-                    file_text_write_string(_file, json_stringify(_export_data));
-                    file_text_close(_file);
-                }
-            }
-        }
-    }
-}");
-
-
-UndertaleScript scr_qa_export = Data.Scripts.ByName("scr_qa_export");
-importGroup.QueueReplace("gml_GlobalScript_scr_qa_export",
-@"function scr_qa_export(arg0, arg1)
-{
-    if (!variable_global_exists(""qa_id_dictionary""))
-        global.qa_id_dictionary = {};
-    
-    var _key = string(arg0);
-    
-    if (_key != """")
-        variable_struct_set(global.qa_id_dictionary, _key, arg1);
-}");
-
-
-UndertaleScript msgsetloc = Data.Scripts.ByName("msgsetloc");
-importGroup.QueueFindReplace("gml_GlobalScript_msgsetloc",
-@"msgset(msg_index, str);",
-@"msgset(msg_index, str);scr_qa_export(str, localized_string_id);");
-
-
-UndertaleScript msgnextloc = Data.Scripts.ByName("msgnextloc");
-importGroup.QueueFindReplace("gml_GlobalScript_msgnextloc",
-@"msgnext(str);",
-@"msgnext(str);scr_qa_export(str, localized_string_id);");
-
-
-UndertaleScript stringsetloc = Data.Scripts.ByName("stringsetloc");
-importGroup.QueueFindReplace("gml_GlobalScript_stringsetloc",
-@"return stringset(str);",
-@"scr_qa_export(str, argument[1]);return stringset(str);");
-
-
-UndertaleScript msgsetsubloc = Data.Scripts.ByName("msgsetsubloc");
-importGroup.QueueFindReplace("gml_GlobalScript_msgsetsubloc",
-@"msgset(msg_index, str);",
-@"msgset(msg_index, str);scr_qa_export(str, argument[argument_count - 1]);");
-
-
-UndertaleScript msgnextsubloc = Data.Scripts.ByName("msgnextsubloc");
-importGroup.QueueFindReplace("gml_GlobalScript_msgnextsubloc",
-@"msgnext(str);",
-@"msgnext(str);scr_qa_export(str, argument[argument_count - 1]);");
-
-
-UndertaleScript stringsetsubloc = Data.Scripts.ByName("stringsetsubloc");
-importGroup.QueueFindReplace("gml_GlobalScript_stringsetsubloc",
-@"return stringset(str);",
-@"scr_qa_export(str, argument[argument_count - 1]);return stringset(str);");
-
-
-UndertaleScript c_msgsetloc = Data.Scripts.ByName("c_msgsetloc");
-importGroup.QueueFindReplace("gml_GlobalScript_c_msgsetloc",
-@"c_msgset(msg_index, str);",
-@"c_msgset(msg_index, str);scr_qa_export(str, localized_string_id);");
-
-
-UndertaleScript c_msgnextloc = Data.Scripts.ByName("c_msgnextloc");
-importGroup.QueueFindReplace("gml_GlobalScript_c_msgnextloc",
-@"c_msgnext(str);",
-@"c_msgnext(str);scr_qa_export(str, localized_string_id);");
-
-
-UndertaleScript c_msgsetsubloc = Data.Scripts.ByName("c_msgsetsubloc");
-importGroup.QueueFindReplace("gml_GlobalScript_c_msgsetsubloc",
-@"c_msgset(msg_index, str);",
-@"c_msgset(msg_index, str);scr_qa_export(str, argument[argument_count - 1]);");
-
-
-UndertaleScript c_msgnextsubloc = Data.Scripts.ByName("c_msgnextsubloc");
-importGroup.QueueFindReplace("gml_GlobalScript_c_msgnextsubloc",
-@"c_msgnext(str);",
-@"c_msgnext(str);scr_qa_export(str, argument[argument_count - 1]);");
 
 importGroup.Import();

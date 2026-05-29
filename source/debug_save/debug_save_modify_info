@@ -1,65 +1,74 @@
 function scr_debug_save_modify_info(arg0, arg1, arg2)
 {
-    var path = "debug_save/debug.ini";
-    
-    if (!ossafe_file_exists(path))
+    if (!file_exists(arg0))
     {
-        scr_debug_print("Error: debug.ini not found. Cannot modify save.");
-        return false;
+        scr_debug_print("Error: Save file not found on disk.");
+        return "";
     }
     
-    var section_str = string(arg0);
-    ossafe_ini_open(path);
+    var file_id = file_text_open_read(arg0);
+    var json_string = "";
     
-    if (is_string(arg2))
-        ini_write_string(section_str, arg1, arg2);
-    else if (is_real(arg2) || is_bool(arg2))
-        ini_write_real(section_str, arg1, arg2);
-    else
-        ini_write_string(section_str, arg1, string(arg2));
-    
-    var file_loc = ini_read_string(section_str, "FileLocation", "");
-    ossafe_ini_close();
-    ossafe_savedata_save();
-    
-    if (file_loc != "" && string_copy(file_loc, string_length(file_loc) - 4, 5) == ".save")
+    while (!file_text_eof(file_id))
     {
-        if (file_exists(file_loc) || ossafe_file_exists(file_loc))
-        {
-            var file_id = file_text_open_read(file_loc);
-            var json_string = "";
-            
-            while (!file_text_eof(file_id))
-            {
-                json_string += file_text_read_string(file_id);
-                file_text_readln(file_id);
-                
-                if (!file_text_eof(file_id))
-                    json_string += "\n";
-            }
-            
-            file_text_close(file_id);
-            var parsed_data = -1;
-            
-            try
-            {
-                parsed_data = json_parse(json_string);
-            }
-            catch (e)
-            {
-            }
-            
-            if (is_struct(parsed_data) && variable_struct_exists(parsed_data, "metadata"))
-            {
-                variable_struct_set(parsed_data.metadata, arg1, arg2);
-                var new_json_string = json_stringify(parsed_data, true);
-                var out_file = file_text_open_write(file_loc);
-                file_text_write_string(out_file, new_json_string);
-                file_text_close(out_file);
-            }
-        }
+        json_string += file_text_read_string(file_id);
+        file_text_readln(file_id);
+        
+        if (!file_text_eof(file_id))
+            json_string += "\n";
     }
     
-    scr_debug_print("Successfully updated [" + section_str + "] - " + string(arg1) + " changed to: " + string(arg2));
-    return true;
+    file_text_close(file_id);
+    var parsed_data = -1;
+    
+    try
+    {
+        parsed_data = json_parse(json_string);
+    }
+    catch (e)
+    {
+        scr_debug_print("Error: JSON is corrupted.");
+        return "";
+    }
+    
+    if (!is_struct(parsed_data) || !variable_struct_exists(parsed_data, "metadata"))
+    {
+        scr_debug_print("Error: Invalid save structure.");
+        return "";
+    }
+    
+    variable_struct_set(parsed_data.metadata, arg1, arg2);
+    var meta = parsed_data.metadata;
+    var safe_name = scr_debug_sanitize_filename(variable_struct_exists(meta, "SaveName") ? meta.SaveName : "Untitled");
+    var safe_cat = scr_debug_sanitize_filename(variable_struct_exists(meta, "Category") ? meta.Category : "", true);
+    var chapter_num = variable_struct_exists(meta, "Chapter") ? meta.Chapter : global.chapter;
+    var base_dir = "debug_save/ch" + string(chapter_num) + "/";
+    
+    if (!directory_exists(base_dir))
+        directory_create(base_dir);
+    
+    var cat_dir = base_dir;
+    
+    if (safe_cat != "")
+    {
+        cat_dir += (safe_cat + "/");
+        
+        if (!directory_exists(cat_dir))
+            directory_create(cat_dir);
+    }
+    
+    var new_path = cat_dir + safe_name + ".save";
+    var out_file = file_text_open_write(new_path);
+    file_text_write_string(out_file, json_stringify(parsed_data, true));
+    file_text_close(out_file);
+    
+    if (arg0 != new_path)
+    {
+        file_delete(arg0);
+        scr_debug_cleanup_folder(arg0);
+    }
+    
+    snd_play(snd_save);
+    scr_debug_print("Updated " + arg1 + " to: " + string(arg2));
+    return new_path;
 }

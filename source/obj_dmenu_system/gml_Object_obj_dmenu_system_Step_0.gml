@@ -11,11 +11,13 @@ if (dmenu_state == "debug_save")
     if (keyboard_check_pressed(ord("I")) && keyboard_check(vk_alt) && !global.dreading_custom_flag)
     {
         scr_debug_save_scan_imports();
+        scr_get_debug_save_list();
         dmenu_state_update();
     }
     else if (keyboard_check_pressed(ord("I")) && !keyboard_check(vk_alt) && !global.dreading_custom_flag)
     {
         scr_debug_save_import();
+        scr_get_debug_save_list();
         dmenu_state_update();
     }
 }
@@ -154,6 +156,41 @@ function evaluate_custom_flag(arg0, arg1)
     }
     
     return proper_exit;
+}
+
+if (keyboard_check_pressed(vk_left) && !global.dreading_custom_flag)
+{
+    if (variable_instance_exists(id, "dbutton_base_indices") && array_length(dbutton_base_indices) > dvertical_index)
+    {
+        var target_base_index = dbutton_base_indices[dvertical_index];
+        var state_tracker = variable_struct_get(dmenu_expanded, dmenu_state);
+        
+        if (is_array(state_tracker) && state_tracker[target_base_index] == true)
+        {
+            state_tracker[target_base_index] = false;
+            variable_struct_set(dmenu_expanded, dmenu_state, state_tracker);
+            
+            for (var idx = 0; idx < array_length(dbutton_base_indices); idx++)
+            {
+                if (dbutton_base_indices[idx] == target_base_index)
+                {
+                    dvertical_index = idx;
+                    break;
+                }
+            }
+            
+            if (dvertical_index < dmenu_start_index)
+                dmenu_start_index = dvertical_index;
+            
+            dmenu_state_update();
+            
+            if (variable_instance_exists(id, "dbutton_max_visible"))
+                dmenu_start_index = clamp(dmenu_start_index, 0, max(0, array_length(dbutton_options) - dbutton_max_visible));
+            
+            snd_play(snd_select);
+            keyboard_clear(vk_left);
+        }
+    }
 }
 
 if (dmenu_active && global.dreading_custom_flag)
@@ -385,7 +422,7 @@ else if (dmenu_active)
             {
                 if (dvertical_index != 0)
                 {
-                    real_index = dbutton_indices[dvertical_index];
+                    var real_index = dbutton_indices[dvertical_index];
                     scr_recruit_info(real_index);
                     recruit_count = global.flag[real_index + 600];
                     to_add = 1 / _recruitcount;
@@ -444,6 +481,22 @@ else if (dmenu_active)
                     else
                         drooms_options.target_member_3 = new_party;
                     
+                    snd_play(snd_menumove);
+                    dmenu_state_update();
+                }
+            }
+            else if (dmenu_state == "debug_save_options" && dvertical_index == 1)
+            {
+                var new_setting = -1;
+                
+                if (pressed_left && global.dload_cur_inv != 0)
+                    new_setting = 0;
+                else if (pressed_right && global.dload_cur_inv != 1)
+                    new_setting = 1;
+                
+                if (new_setting != -1)
+                {
+                    global.dload_cur_inv = new_setting;
                     snd_play(snd_menumove);
                     dmenu_state_update();
                 }
@@ -632,7 +685,7 @@ else if (dmenu_active)
                 case "objects":
                     if (dhorizontal_page != 0 || dvertical_index != 0)
                     {
-                        real_index = dbutton_indices[dvertical_index];
+                        var real_index = dbutton_indices[dvertical_index];
                         
                         if (dhorizontal_page == 0)
                         {
@@ -661,7 +714,7 @@ else if (dmenu_active)
                 case "armors":
                     if (dhorizontal_page != 0 || dvertical_index != 0)
                     {
-                        real_index = dbutton_indices[dvertical_index];
+                        var real_index = dbutton_indices[dvertical_index];
                         
                         if (dhorizontal_page == 0)
                         {
@@ -681,7 +734,7 @@ else if (dmenu_active)
                 case "weapons":
                     if (dhorizontal_page != 0 || dvertical_index != 0)
                     {
-                        real_index = dbutton_indices[dvertical_index];
+                        var real_index = dbutton_indices[dvertical_index];
                         
                         if (dhorizontal_page == 0)
                         {
@@ -701,7 +754,7 @@ else if (dmenu_active)
                 case "keyitems":
                     if (dvertical_index != 0)
                     {
-                        real_index = dbutton_indices[dvertical_index];
+                        var real_index = dbutton_indices[dvertical_index];
                         scr_keyiteminfo(real_index);
                         dgiver_bname = tempkeyitemname;
                         scr_debug_print(string(dgiver_bname) + scr_dmode_get_text("msg_selected"));
@@ -741,17 +794,19 @@ else if (dmenu_active)
     
     if (keyboard_check_pressed(global.input_k[5]) || keyboard_check_pressed(global.input_k[8]))
     {
-        if (dmenu_state != "debug_save" || array_length(dmenu_state_history) > 0)
-            snd_play(snd_smallswing);
+        snd_play(snd_smallswing);
         
-        if (dmenu_popup_launch == 1)
+        if (dmenu_state == "debug_save")
         {
-            if (dmenu_state == "debug_save")
+            if (dmenu_popup_launch == 1)
             {
-                instance_create(0, 0, obj_savemenu);
-                obj_savemenu.menuno = 1;
-                obj_savemenu.mpos = 3;
-                global.interact = 1;
+                if (!instance_exists(obj_savemenu))
+                {
+                    instance_create(0, 0, obj_savemenu);
+                    obj_savemenu.menuno = 1;
+                    obj_savemenu.mpos = 3;
+                    global.interact = 1;
+                }
             }
         }
         
@@ -778,34 +833,23 @@ else if (dmenu_active)
             }
             else if (dvertical_index > 0 && dvertical_index < array_length(dbutton_options))
             {
-                var hovered_text = dbutton_options[dvertical_index];
+                var real_index = (dvertical_index < array_length(dbutton_indices)) ? dbutton_indices[dvertical_index] : -1;
                 
-                if (string_copy(hovered_text, 1, 2) == "- ")
-                    hovered_text = string_copy(hovered_text, 3, string_length(hovered_text) - 2);
-                
-                var found_desc = "";
-                
-                for (var i = 0; i < array_length(debug_save_names); i++)
-                {
-                    if (debug_save_names[i] == hovered_text)
-                    {
-                        found_desc = debug_save_descriptions[i];
-                        break;
-                    }
-                }
-                
-                dhinter_text = found_desc;
+                if (real_index >= 0 && real_index < array_length(debug_save_descriptions))
+                    dhinter_text = debug_save_descriptions[real_index];
+                else
+                    dhinter_text = "";
             }
         }
         
         if (dmenu_state == "debug_save_options")
         {
-            var target_save_name = string(global.debug_selected_save_name);
+            var target_path = global.debug_selected_save_section;
             var found_desc = "No description available.";
             
-            for (var i = 0; i < array_length(debug_save_names); i++)
+            for (var i = 0; i < array_length(debug_save_sections); i++)
             {
-                if (debug_save_names[i] == target_save_name)
+                if (debug_save_sections[i] == target_path)
                 {
                     found_desc = debug_save_descriptions[i];
                     break;
@@ -857,13 +901,23 @@ else if (dmenu_active)
                     var line_sep = 18 * d;
                     var max_h = line_sep * 2;
                     
-                    if (string_height_ext(dhinter_text, line_sep, max_w) > max_h)
+                    if (!variable_instance_exists(id, "dhinter_cached_raw") || dhinter_cached_raw != dhinter_text)
                     {
-                        while (string_height_ext(dhinter_text + "...", line_sep, max_w) > max_h && string_length(dhinter_text) > 0)
-                            dhinter_text = string_delete(dhinter_text, string_length(dhinter_text), 1);
+                        dhinter_cached_raw = dhinter_text;
+                        var temp_text = dhinter_text;
                         
-                        dhinter_text += "...";
+                        if (string_height_ext(temp_text, line_sep, max_w) > max_h)
+                        {
+                            while (string_height_ext(temp_text + "...", line_sep, max_w) > max_h && string_length(temp_text) > 0)
+                                temp_text = string_delete(temp_text, string_length(temp_text), 1);
+                            
+                            temp_text += "...";
+                        }
+                        
+                        dhinter_cached_display = temp_text;
                     }
+                    
+                    dhinter_text = dhinter_cached_display;
                 }
                 else
                 {

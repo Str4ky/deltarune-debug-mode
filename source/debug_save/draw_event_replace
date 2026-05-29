@@ -1,18 +1,18 @@
-if (button1_p() && buffer < 0)
-{
-    if (mpos == 3)
-    {
-        if (global.debug)
+        if (button1_p() && buffer < 0)
         {
-            menuno = 98;
-            buffer = 3;
-            snd_play(snd_egg);
-        }
-        else
-        {
-            menuno = 0;
-            buffer = 3;
-            mpos = global.filechoice;
-            snd_play(snd_select);
-        }
-    }
+            if (mpos == 3)
+            {
+                if (global.debug)
+                {
+                    menuno = 98;
+                    buffer = 3;
+                    snd_play(snd_egg);
+                }
+                else
+                {
+                    menuno = 0;
+                    buffer = 3;
+                    mpos = global.filechoice;
+                    snd_play(snd_select);
+                }
+            }

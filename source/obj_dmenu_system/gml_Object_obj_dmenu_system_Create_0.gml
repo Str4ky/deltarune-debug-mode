@@ -92,6 +92,9 @@ dpop_history = function()
     }
     else
     {
+        if (!(dmenu_popup_launch == 1 && dmenu_state == "debug_save"))
+            global.interact = 0;
+        
         dmenu_popup_launch = 0;
         dmenu_active = !dmenu_active;
         dmenu_state = "debug";
@@ -101,7 +104,6 @@ dpop_history = function()
         dmenu_horizontal_index_history = [];
         dmenu_page_index_history = [];
         dvertical_index = 0;
-        global.interact = 0;
         dmenu_state_update();
     }
     
@@ -369,6 +371,67 @@ draw_monospace = function(arg0, arg1, arg2)
     }
 };
 
+draw_monospace_ext = function(arg0, arg1, arg2, arg3, arg4)
+{
+    var _start_x = arg0;
+    var _start_y = arg1;
+    var _text = string(arg2);
+    var _line_sep = arg3;
+    var _max_width = arg4;
+    var _char_sep = (global.darkzone == 1) ? 15 : 8;
+    var _draw_x = _start_x;
+    var _draw_y = _start_y;
+    var _current_word = "";
+    var _text_len = string_length(_text);
+    
+    for (var i = 1; i <= _text_len; i++)
+    {
+        var _char = string_char_at(_text, i);
+        
+        if (_char != " " && _char != "\n")
+            _current_word += _char;
+        
+        if (_char == " " || _char == "\n" || i == _text_len)
+        {
+            var _word_width = string_length(_current_word) * _char_sep;
+            
+            if (_max_width > 0 && ((_draw_x + _word_width) - _start_x) > _max_width)
+            {
+                if (_draw_x != _start_x)
+                {
+                    _draw_x = _start_x;
+                    _draw_y += _line_sep;
+                }
+            }
+            
+            for (var w = 1; w <= string_length(_current_word); w++)
+            {
+                if (_max_width > 0 && ((_draw_x + _char_sep) - _start_x) > _max_width)
+                {
+                    _draw_x = _start_x;
+                    _draw_y += _line_sep;
+                }
+                
+                draw_text(_draw_x, _draw_y, string_char_at(_current_word, w));
+                _draw_x += _char_sep;
+            }
+            
+            _current_word = "";
+            
+            if (_char == " ")
+            {
+                if (_draw_x != _start_x)
+                    _draw_x += _char_sep;
+            }
+            else if (_char == "\n")
+            {
+                _draw_x = _start_x;
+                _draw_y += _line_sep;
+            }
+        }
+    }
+};
+
 set_keyboard_reader = function(arg0)
 {
     global.dreading_custom_flag = arg0;
@@ -453,6 +516,7 @@ function dmenu_process_submenus(arg0, arg1 = "")
     
     var _temp_options = [];
     var _temp_indices = [];
+    var _temp_base_indices = [];
     var _needs_struct_save = false;
     
     for (var i = 0; i < array_length(my_options); i++)
@@ -497,17 +561,21 @@ function dmenu_process_submenus(arg0, arg1 = "")
         
         array_push(_temp_options, _display_name);
         array_push(_temp_indices, _original_index);
+        array_push(_temp_base_indices, i);
         
         if (_is_open)
         {
             var _submenu = arg0[i];
+            var _subindices = (array_length(arg0) > (i + 1000) && is_array(arg0[i + 1000])) ? arg0[i + 1000] : [];
             
             for (var j = 0; j < array_length(_submenu); j++)
             {
                 if (_search == "" || _cat_match || string_pos(_search, string_lower(_submenu[j])) > 0)
                 {
                     array_push(_temp_options, "- " + _submenu[j]);
-                    array_push(_temp_indices, -1);
+                    var exact_index = (array_length(_subindices) > j) ? _subindices[j] : -1;
+                    array_push(_temp_indices, exact_index);
+                    array_push(_temp_base_indices, i);
                 }
             }
         }
@@ -518,6 +586,7 @@ function dmenu_process_submenus(arg0, arg1 = "")
     
     dbutton_options = _temp_options;
     dbutton_indices = _temp_indices;
+    dbutton_base_indices = _temp_base_indices;
 }
 
 function dmenu_interact_submenus(arg0)

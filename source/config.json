@@ -24,7 +24,6 @@
 		"scr_flag_set_ch4_fix",
         "scr_debug_fullheal",
         "scr_turn_skip",
-        "obj_spritecomparer",
-        "qa_helper"
+        "obj_spritecomparer"
     ]
 }

@@ -10,6 +10,5 @@ if (menuno == 98)
     obj_dmenu_system.dmenu_vertical_index_history = [];
     obj_dmenu_system.dmenu_page_index_history = [];
     obj_dmenu_system.dmenu_active = true;
-    endme = 2;
-    menuno = -1;
+    instance_destroy();
 }
