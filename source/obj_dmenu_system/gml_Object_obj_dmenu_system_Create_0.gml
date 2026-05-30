@@ -53,7 +53,7 @@ if (global.chapter == 1)
 }
 
 if (global.chapter < 3)
-    array_delete(dbutton_options_original, 2, 1);
+    array_delete(dbutton_options_original[0], 2, 1);
 
 dbutton_options = [];
 dbutton_options_2d = dbutton_options_original;
