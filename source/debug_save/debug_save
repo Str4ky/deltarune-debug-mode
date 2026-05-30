@@ -65,6 +65,13 @@ function scr_debug_save()
         else if (global.flag[241] == 7)
             uraboss = 2;
     }
+    else if (global.chapter == 2)
+    {
+        if (global.flag[571] == 1)
+            uraboss = 1;
+        else if (global.flag[571] == 2)
+            uraboss = 2;
+    }
     else
     {
         uraboss = scr_get_secret_boss_result(global.chapter);

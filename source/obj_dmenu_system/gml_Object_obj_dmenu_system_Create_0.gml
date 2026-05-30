@@ -8,7 +8,7 @@ dmenu_arrow_timer = 0;
 dscroll_timer = 0;
 dscroll_cur_key = 0;
 dscroll_delay = 15;
-dscroll_speed = 5;
+dscroll_speed = 1;
 dbackspace_timer = 0;
 dmenu_title = scr_dmode_get_text("debug_menu");
 dbutton_options_original = [[scr_dmode_get_text("warps"), scr_dmode_get_text("items"), scr_dmode_get_text("recruits"), scr_dmode_get_text("misc")], ["Globals", "Debug save"]];
@@ -420,8 +420,7 @@ draw_monospace_ext = function(arg0, arg1, arg2, arg3, arg4)
             
             if (_char == " ")
             {
-                if (_draw_x != _start_x)
-                    _draw_x += _char_sep;
+                _draw_x += _char_sep;
             }
             else if (_char == "\n")
             {

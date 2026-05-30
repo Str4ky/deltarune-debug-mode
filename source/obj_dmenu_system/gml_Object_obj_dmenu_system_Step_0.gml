@@ -44,12 +44,13 @@ if (dmenu_popup_launch != 1)
 
 function dmenu_pressed_key(arg0)
 {
-    if (arg0 != 40 && arg0 != 38 && arg0 != 37 && arg0 != 39)
+    if (arg0 != 40 && arg0 != 38 && arg0 != 37 && arg0 != 39 && arg0 != 8)
         return 0;
     
     if (keyboard_check_pressed(arg0))
     {
         dscroll_cur_key = arg0;
+        dscroll_timer = 0;
         return 1;
     }
     
@@ -58,13 +59,13 @@ function dmenu_pressed_key(arg0)
     
     if (keyboard_check(arg0))
     {
+        dscroll_timer += 1;
+        
         if (dscroll_timer >= dscroll_delay)
         {
             if ((dscroll_timer % dscroll_speed) == 0)
                 return 2;
         }
-        
-        dscroll_timer += 1;
     }
     else if (arg0 == dscroll_cur_key)
     {

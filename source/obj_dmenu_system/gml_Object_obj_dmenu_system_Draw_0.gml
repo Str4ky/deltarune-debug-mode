@@ -26,7 +26,7 @@ if (dmenu_box == 2)
     ycenter = 135;
 }
 
-var x_start = 0;
+x_start = 0;
 
 if (dbutton_layout == 0)
 {
@@ -62,7 +62,7 @@ if (dbutton_layout == 3)
     x_start = ((xcenter - (menu_width / 2)) * d) + x_padding;
 }
 
-var button_count = array_length(dbutton_options);
+button_count = array_length(dbutton_options);
 
 if (dmenu_active)
 {
@@ -168,16 +168,68 @@ if (dmenu_active)
         else if (dmenu_state == "new_debug_save" || dmenu_state == "dsave_edit_name" || dmenu_state == "dsave_edit_desc" || dmenu_state == "dsave_edit_cat")
         {
             var base_x = x_start + x_padding + xx;
-            var base_y = y_start + (17 * d) + yy;
+            var base_y = y_start + yy;
             var mono_spacing = (global.darkzone == 1) ? 15 : 8;
-            var thickness = 1 * d;
-            var visual_offset = -2;
-            var cursor_padding = 3 * d;
-            var w_name = string_length(string(dkeyboard_input)) * mono_spacing;
-            var x1_start = base_x;
+            var box_right_edge = (((xcenter + (menu_width / 2)) * d) - x_padding) + xx;
+            var max_width = box_right_edge - base_x;
+            var line_sep = 16 * d;
+            var cursor_x = base_x;
+            var cursor_y = base_y;
+            var current_word = "";
+            var input_str = string(dkeyboard_input);
+            var str_len = string_length(input_str);
+            
+            for (var i = 1; i <= str_len; i++)
+            {
+                var _char = string_char_at(input_str, i);
+                
+                if (_char != " " && _char != "\n")
+                    current_word += _char;
+                
+                if (_char == " " || _char == "\n" || i == str_len)
+                {
+                    var _word_width = string_length(current_word) * mono_spacing;
+                    
+                    if (max_width > 0 && ((cursor_x + _word_width) - base_x) > max_width)
+                    {
+                        if (cursor_x != base_x)
+                        {
+                            cursor_x = base_x;
+                            cursor_y += line_sep;
+                        }
+                    }
+                    
+                    for (var w = 1; w <= string_length(current_word); w++)
+                    {
+                        if (max_width > 0 && ((cursor_x + mono_spacing) - base_x) > max_width)
+                        {
+                            cursor_x = base_x;
+                            cursor_y += line_sep;
+                        }
+                        
+                        cursor_x += mono_spacing;
+                    }
+                    
+                    current_word = "";
+                    
+                    if (_char == " ")
+                    {
+                        cursor_x += mono_spacing;
+                    }
+                    else if (_char == "\n")
+                    {
+                        cursor_x = base_x;
+                        cursor_y += line_sep;
+                    }
+                }
+            }
+            
+            var cursor_thickness = 1 * d;
+            var cursor_height = 14 * d;
+            cursor_x += (1 * d);
+            var final_cursor_y = cursor_y + (2 * d);
             draw_set_color(c_yellow);
-            var draw_w_name = (w_name == 0) ? (mono_spacing / 4) : w_name;
-            draw_rectangle((x1_start + visual_offset) - cursor_padding, base_y, x1_start + draw_w_name + visual_offset + cursor_padding, base_y + thickness, false);
+            draw_rectangle(cursor_x, final_cursor_y, cursor_x + cursor_thickness, final_cursor_y + cursor_height, false);
         }
     }
     
@@ -370,57 +422,102 @@ if (dmenu_active)
     
     if (dbutton_layout == 3)
     {
+        var cur_btn = string(dbutton_options_2d[0][0]);
+        var text_x = x_start + x_padding + xx;
+        var text_y = y_start + yy;
+        var box_right_edge = (((xcenter + (menu_width / 2)) * d) - x_padding) + xx;
+        var max_width = box_right_edge - text_x;
+        var line_spacing = 16 * d;
+        var mono_spacing = (global.darkzone == 1) ? 15 : 8;
+        var cursor_x = text_x;
+        var line_count = 1;
+        var current_word = "";
+        var str_len = string_length(cur_btn);
+        
+        for (var i = 1; i <= str_len; i++)
+        {
+            var _char = string_char_at(cur_btn, i);
+            
+            if (_char != " " && _char != "\n")
+                current_word += _char;
+            
+            if (_char == " " || _char == "\n" || i == str_len)
+            {
+                var _word_width = string_length(current_word) * mono_spacing;
+                
+                if (max_width > 0 && ((cursor_x + _word_width) - text_x) > max_width)
+                {
+                    if (cursor_x != text_x)
+                    {
+                        cursor_x = text_x;
+                        line_count++;
+                    }
+                }
+                
+                for (var w = 1; w <= string_length(current_word); w++)
+                {
+                    if (max_width > 0 && ((cursor_x + mono_spacing) - text_x) > max_width)
+                    {
+                        cursor_x = text_x;
+                        line_count++;
+                    }
+                    
+                    cursor_x += mono_spacing;
+                }
+                
+                current_word = "";
+                
+                if (_char == " ")
+                {
+                    cursor_x += mono_spacing;
+                }
+                else if (_char == "\n")
+                {
+                    cursor_x = text_x;
+                    line_count++;
+                }
+            }
+        }
+        
+        var extra_height = (line_count - 1) * line_spacing;
+        var dynamic_bottom_y = text_y + (19 * d) + extra_height;
+        var is_multiline = dmenu_box == 1;
+        var buttons_y = yy + (is_multiline ? (185 * d) : (125 * d));
+        
         for (var i = 0; i < array_length(dbutton_options_2d[1]); i++)
         {
-            cur_btn = string(dbutton_options_2d[1][i]);
-            var text_width = string_width(cur_btn);
-            text_is_yellow = dvertical_index == 1 && dhorizontal_index == i;
+            var bottom_btn_str = string(dbutton_options_2d[1][i]);
+            var text_is_yellow = dvertical_index == 1 && dhorizontal_index == i;
             draw_set_color(text_is_yellow ? c_yellow : c_white);
-            draw_text(x_start + (12 * power(10, i) * d) + xx, (125 * d) + yy, cur_btn);
+            draw_text(x_start + (12 * power(10, i) * d) + xx, buttons_y, bottom_btn_str);
         }
         
         inputbox = function(arg0, arg1, arg2, arg3)
         {
-            border = 1 * d;
-            
-            if (dvertical_index == 0 && !global.dreading_custom_flag)
-                draw_set_color(c_yellow);
-            else
-                draw_set_color(c_white);
+            var border = 1 * d;
+            draw_set_color((dvertical_index == 0 && !global.dreading_custom_flag) ? c_yellow : c_white);
             
             for (var i = 0; i < border; i++)
                 draw_rectangle((arg0 - border) + i, (arg1 - border) + i, (arg2 + border) - i, (arg3 + border) - i, true);
         };
         
-        var box_right_edge = (((xcenter + (menu_width / 2)) * d) - x_padding) + xx;
-        inputbox(x_start + xx, y_start + yy, box_right_edge, y_start + (19 * d) + yy);
-        var cur_btn = string(dbutton_options_2d[0][0]);
-        
-        if (dkeyboard_input != "")
-            cur_btn = dkeyboard_input;
+        inputbox(x_start + xx, text_y, box_right_edge, dynamic_bottom_y);
+        var color = c_gray;
         
         if (dvertical_index == 0 && global.dreading_custom_flag)
             color = c_yellow;
         else if (dkeyboard_input != "")
             color = c_white;
-        else
-            color = c_gray;
         
         draw_set_color(color);
-        var text_x = x_start + x_padding + xx;
-        var text_y = y_start + yy;
-        var max_width = box_right_edge - text_x;
-        var line_spacing = 16 * d;
         draw_monospace_ext(text_x, text_y, cur_btn, line_spacing, max_width);
-        
-        if (d == 2)
-            heartsprite = spr_heart;
-        
-        if (d == 1)
-            heartsprite = spr_heartsmall;
+        var heartsprite = (d == 2) ? spr_heart : spr_heartsmall;
         
         if (dvertical_index != 0)
-            draw_sprite_ext(heartsprite, 0, x_start + (108 * dhorizontal_index * d) + xx, (130 * d) + yy, 1, 1, 0, c_white, 1);
+        {
+            var heart_y = buttons_y + (5 * d);
+            draw_sprite_ext(heartsprite, 0, x_start + (108 * dhorizontal_index * d) + xx, heart_y, 1, 1, 0, c_white, 1);
+        }
     }
     
     dhinter_active = true;
