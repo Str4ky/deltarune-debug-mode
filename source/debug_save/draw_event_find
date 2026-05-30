@@ -1,1 +1,9 @@
-if\s*\(\s*button1_p\(\)\s*&&\s*buffer\s*<\s*0\s*\)\s*\{[\s\S]*?if\s*\(\s*mpos\s*==\s*3\s*\)\s*\{[\s\S]*?\}
+        if (button1_p() && buffer < 0)
+        {
+            if (mpos == 3)
+            {
+                menuno = 0;
+                buffer = 3;
+                mpos = global.filechoice;
+                snd_play(snd_select);
+            }

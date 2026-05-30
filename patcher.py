@@ -313,4 +313,4 @@ def compile_utmt_mod(source_folder, template_file):
 source_fol = "source"
 if (len(sys.argv) == 2):
     source_fol = sys.argv[1]
-compile_utmt_mod(source_folder=source_fol, template_file="default_template.csx")
+compile_utmt_mod(source_folder=source_fol, template_file="debug_mode_template.csx")

@@ -6,6 +6,13 @@ if (!Data.IsVersionAtLeast(2023, 6))
     return;
 }
 
+if (Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapter 2" &&
+    Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapitre 2")
+{
+    ScriptError("Erreur 1 : Ce script s'applique seulement au Chapitre 2.");
+    return;
+}
+
 bool isFrenchPatch = false;
 foreach (var str in Data.Strings)
 {
@@ -16,18 +23,6 @@ foreach (var str in Data.Strings)
     }
 }
 string defaultLang = isFrenchPatch ? "fr" : "en";
-
-UndertaleFunction DefineFunc(string name)
-{
-    UndertaleString str = Data.Strings.MakeString(name, out int id);
-    UndertaleFunction func = new()
-    {
-        Name = str,
-        NameStringID = id
-    };
-    Data.Functions.Add(func);
-    return func;
-}
 
 GlobalDecompileContext globalDecompileContext = new(Data);
 Underanalyzer.Decompiler.IDecompileSettings decompilerSettings = new Underanalyzer.Decompiler.DecompileSettings();
@@ -2210,7 +2205,7 @@ if (type == 1)
 
 
 UndertaleGameObject obj_savemenu = Data.GameObjects.ByName("obj_savemenu");
-importGroup.QueueAppend("gml_Object_obj_savemenu_Step_0",
+importGroup.QueueAppend(obj_savemenu.EventHandlerFor(EventType.Step, (uint)0, Data),
 @"if (menuno == 98)
 {
     obj_dmenu_system.dmenu_popup_launch = 1;
@@ -2227,19 +2222,29 @@ importGroup.QueueAppend("gml_Object_obj_savemenu_Step_0",
 }");
 
 
-importGroup.QueueRegexFindReplace("gml_Object_obj_savemenu_Draw_0",
-@"    if \(mpos == 3\)
-        draw_set_color\(c_yellow\);",
-@"if (mpos == 3)
-    draw_set_color(c_yellow);
+importGroup.QueueFindReplace("gml_Object_obj_savemenu_Draw_0",
+@"    if (mpos == 3)
+    {
+        draw_set_color(c_yellow);
+    }",
+@"    if (mpos == 3)
+        draw_set_color(c_yellow);
 
-if (global.debug)
-    returntxt = stringsetloc(""Debug saves"", ""obj_savemenu_slash_Draw_0_gml_48_0"");
-else");
+    if (global.debug)
+        returntxt = stringsetloc(""Debug saves"", ""obj_savemenu_slash_Draw_0_gml_48_0"");
+    else");
 
 
-importGroup.QueueRegexFindReplace("gml_Object_obj_savemenu_Draw_0",
-@"if\s*\(\s*button1_p\(\)\s*&&\s*buffer\s*<\s*0\s*\)\s*\{[\s\S]*?if\s*\(\s*mpos\s*==\s*3\s*\)\s*\{[\s\S]*?\}",
+importGroup.QueueFindReplace("gml_Object_obj_savemenu_Draw_0",
+@"        if (button1_p() && buffer < 0)
+        {
+            if (mpos == 3)
+            {
+                menuno = 0;
+                buffer = 3;
+                mpos = global.filechoice;
+                snd_play(snd_select);
+            }",
 @"        if (button1_p() && buffer < 0)
         {
             if (mpos == 3)
@@ -7677,3 +7682,5 @@ importGroup.QueueReplace("gml_GlobalScript_scr_turn_skip",
 }");
 
 importGroup.Import();
+
+ScriptMessage("Mode Debug du Chapitre 2 ajouté.\r\n" + "Pour activer le Mode Debug en jeu, appuyer sur F10.");

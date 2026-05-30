@@ -6,6 +6,13 @@ if (!Data.IsVersionAtLeast(2023, 6))
     return;
 }
 
+if (Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapter 1" &&
+    Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapitre 1")
+{
+    ScriptError("Erreur 1 : Ce script s'applique seulement au Chapitre 1.");
+    return;
+}
+
 bool isFrenchPatch = false;
 foreach (var str in Data.Strings)
 {
@@ -16,18 +23,6 @@ foreach (var str in Data.Strings)
     }
 }
 string defaultLang = isFrenchPatch ? "fr" : "en";
-
-UndertaleFunction DefineFunc(string name)
-{
-    UndertaleString str = Data.Strings.MakeString(name, out int id);
-    UndertaleFunction func = new()
-    {
-        Name = str,
-        NameStringID = id
-    };
-    Data.Functions.Add(func);
-    return func;
-}
 
 GlobalDecompileContext globalDecompileContext = new(Data);
 Underanalyzer.Decompiler.IDecompileSettings decompilerSettings = new Underanalyzer.Decompiler.DecompileSettings();
@@ -6562,3 +6557,5 @@ importGroup.QueueReplace("gml_GlobalScript_scr_turn_skip",
 }");
 
 importGroup.Import();
+
+ScriptMessage("Mode Debug du Chapitre 1 ajouté.\r\n" + "Pour activer le Mode Debug en jeu, appuyer sur F10.");
