@@ -1,4 +1,5 @@
 dmenu_active = false;
+dmenu_popup_launch = 0;
 dmenu_box = 0;
 dbutton_layout = 0;
 dmenu_start_index = 0;
@@ -7,10 +8,10 @@ dmenu_arrow_timer = 0;
 dscroll_timer = 0;
 dscroll_cur_key = 0;
 dscroll_delay = 15;
-dscroll_speed = 5;
+dscroll_speed = 1;
 dbackspace_timer = 0;
 dmenu_title = scr_dmode_get_text("debug_menu");
-dbutton_options_original = [[scr_dmode_get_text("warps"), scr_dmode_get_text("items"), scr_dmode_get_text("recruits"), scr_dmode_get_text("misc")], ["Globals"]];
+dbutton_options_original = [[scr_dmode_get_text("warps"), scr_dmode_get_text("items"), scr_dmode_get_text("recruits"), scr_dmode_get_text("misc")], ["Globals", "Debug save"]];
 dnumber_litems = [0, 11, 14, 14, 18];
 dlight_weapons = [];
 dlight_armors = [[3, scr_dmode_get_text("bandage")], [14, scr_dmode_get_text("wristwatch")]];
@@ -21,6 +22,7 @@ armordesctemp = "";
 weapondesctemp = "";
 tempkeyitemdesc = "";
 dhinter_text = "";
+global.dload_cur_inv = 0;
 dtemp_text = "";
 dtemp_num = 0;
 
@@ -51,7 +53,7 @@ if (global.chapter == 1)
 }
 
 if (global.chapter < 3)
-    array_delete(dbutton_options_original, 2, 1);
+    array_delete(dbutton_options_original[0], 2, 1);
 
 dbutton_options = [];
 dbutton_options_2d = dbutton_options_original;
@@ -60,7 +62,9 @@ dvertical_index = 0;
 dhorizontal_page = 0;
 dhorizontal_index = 0;
 dmenu_state_history = [];
-dbutton_selected_history = [];
+dmenu_vertical_index_history = [];
+dmenu_horizontal_index_history = [];
+dmenu_page_index_history = [];
 dgiver_menu_state = 0;
 dgiver_button_selected = 0;
 dgiver_amount = 1;
@@ -79,29 +83,56 @@ dkeyitem_gaps = [0, 0, 0, 10, 0];
 
 dpop_history = function()
 {
+    dmenu_skip_reindexing = true;
     dkeyboard_input = "";
     
     if (array_length(dmenu_state_history) > 0)
     {
-        dmenu_state = dmenu_state_history[array_length(dmenu_state_history) - 1];
-        array_resize(dmenu_state_history, array_length(dmenu_state_history) - 1);
+        dmenu_state = array_pop(dmenu_state_history);
     }
     else
     {
+        if (!(dmenu_popup_launch == 1 && dmenu_state == "debug_save"))
+            global.interact = 0;
+        
+        dmenu_popup_launch = 0;
         dmenu_active = !dmenu_active;
+        dmenu_state = "debug";
+        dbutton_options = dbutton_options_original;
         dmenu_state_history = [];
-        dbutton_selected_history = [];
-        global.interact = 0;
+        dmenu_vertical_index_history = [];
+        dmenu_horizontal_index_history = [];
+        dmenu_page_index_history = [];
+        dvertical_index = 0;
+        dmenu_state_update();
     }
     
-    if (array_length(dbutton_selected_history) > 0)
-    {
-        dvertical_index = dbutton_selected_history[array_length(dbutton_selected_history) - 1];
-        array_resize(dbutton_selected_history, array_length(dbutton_selected_history) - 1);
-    }
+    if (array_length(dmenu_vertical_index_history) > 0)
+        dvertical_index = array_pop(dmenu_vertical_index_history);
+    
+    if (array_length(dmenu_horizontal_index_history) > 0)
+        dhorizontal_index = array_pop(dmenu_horizontal_index_history);
+    
+    if (array_length(dmenu_page_index_history) > 0)
+        dhorizontal_page = array_pop(dmenu_page_index_history);
     
     dmenu_state_update();
     dmenu_start_index = clamp(dvertical_index, 0, max(0, array_length(dbutton_options) - dbutton_max_visible));
+};
+
+dremove_false_history = function()
+{
+    if (array_length(dmenu_state_history) > 0)
+        array_pop(dmenu_state_history);
+    
+    if (array_length(dmenu_vertical_index_history) > 0)
+        array_pop(dmenu_vertical_index_history);
+    
+    if (array_length(dmenu_horizontal_index_history) > 0)
+        array_pop(dmenu_horizontal_index_history);
+    
+    if (array_length(dmenu_page_index_history) > 0)
+        array_pop(dmenu_page_index_history);
 };
 
 ditem_index_data = function(arg0)
@@ -340,6 +371,66 @@ draw_monospace = function(arg0, arg1, arg2)
     }
 };
 
+draw_monospace_ext = function(arg0, arg1, arg2, arg3, arg4)
+{
+    var _start_x = arg0;
+    var _start_y = arg1;
+    var _text = string(arg2);
+    var _line_sep = arg3;
+    var _max_width = arg4;
+    var _char_sep = (global.darkzone == 1) ? 15 : 8;
+    var _draw_x = _start_x;
+    var _draw_y = _start_y;
+    var _current_word = "";
+    var _text_len = string_length(_text);
+    
+    for (var i = 1; i <= _text_len; i++)
+    {
+        var _char = string_char_at(_text, i);
+        
+        if (_char != " " && _char != "\n")
+            _current_word += _char;
+        
+        if (_char == " " || _char == "\n" || i == _text_len)
+        {
+            var _word_width = string_length(_current_word) * _char_sep;
+            
+            if (_max_width > 0 && ((_draw_x + _word_width) - _start_x) > _max_width)
+            {
+                if (_draw_x != _start_x)
+                {
+                    _draw_x = _start_x;
+                    _draw_y += _line_sep;
+                }
+            }
+            
+            for (var w = 1; w <= string_length(_current_word); w++)
+            {
+                if (_max_width > 0 && ((_draw_x + _char_sep) - _start_x) > _max_width)
+                {
+                    _draw_x = _start_x;
+                    _draw_y += _line_sep;
+                }
+                
+                draw_text(_draw_x, _draw_y, string_char_at(_current_word, w));
+                _draw_x += _char_sep;
+            }
+            
+            _current_word = "";
+            
+            if (_char == " ")
+            {
+                _draw_x += _char_sep;
+            }
+            else if (_char == "\n")
+            {
+                _draw_x = _start_x;
+                _draw_y += _line_sep;
+            }
+        }
+    }
+};
+
 set_keyboard_reader = function(arg0)
 {
     global.dreading_custom_flag = arg0;
@@ -359,6 +450,12 @@ function scr_array_contains(arg0, arg1)
     return false;
 }
 
+dload_options = 
+{
+    target_save: -1,
+    target_with_cur_inv: global.dload_cur_inv
+};
+
 function parse_var_str(arg0, arg1)
 {
     str = arg0;
@@ -370,7 +467,8 @@ function parse_var_str(arg0, arg1)
     if (!is_good)
         return 0;
     
-	brack_start = string_pos("[", str);
+    brack_start = string_pos("[", str);
+    
     if (brack_start == 0)
     {
         dtemp_text = str;
@@ -383,4 +481,141 @@ function parse_var_str(arg0, arg1)
     }
     
     return 1;
+}
+
+dmenu_expanded = {};
+dmenu_last_search = "";
+dmenu_was_searching = false;
+my_options = [];
+
+function dmenu_process_submenus(arg0, arg1 = "")
+{
+    my_options = array_create(array_length(dbutton_options));
+    array_copy(my_options, 0, dbutton_options, 0, array_length(dbutton_options));
+    var _state_tracker = variable_struct_exists(dmenu_expanded, dmenu_state) ? variable_struct_get(dmenu_expanded, dmenu_state) : array_create(array_length(dbutton_options), false);
+    
+    while (array_length(_state_tracker) < array_length(my_options))
+        array_push(_state_tracker, false);
+    
+    var _search = string_lower(arg1);
+    var _search_changed = dmenu_last_search != _search;
+    dmenu_last_search = _search;
+    
+    if (_search == "" && dmenu_was_searching)
+    {
+        for (var k = 0; k < array_length(_state_tracker); k++)
+            _state_tracker[k] = false;
+        
+        dmenu_was_searching = false;
+    }
+    else if (_search != "")
+    {
+        dmenu_was_searching = true;
+    }
+    
+    var _temp_options = [];
+    var _temp_indices = [];
+    var _temp_base_indices = [];
+    var _needs_struct_save = false;
+    
+    for (var i = 0; i < array_length(my_options); i++)
+    {
+        var _base_name = my_options[i];
+        var _is_dropdown = i < array_length(arg0) && is_array(arg0[i]);
+        var _original_index = (i < array_length(dbutton_indices)) ? dbutton_indices[i] : -1;
+        var _is_persistent = _original_index == -2;
+        var _cat_match = true;
+        var _sub_match = false;
+        
+        if (_search != "" && !_is_persistent)
+        {
+            _cat_match = string_pos(_search, string_lower(_base_name)) > 0;
+            
+            if (_is_dropdown)
+            {
+                var _submenu = arg0[i];
+                
+                for (var j = 0; j < array_length(_submenu); j++)
+                {
+                    if (string_pos(_search, string_lower(_submenu[j])) > 0)
+                        _sub_match = true;
+                }
+                
+                if (_search_changed && _state_tracker[i] != _sub_match)
+                {
+                    _state_tracker[i] = _sub_match;
+                    _needs_struct_save = true;
+                }
+            }
+            
+            if (!_cat_match && !_sub_match)
+                continue;
+        }
+        
+        var _is_open = _is_dropdown && _state_tracker[i] == true;
+        var _display_name = _base_name;
+        
+        if (_is_dropdown)
+            _display_name += (_is_open ? " ^" : " v");
+        
+        array_push(_temp_options, _display_name);
+        array_push(_temp_indices, _original_index);
+        array_push(_temp_base_indices, i);
+        
+        if (_is_open)
+        {
+            var _submenu = arg0[i];
+            var _subindices = (array_length(arg0) > (i + 1000) && is_array(arg0[i + 1000])) ? arg0[i + 1000] : [];
+            
+            for (var j = 0; j < array_length(_submenu); j++)
+            {
+                if (_search == "" || _cat_match || string_pos(_search, string_lower(_submenu[j])) > 0)
+                {
+                    array_push(_temp_options, "- " + _submenu[j]);
+                    var exact_index = (array_length(_subindices) > j) ? _subindices[j] : -1;
+                    array_push(_temp_indices, exact_index);
+                    array_push(_temp_base_indices, i);
+                }
+            }
+        }
+    }
+    
+    if (_needs_struct_save || !variable_struct_exists(dmenu_expanded, dmenu_state))
+        variable_struct_set(dmenu_expanded, dmenu_state, _state_tracker);
+    
+    dbutton_options = _temp_options;
+    dbutton_indices = _temp_indices;
+    dbutton_base_indices = _temp_base_indices;
+}
+
+function dmenu_interact_submenus(arg0)
+{
+    var _clicked_index = -1;
+    
+    for (var i = 0; i < array_length(my_options); i++)
+    {
+        var _base_name = my_options[i];
+        
+        if (arg0 == (_base_name + " v") || arg0 == (_base_name + " ^"))
+        {
+            _clicked_index = i;
+            break;
+        }
+    }
+    
+    if (_clicked_index != -1 && variable_struct_exists(dmenu_expanded, dmenu_state))
+    {
+        var _state_tracker = variable_struct_get(dmenu_expanded, dmenu_state);
+        
+        if (_clicked_index < array_length(_state_tracker))
+        {
+            _state_tracker[_clicked_index] = !_state_tracker[_clicked_index];
+            variable_struct_set(dmenu_expanded, dmenu_state, _state_tracker);
+            dmenu_skip_reindexing = true;
+            dremove_false_history();
+            return true;
+        }
+    }
+    
+    return false;
 }

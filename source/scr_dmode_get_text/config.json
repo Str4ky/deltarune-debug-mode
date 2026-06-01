@@ -1,5 +1,12 @@
 {
-    "create_new": true,
-    "mode": "replace",
-	"gml_GlobalScript_scr_dmode_get_text.gml": {}
+	".get_text": {
+    "gml_name": "gml_GlobalScript_scr_dmode_get_text",
+    "actions": [
+      {
+        "replace": {
+          "content_file": "dmode_get_text.gml"
+        }
+      }
+    ]
+  }
 }

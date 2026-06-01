@@ -1,0 +1,9 @@
+        if (button1_p() && buffer < 0)
+        {
+            if (mpos == 3)
+            {
+                menuno = 0;
+                buffer = 3;
+                mpos = global.filechoice;
+                snd_play(snd_select);
+            }

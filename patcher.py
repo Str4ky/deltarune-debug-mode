@@ -285,7 +285,7 @@ def compile_utmt_mod(source_folder, template_file):
     for i in range(1, 5):
         element_memory = []
         
-        output_file = f"Mode Debug (chapitre {i}).csx"
+        output_file = f"debug_mode_chap{i}.csx"
         final_lines = []
         
         current_top = template_top.replace("CHAPTER_NUMBER", str(i))
@@ -313,4 +313,4 @@ def compile_utmt_mod(source_folder, template_file):
 source_fol = "source"
 if (len(sys.argv) == 2):
     source_fol = sys.argv[1]
-compile_utmt_mod(source_folder=source_fol, template_file="default_template.csx")
+compile_utmt_mod(source_folder=source_fol, template_file="debug_mode_template.csx")

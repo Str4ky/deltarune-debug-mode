@@ -1,0 +1,6 @@
+    if (mpos == 3)
+        draw_set_color(c_yellow);
+
+    if (global.debug)
+        returntxt = stringsetloc("Debug saves", "obj_savemenu_slash_Draw_0_gml_48_0");
+    else

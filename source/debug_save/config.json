@@ -1,0 +1,79 @@
+{
+  "savemenu_step_append": {
+    "chapters": [-1],
+    "mode": "append",
+    "gml_name": "gml_Object_obj_savemenu_Step_0"
+  },
+  ".save_debug_button": {
+    "chapters": [-1],
+    "gml_name": "gml_Object_obj_savemenu_Draw_0",
+    "actions": [
+      {
+        "find_replace": {
+          "find_file": "save_debug_button_find",
+          "replace_file": "save_debug_button_replace"
+        }
+      }
+    ]
+  },
+  ".savemenu_draw_findreplace": {
+    "chapters": [-1],
+    "gml_name": "gml_Object_obj_savemenu_Draw_0",
+    "actions": [
+      {
+        "find_replace": {
+          "find_file": "draw_event_find",
+          "replace_file": "draw_event_replace"
+        }
+      }
+    ]
+  },
+  ".saveprocess": {
+    "chapters": [-1],
+    "gml_name": "gml_GlobalScript_scr_saveprocess",
+    "actions": [
+      {
+        "find_replace": {
+          "find_file": "saveprocess_find",
+          "replace_file": "saveprocess_replace"
+        }
+      }
+    ]
+  },
+  ".saveprocess_ch1": {
+    "chapters": [1],
+    "gml_name": "gml_GlobalScript_scr_saveprocess",
+    "actions": [
+      {
+        "find_replace": {
+          "find": "file = \"filech1_\" + string(arg0);",
+          "replace_file": "saveprocess_ch1_replace"
+        }
+      }
+    ]
+  },
+  "get_debug_save_list": {
+    "mode": "replace",
+    "gml_name": "gml_GlobalScript_scr_get_debug_save_list"
+  },
+  "debug_save_import": {
+    "mode": "replace",
+    "gml_name": "gml_GlobalScript_scr_debug_save_import"
+  },
+  "debug_save_scan_imports": {
+    "mode": "replace",
+    "gml_name": "gml_GlobalScript_scr_debug_save_scan_imports"
+  },
+  "debug_save_modify_info": {
+    "mode": "replace",
+    "gml_name": "gml_GlobalScript_scr_debug_save_modify_info"
+  },
+  "debug_save": {
+    "mode": "replace",
+    "gml_name": "gml_GlobalScript_scr_debug_save"
+  },
+  "debug_load": {
+    "mode": "replace",
+    "gml_name": "gml_GlobalScript_scr_debug_load"
+  }
+}

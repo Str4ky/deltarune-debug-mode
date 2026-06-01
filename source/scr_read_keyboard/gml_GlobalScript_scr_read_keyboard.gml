@@ -2,15 +2,14 @@ function scr_read_keyboard()
 {
     var cur_text = global.dkeyboard_text;
     text_changed = 0;
+    var backspace_action = dmenu_pressed_key(8);
     
-    if (keyboard_check(vk_backspace))
+    if (backspace_action > 0)
     {
-        if (keyboard_check_pressed(vk_backspace))
-        {
+        if (string_length(cur_text) > 0)
             cur_text = string_delete(cur_text, string_length(cur_text), 1);
-            keyboard_string = "";
-        }
         
+        keyboard_string = "";
         text_changed = 1;
     }
     else if (keyboard_string != "")

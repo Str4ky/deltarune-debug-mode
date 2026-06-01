@@ -1,21 +1,45 @@
 {
-	"gml_name": "gml_Object_obj_overworldc_Step_0",
-	"mode": "append",
-	"gml_Object_obj_overworldc_Step_0.gml": {
-		"chapters": [1, 2]
-	},
-	"chap2_debug": {
-		"chapters": [2]
-	},
-    "dmenu_adder.gml": {},
-	".replace_debug": {
-		"actions": [
-			{
-				"find_replace": {
-					"find": "if (scr_debug())",
-					"replace": "if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))"
-				}
-			}
-		]
-	}
+    "gml_name": "gml_Object_obj_overworldc_Step_0",
+    
+    "gml_Object_obj_overworldc_Step_0.gml": {
+        "chapters": [1, 2],
+        "actions": [
+            {
+                "append": {
+                    "content_file": "gml_Object_obj_overworldc_Step_0.gml"
+                }
+            },
+            {
+                "find_replace": {
+                    "find": "if (scr_debug())",
+                    "replace": "if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))"
+                }
+            }
+        ]
+    },
+    
+    ".chap3-4": {
+        "chapters": [3, 4],
+        "actions": [
+            {
+                "find_replace": {
+                    "find": "if (sunkus_kb_check_pressed(ord(\"L\")))",
+                    "replace": "if (0)"
+                }
+            },
+            {
+                "append": {
+                    "content_file": "chap3-4_debug_load"
+                }
+            },
+            {
+                "find_replace": {
+                    "find": "if (scr_debug())",
+                    "replace": "if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))"
+                }
+            }
+        ]
+    },
+    
+    "dmenu_adder.gml": {}
 }

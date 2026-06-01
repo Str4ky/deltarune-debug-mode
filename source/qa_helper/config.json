@@ -1,0 +1,133 @@
+{
+  "chapters": [-1],
+  ".obj_writer_step": {
+    "gml_name": "gml_Object_obj_writer_Step_0",
+    "actions": [
+      {
+        "replace": {
+          "content_file": "obj_writer_step.gml"
+        }
+      }
+    ]
+  },
+  ".qa_export": {
+    "gml_name": "gml_GlobalScript_scr_qa_export",
+    "actions": [
+      {
+        "replace": {
+          "content_file": "scr_qa_export.gml"
+        }
+      }
+    ]
+  },
+  ".msgsetloc": {
+    "gml_name": "gml_GlobalScript_msgsetloc",
+    "actions": [
+      {
+        "find_replace": {
+          "find": "msgset(msg_index, str);",
+          "replace": "msgset(msg_index, str);scr_qa_export(str, localized_string_id);"
+        }
+      }
+    ]
+  },
+  ".msgnextloc": {
+    "gml_name": "gml_GlobalScript_msgnextloc",
+    "actions": [
+      {
+        "find_replace": {
+          "find": "msgnext(str);",
+          "replace": "msgnext(str);scr_qa_export(str, localized_string_id);"
+        }
+      }
+    ]
+  },
+  ".stringsetloc": {
+    "gml_name": "gml_GlobalScript_stringsetloc",
+    "actions": [
+      {
+        "find_replace": {
+          "find": "return stringset(str);",
+          "replace": "scr_qa_export(str, argument[1]);return stringset(str);"
+        }
+      }
+    ]
+  },
+  ".msgsetsubloc": {
+    "gml_name": "gml_GlobalScript_msgsetsubloc",
+    "actions": [
+      {
+        "find_replace": {
+          "find": "msgset(msg_index, str);",
+          "replace": "msgset(msg_index, str);scr_qa_export(str, argument[argument_count - 1]);"
+        }
+      }
+    ]
+  },
+  ".msgnextsubloc": {
+    "gml_name": "gml_GlobalScript_msgnextsubloc",
+    "actions": [
+      {
+        "find_replace": {
+          "find": "msgnext(str);",
+          "replace": "msgnext(str);scr_qa_export(str, argument[argument_count - 1]);"
+        }
+      }
+    ]
+  },
+  ".stringsetsubloc": {
+    "gml_name": "gml_GlobalScript_stringsetsubloc",
+    "actions": [
+      {
+        "find_replace": {
+          "find": "return stringset(str);",
+          "replace": "scr_qa_export(str, argument[argument_count - 1]);return stringset(str);"
+        }
+      }
+    ]
+  },
+  ".c_msgsetloc": {
+    "gml_name": "gml_GlobalScript_c_msgsetloc",
+    "actions": [
+      {
+        "find_replace": {
+          "find": "c_msgset(msg_index, str);",
+          "replace": "c_msgset(msg_index, str);scr_qa_export(str, localized_string_id);"
+        }
+      }
+    ]
+  },
+  ".c_msgnextloc": {
+    "gml_name": "gml_GlobalScript_c_msgnextloc",
+    "actions": [
+      {
+        "find_replace": {
+          "find": "c_msgnext(str);",
+          "replace": "c_msgnext(str);scr_qa_export(str, localized_string_id);"
+        }
+      }
+    ]
+  },
+  ".c_msgsetsubloc": {
+    "gml_name": "gml_GlobalScript_c_msgsetsubloc",
+    "actions": [
+      {
+        "find_replace": {
+          "find": "c_msgset(msg_index, str);",
+          "replace": "c_msgset(msg_index, str);scr_qa_export(str, argument[argument_count - 1]);"
+        }
+      }
+    ]
+  },
+  ".c_msgnextsubloc": {
+    "gml_name": "gml_GlobalScript_c_msgnextsubloc",
+    "actions": [
+      {
+        "find_replace": {
+          "find": "c_msgnext(str);",
+          "replace": "c_msgnext(str);scr_qa_export(str, argument[argument_count - 1]);"
+        }
+      }
+    ]
+  }
+}

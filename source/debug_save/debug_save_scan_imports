@@ -1,0 +1,204 @@
+function scr_debug_save_scan_imports()
+{
+    var import_dir = "debug_save/import/";
+    
+    if (!directory_exists(import_dir))
+    {
+        directory_create(import_dir);
+        scr_debug_print("Created 'import' folder. Place your folders/saves inside!");
+        snd_play(snd_noise);
+        exit;
+    }
+    
+    var dirs_to_scan = [import_dir];
+    var files_to_import = [];
+    
+    while (array_length(dirs_to_scan) > 0)
+    {
+        var current_dir = array_pop(dirs_to_scan);
+        var f_name = file_find_first(current_dir + "*", 16);
+        
+        while (f_name != "")
+        {
+            if (f_name != "." && f_name != "..")
+            {
+                var full_path = current_dir + f_name;
+                
+                if (directory_exists(full_path))
+                    array_push(dirs_to_scan, full_path + "/");
+                else
+                    array_push(files_to_import, full_path);
+            }
+            
+            f_name = file_find_next();
+        }
+        
+        file_find_close();
+    }
+    
+    if (array_length(files_to_import) == 0)
+    {
+        scr_debug_print("No files found to import.");
+        exit;
+    }
+    
+    var success_count = 0;
+    
+    for (var f = 0; f < array_length(files_to_import); f++)
+    {
+        var target_path = files_to_import[f];
+        var file_id = file_text_open_read(target_path);
+        var file_content = "";
+        
+        while (!file_text_eof(file_id))
+        {
+            file_content += file_text_read_string(file_id);
+            file_text_readln(file_id);
+            
+            if (!file_text_eof(file_id))
+                file_content += "\n";
+        }
+        
+        file_text_close(file_id);
+        var is_structured = false;
+        var import_data = -1;
+        
+        try
+        {
+            import_data = json_parse(file_content);
+            
+            if (is_struct(import_data) && variable_struct_exists(import_data, "metadata"))
+                is_structured = true;
+        }
+        catch (e)
+        {
+            is_structured = false;
+        }
+        
+        var meta = {};
+        var save_content = "";
+        var clean_path = string_replace_all(target_path, "\\", "/");
+        var clean_import_dir = string_replace_all(import_dir, "\\", "/");
+        var rel_path = string_replace(clean_path, clean_import_dir, "");
+        var path_parts = [];
+        var cur_part = "";
+        
+        for (var p = 1; p <= string_length(rel_path); p++)
+        {
+            var char = string_char_at(rel_path, p);
+            
+            if (char == "/")
+            {
+                if (cur_part != "")
+                    array_push(path_parts, cur_part);
+                
+                cur_part = "";
+            }
+            else
+            {
+                cur_part += char;
+            }
+        }
+        
+        if (cur_part != "")
+            array_push(path_parts, cur_part);
+        
+        var p_len = array_length(path_parts);
+        var ext_name = "Untitled";
+        var ext_cat = "Imported";
+        var file_only_name = path_parts[p_len - 1];
+        var chapter_num = global.chapter;
+        var pos_underscore = string_pos("_", file_only_name);
+        
+        if (pos_underscore > 6)
+        {
+            var chapter_str = string_copy(file_only_name, 7, pos_underscore - 7);
+            
+            try
+            {
+                chapter_num = real(chapter_str);
+            }
+            catch (e)
+            {
+            }
+        }
+        
+        if (p_len >= 3)
+        {
+            ext_name = path_parts[p_len - 2];
+            ext_cat = path_parts[p_len - 3];
+        }
+        else if (p_len == 2)
+        {
+            ext_name = path_parts[0];
+            ext_cat = "Imported";
+        }
+        else if (p_len == 1)
+        {
+            ext_name = file_only_name;
+            ext_cat = "Imported";
+        }
+        
+        if (is_structured)
+        {
+            meta = import_data.metadata;
+            save_content = import_data.save_file;
+            
+            if (!variable_struct_exists(meta, "SaveName") || meta.SaveName == "")
+                meta.SaveName = ext_name;
+            
+            if (!variable_struct_exists(meta, "Category") || meta.Category == "")
+                meta.Category = ext_cat;
+        }
+        else
+        {
+            meta.SaveName = ext_name;
+            meta.Category = ext_cat;
+            meta.Chapter = chapter_num;
+            meta.Description = "Raw save imported from folder structure.";
+            meta.Name = "Unknown";
+            meta.Level = 1;
+            meta.Love = 1;
+            meta.Room = 0;
+            meta.Time = 0;
+            meta.UraBoss = 0;
+            save_content = file_content;
+        }
+        
+        var safe_name = scr_debug_sanitize_filename(meta.SaveName);
+        var safe_cat = scr_debug_sanitize_filename(meta.Category, true);
+        var target_chap = variable_struct_exists(meta, "Chapter") ? meta.Chapter : global.chapter;
+        var base_dir = "debug_save/ch" + string(target_chap) + "/";
+        
+        if (!directory_exists(base_dir))
+            directory_create(base_dir);
+        
+        var cat_dir = base_dir;
+        
+        if (safe_cat != "")
+        {
+            cat_dir += (safe_cat + "/");
+            
+            if (!directory_exists(cat_dir))
+                directory_create(cat_dir);
+        }
+        
+        var new_file_path = cat_dir + safe_name + ".save";
+        var export_data = 
+        {
+            metadata: meta,
+            save_file: save_content
+        };
+        var out_file = file_text_open_write(new_file_path);
+        file_text_write_string(out_file, json_stringify(export_data, true));
+        file_text_close(out_file);
+        file_delete(target_path);
+        success_count++;
+    }
+    
+    if (directory_exists(import_dir))
+        directory_destroy(import_dir);
+    
+    scr_debug_print(string(success_count) + " files imported successfully!");
+    snd_play(snd_shineselect);
+}
