@@ -1,0 +1,25 @@
+{
+    "gml_name": "gml_Object_obj_rhythmgame_Step_0",
+    ".rhythmgame_debug_keys": {
+        "chapters": [-1, -2],
+        "actions": [
+            {
+                "find_replace": {
+                    "find": "if (keyboard_check_pressed(ord(\"O\"))",
+                    "replace": "if (keyboard_check_pressed(ord(\"N\"))"
+                }
+            },
+            {
+                "find_replace": {
+                    "find": "debug_print(\"debug mode disabled\");",
+                    "replace": "scr_debug_delete_persistent(\"Debug keys\");\ndebug_print(\"debug mode disabled\");"
+                }
+            },
+            {
+                "append": {
+                    "content_file": "debug_keys_append.gml"
+                }
+            }
+        ]
+    }
+}

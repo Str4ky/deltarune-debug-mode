@@ -622,6 +622,7 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_print_persistent",
             if (string_pos(search_key, message[i]) == 1)
             {
                 message[i] = final_text;
+                messagetimer[i] = 10;
                 found = true;
                 break;
             }
@@ -630,6 +631,7 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_print_persistent",
         if (!found)
         {
             message[messagecount] = final_text;
+            messagetimer[messagecount] = 10;
             messagecount++;
         }
         
@@ -647,6 +649,48 @@ function debug_print_persistent(arg0, arg1)
 
 function scr_debug_delete_persistent(arg0, arg1 = false)
 {
+    if (!instance_exists(obj_debug_gui_persistent))
+        exit;
+    
+    var search_key = string(arg0) + "":"";
+    
+    with (obj_debug_gui_persistent)
+    {
+        var found_index = -1;
+        
+        for (i = 0; i < messagecount; i++)
+        {
+            if (string_pos(search_key, message[i]) == 1)
+            {
+                found_index = i;
+                break;
+            }
+        }
+        
+        if (found_index != -1)
+        {
+            for (i = found_index; i < (messagecount - 1); i++)
+            {
+                message[i] = message[i + 1];
+                messagetimer[i] = messagetimer[i + 1];
+            }
+            
+            messagecount--;
+            
+            if (messagecount <= 0)
+            {
+                debugmessage = """";
+                instance_destroy();
+            }
+            else
+            {
+                debugmessage = message[0];
+                
+                for (i = 1; i < messagecount; i++)
+                    debugmessage += (""#"" + message[i]);
+            }
+        }
+    }
 }
 
 function scr_debug_clear_persistent()
@@ -1235,10 +1279,27 @@ importGroup.QueueReplace(obj_debug_gui_persistent.EventHandlerFor(EventType.Step
 }
 else
 {
-    for (i = 0; i < (messagecount - 1); i++)
-        message[i] = message[i + 1];
+    var _rebuild = false;
+    i = messagecount - 1;
     
-    messagecount--;
+    while (i >= 0)
+    {
+        messagetimer[i]--;
+        
+        if (messagetimer[i] <= 0)
+        {
+            for (var j = i; j < (messagecount - 1); j++)
+            {
+                message[j] = message[j + 1];
+                messagetimer[j] = messagetimer[j + 1];
+            }
+            
+            messagecount--;
+            _rebuild = true;
+        }
+        
+        i--;
+    }
     
     if (messagecount <= 0)
     {
@@ -1246,10 +1307,13 @@ else
         exit;
     }
     
-    debugmessage = message[0];
-    
-    for (i = 1; i < messagecount; i++)
-        debugmessage += (""#"" + message[i]);
+    if (_rebuild)
+    {
+        debugmessage = message[0];
+        
+        for (i = 1; i < messagecount; i++)
+            debugmessage += (""#"" + message[i]);
+    }
 }");
 
 
@@ -8097,6 +8161,32 @@ importGroup.QueueAppend(obj_spritecomparer.EventHandlerFor(EventType.Draw, (uint
 importGroup.QueueFindReplace("gml_Object_obj_spritecomparer_Draw_0",
 @"if (keyboard_check_pressed(ord(""D"")))",
 @"if (keyboard_check_pressed(vk_f2))");
+
+
+UndertaleGameObject obj_rhythmgame = Data.GameObjects.ByName("obj_rhythmgame");
+importGroup.QueueFindReplace("gml_Object_obj_rhythmgame_Step_0",
+@"if (keyboard_check_pressed(ord(""O""))",
+@"if (keyboard_check_pressed(ord(""N""))");
+importGroup.QueueFindReplace("gml_Object_obj_rhythmgame_Step_0",
+@"debug_print(""debug mode disabled"");",
+@"scr_debug_delete_persistent(""Debug keys"");
+debug_print(""debug mode disabled"");");
+importGroup.QueueAppend("gml_Object_obj_rhythmgame_Step_0",
+@"if (scr_debug())
+{
+    if (show_debug)
+    {
+        var _key_data = ""[Shift + -/+] Change volume: "" + string(main_vol * 100) + ""%"";
+        _key_data += ""#[P] Pause song"";
+        _key_data += ""#[R] Restart song"";
+        _key_data += ""#[F5] End song"";
+        _key_data += ""#[F6] Go to end screen"";
+        _key_data += (""#[I] Autoplay: "" + (auto_play ? ""on"" : ""off""));
+        _key_data += (""#[U] Swap modes: "" + string(tutorial));
+        _key_data += ""#[N] Toggle rhythm game debug"";
+        scr_debug_print_persistent(""Debug keys"", _key_data);
+    }
+}");
 
 importGroup.Import();
 
