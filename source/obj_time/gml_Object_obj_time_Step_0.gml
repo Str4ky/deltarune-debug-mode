@@ -12,14 +12,19 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
 {
     if (keyboard_check_pressed(ord("P")))
     {
-        if (room_speed == 30)
+        if (!variable_global_exists("speed_fps"))
+            global.speed_fps = 30;
+        
+        if (global.speed_fps == 30)
         {
-            room_speed = 1;
+            global.speed_fps = 1;
+            game_set_speed(1, gamespeed_fps);
             scr_debug_print(scr_dmode_get_text("fps_1"));
         }
         else
         {
-            room_speed = 30;
+            global.speed_fps = 30;
+            game_set_speed(30, gamespeed_fps);
             scr_debug_print(scr_dmode_get_text("fps_30"));
         }
     }
@@ -35,20 +40,26 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
     
     if (keyboard_check_pressed(ord("O")))
     {
-        if (room_speed == 120 || room_speed == 1)
+        if (!variable_global_exists("speed_fps"))
+            global.speed_fps = 30;
+        
+        if (global.speed_fps == 30)
         {
-            room_speed = 30;
-            scr_debug_print(scr_dmode_get_text("fps_30"));
+            global.speed_fps = 60;
+            game_set_speed(60, gamespeed_fps);
+            scr_debug_print(scr_dmode_get_text("fps_60"));
         }
-        else if (room_speed == 60)
+        else if (global.speed_fps == 60)
         {
-            room_speed = 120;
+            global.speed_fps = 120;
+            game_set_speed(120, gamespeed_fps);
             scr_debug_print(scr_dmode_get_text("fps_120"));
         }
-        else if (room_speed == 30)
+        else
         {
-            room_speed = 60;
-            scr_debug_print(scr_dmode_get_text("fps_60"));
+            global.speed_fps = 30;
+            game_set_speed(30, gamespeed_fps);
+            scr_debug_print(scr_dmode_get_text("fps_30"));
         }
     }
 }

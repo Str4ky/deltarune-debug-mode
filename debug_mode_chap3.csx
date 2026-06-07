@@ -562,15 +562,95 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_print",
 
 function print_message(arg0)
 {
+    scr_debug_print(arg0);
 }
 
 function debug_print(arg0)
 {
+    scr_debug_print(arg0);
 }
 
 function scr_debug_clear_all()
 {
     scr_debug_clear_persistent();
+}
+
+enum e__VW
+{
+    XView,
+    YView,
+    WView,
+    HView,
+    Angle,
+    HBorder,
+    VBorder,
+    HSpeed,
+    VSpeed,
+    Object,
+    Visible,
+    XPort,
+    YPort,
+    WPort,
+    HPort,
+    Camera,
+    SurfaceID
+}");
+
+
+UndertaleScript scr_debug_print_persistent = Data.Scripts.ByName("scr_debug_print_persistent");
+importGroup.QueueReplace("gml_GlobalScript_scr_debug_print_persistent",
+@"function scr_debug_print_persistent(arg0, arg1)
+{
+    if (!scr_debug())
+        exit;
+    
+    if (!instance_exists(obj_debug_gui_persistent))
+    {
+        instance_create(__view_get(e__VW.XView, 0) + 10, __view_get(e__VW.YView, 0) + 10, obj_debug_gui_persistent);
+        obj_debug_gui_persistent.depth = -9999;
+    }
+    
+    var search_key = string(arg0) + "":"";
+    var final_text = string(arg0) + "": "" + string(arg1);
+    
+    with (obj_debug_gui_persistent)
+    {
+        var found = false;
+        
+        for (i = 0; i < messagecount; i++)
+        {
+            if (string_pos(search_key, message[i]) == 1)
+            {
+                message[i] = final_text;
+                found = true;
+                break;
+            }
+        }
+        
+        if (!found)
+        {
+            message[messagecount] = final_text;
+            messagecount++;
+        }
+        
+        debugmessage = message[0];
+        
+        for (i = 1; i < messagecount; i++)
+            debugmessage += (""#"" + message[i]);
+    }
+}
+
+function debug_print_persistent(arg0, arg1)
+{
+    scr_debug_print_persistent(arg0, arg1);
+}
+
+function scr_debug_delete_persistent(arg0, arg1 = false)
+{
+}
+
+function scr_debug_clear_persistent()
+{
 }
 
 enum e__VW
@@ -1138,6 +1218,53 @@ draw_set_font(fnt);");
 
 importGroup.QueueReplace(obj_debug_gui.EventHandlerFor(EventType.CleanUp, (uint)0, Data),
 @"event_inherited();");
+
+
+UndertaleGameObject obj_debug_gui_persistent = Data.GameObjects.ByName("obj_debug_gui_persistent");
+importGroup.QueueReplace(obj_debug_gui_persistent.EventHandlerFor(EventType.Create, (uint)0, Data),
+@"message[0] = """";
+debugmessage = """";
+newtext = """";
+messagecount = 0;");
+
+
+importGroup.QueueReplace(obj_debug_gui_persistent.EventHandlerFor(EventType.Step, (uint)0, Data),
+@"if (messagecount <= 0)
+{
+    instance_destroy();
+}
+else
+{
+    for (i = 0; i < (messagecount - 1); i++)
+        message[i] = message[i + 1];
+    
+    messagecount--;
+    
+    if (messagecount <= 0)
+    {
+        instance_destroy();
+        exit;
+    }
+    
+    debugmessage = message[0];
+    
+    for (i = 1; i < messagecount; i++)
+        debugmessage += (""#"" + message[i]);
+}");
+
+
+importGroup.QueueReplace(obj_debug_gui_persistent.EventHandlerFor(EventType.Draw, (uint)64, Data),
+@"var fnt = draw_get_font();
+draw_set_font(fnt_comicsans);
+var col = draw_get_color();
+draw_set_halign(fa_right);
+draw_set_color(c_black);
+draw_text_transformed(631, 40, string_hash_to_newline(debugmessage), 0.5, 0.5, 0);
+draw_set_color(c_red);
+draw_text_transformed(630, 39, string_hash_to_newline(debugmessage), 0.5, 0.5, 0);
+draw_set_halign(fa_left);
+draw_set_color(col);
+draw_set_font(fnt);");
 
 
 UndertaleGameObject obj_debug_xy = Data.GameObjects.ByName("obj_debug_xy");
@@ -3697,17 +3824,6 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
                 global.currentroom = room_id;
             }
             
-            if (global.filechoice != 9)
-            {
-                if (scr_completed_chapter_any_slot(4) && global.plot >= 243)
-                {
-                    global.flag[1658] = 1;
-                    
-                    if (global.flag[1659] == 0)
-                        global.currentroom = scr_get_id_by_room_index(261);
-                }
-            }
-            
             break;
     }
     
@@ -3953,7 +4069,7 @@ if (global.chapter == 1)
 }
 
 if (global.chapter < 3)
-    array_delete(dbutton_options_original, 2, 1);
+    array_delete(dbutton_options_original[0], 2, 1);
 
 dbutton_options = [];
 dbutton_options_2d = dbutton_options_original;
@@ -7568,12 +7684,13 @@ importGroup.QueueReplace(obj_time.EventHandlerFor(EventType.Draw, (uint)0, Data)
 @"if (scr_debug())
 {
     draw_set_font(fnt_main);
+    var text_scale = (global.darkzone == 1) ? 1 : 0.5;
     draw_set_color(c_red);
     draw_text(__view_get(0, 0), __view_get(1, 0), fps);
     draw_set_font(fnt_main);
     draw_set_color(c_green);
-    draw_text((__view_get(0, 0) + __view_get(2, 0)) - string_width(room_get_name(room)), __view_get(1, 0), room_get_name(room));
-    draw_text((__view_get(0, 0) + __view_get(2, 0)) - string_width(""plot "" + string(global.plot)), __view_get(1, 0) + 15, ""plot "" + string(global.plot));
+    draw_text_transformed((__view_get(0, 0) + __view_get(2, 0)) - (string_width(room_get_name(room)) * text_scale), __view_get(1, 0), room_get_name(room), text_scale, text_scale, 0);
+    draw_text_transformed((__view_get(0, 0) + __view_get(2, 0)) - (string_width(""plot "" + string(global.plot)) * text_scale), __view_get(1, 0) + (15 * text_scale), ""plot "" + string(global.plot), text_scale, text_scale, 0);
 }");
 
 
@@ -7592,14 +7709,19 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
 {
     if (keyboard_check_pressed(ord(""P"")))
     {
-        if (room_speed == 30)
+        if (!variable_global_exists(""speed_fps""))
+            global.speed_fps = 30;
+        
+        if (global.speed_fps == 30)
         {
-            room_speed = 1;
+            global.speed_fps = 1;
+            game_set_speed(1, gamespeed_fps);
             scr_debug_print(scr_dmode_get_text(""fps_1""));
         }
         else
         {
-            room_speed = 30;
+            global.speed_fps = 30;
+            game_set_speed(30, gamespeed_fps);
             scr_debug_print(scr_dmode_get_text(""fps_30""));
         }
     }
@@ -7615,20 +7737,26 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
     
     if (keyboard_check_pressed(ord(""O"")))
     {
-        if (room_speed == 120 || room_speed == 1)
+        if (!variable_global_exists(""speed_fps""))
+            global.speed_fps = 30;
+        
+        if (global.speed_fps == 30)
         {
-            room_speed = 30;
-            scr_debug_print(scr_dmode_get_text(""fps_30""));
+            global.speed_fps = 60;
+            game_set_speed(60, gamespeed_fps);
+            scr_debug_print(scr_dmode_get_text(""fps_60""));
         }
-        else if (room_speed == 60)
+        else if (global.speed_fps == 60)
         {
-            room_speed = 120;
+            global.speed_fps = 120;
+            game_set_speed(120, gamespeed_fps);
             scr_debug_print(scr_dmode_get_text(""fps_120""));
         }
-        else if (room_speed == 30)
+        else
         {
-            room_speed = 60;
-            scr_debug_print(scr_dmode_get_text(""fps_60""));
+            global.speed_fps = 30;
+            game_set_speed(30, gamespeed_fps);
+            scr_debug_print(scr_dmode_get_text(""fps_30""));
         }
     }
 }
@@ -7781,6 +7909,18 @@ importGroup.QueueAppend(obj_battlecontroller.EventHandlerFor(EventType.Create, (
 importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_Step_0",
 @"if (scr_debug())",
 @"if (0)");
+
+
+UndertaleScript scr_wincombat = Data.Scripts.ByName("scr_wincombat");
+importGroup.QueueFindReplace("gml_GlobalScript_scr_wincombat",
+@"scr_monsterdefeat();",
+@"if (keyboard_check(vk_shift))
+{
+    scr_spareanim();
+    scr_recruit();
+}
+
+scr_monsterdefeat();");
 
 
 UndertaleScript scr_damage_all_overworld = Data.Scripts.ByName("scr_damage_all_overworld");

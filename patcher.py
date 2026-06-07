@@ -85,7 +85,7 @@ def get_command_variable(config):
 
 def init_basic_json(foldername, json_name):
     if (not os.path.exists(json_name)):
-        print(f"Warning: `get_file_pos(json_name)' doesn't exist. Skipping", file=sys.stderr)
+        print(f"Warning: `{get_file_pos(json_name)}' doesn't exist. Skipping", file=sys.stderr)
         return ({})
     with open(json_name, "r", encoding="utf-8") as f:
         try:
@@ -93,6 +93,15 @@ def init_basic_json(foldername, json_name):
         except json.JSONDecodeError:
             print(f"Error: Malformed config.json in `{CWD}'.", file=sys.stderr)
             return ({})
+
+    flattened_data = {}
+    for key, value in data.items():
+        if isinstance(value, list) and len(value) > 0 and isinstance(value[0], dict):
+            for i, sub_value in enumerate(value):
+                flattened_data[f"{key}|{i}"] = sub_value
+        else:
+            flattened_data[key] = value
+    data = flattened_data
 
     res = {}
     defaults = {
@@ -115,11 +124,15 @@ def init_basic_json(foldername, json_name):
             defaults[opt] = data[opt]
     
     defaults['chapters'] = parse_chapter_config(defaults['chapters'])
+    
     for filename, file in data.items():
+        real_filename = filename.split('|')[0]
+        
         if (defaults.get(filename) != None):
             continue
-        if (filename[0] != '.' and not os.path.exists(filename)):
-            print(f"Error: `{filename}' doesn't exist in {CWD}, skipping", file=sys.stderr)
+        
+        if (real_filename[0] != '.' and not os.path.exists(real_filename)):
+            print(f"Error: `{real_filename}' doesn't exist in {CWD}, skipping", file=sys.stderr)
             continue
 
         for key, value in defaults.items():
@@ -135,12 +148,12 @@ def init_basic_json(foldername, json_name):
         ]
 
         gml_predic = ""
-        if (filename.startswith("gml_")):
-            gml_predic = filename
+        if (real_filename.startswith("gml_")):
+            gml_predic = real_filename
         else:
-            for elem, type in gml_types:
-                if (filename.startswith(type)):
-                    gml_predic = elem + filename
+            for elem, g_type in gml_types:
+                if (real_filename.startswith(g_type)):
+                    gml_predic = elem + real_filename
 
         file['gml_name'] = file.get("gml_name", gml_predic)
 
@@ -148,14 +161,14 @@ def init_basic_json(foldername, json_name):
         if (file['gml_name'].endswith(gml_extension)):
             file['gml_name'] = file['gml_name'][:-len(gml_extension)]
 
-        for elem, type in gml_types:
+        for elem, g_type in gml_types:
             if (file['gml_name'].startswith(elem)):
-                type_predic = type
+                type_predic = g_type
                 break
 
         file['element_type'] = file.get('element_type', type_predic)
         if (not file['element_type'] in [obj[1] for obj in gml_types]):
-            print(f"Error: unknown element type `{file['element_type']}' for file `{filename}' in `{get_file_pos(json_name)}'")
+            print(f"Error: unknown element type `{file['element_type']}' for file `{real_filename}' in `{get_file_pos(json_name)}'")
             continue
 
         left_index = 2
@@ -179,7 +192,6 @@ def init_basic_json(foldername, json_name):
     return res
 
 def parse_folder(declared_elements=None, current_chapter=0):
-
     """Process a folder and generate CSX lines while tracking declarations."""
     if declared_elements is None:
         declared_elements = set()
@@ -201,7 +213,6 @@ def parse_folder(declared_elements=None, current_chapter=0):
             print(f"Warning: {master_config_path} `{fold}' doesn't exist)", file=sys.stderr)
         elif (not os.path.isdir(fold)):
             print(f"Warning: `{fold}' isn't a folder", file=sys.stderr)
-
         else:
             folders.append(fold)
 
@@ -218,15 +229,19 @@ def parse_folder(declared_elements=None, current_chapter=0):
         folder_config = init_basic_json(folder, master_config_path)
 
         for filename, config in folder_config.items():
-            if (filename[0] != '.'):
-                with open(filename, 'r', encoding='utf-8') as f:
+            real_filename = filename.split('|')[0]
+            
+            if (real_filename[0] != '.'):
+                with open(real_filename, 'r', encoding='utf-8') as f:
                     gml_code = set_double_quote(f.read())
+            
             create_new = config.get("create_new", False)
             if (not current_chapter in config['chapters']):
                 continue
             csx_lines.append("\n")
             create_new = config['create_new']
             execute_actions(config['pre_actions'], config, csx_lines)
+            
             if (not config['obj_name'] in declared_elements):
                 declared_elements.append(config['obj_name'])
                 if (create_new):
@@ -235,12 +250,9 @@ def parse_folder(declared_elements=None, current_chapter=0):
                             "FILE_NAME", config['obj_name']
                         )))
                     elif (config['element_type'] == 'obj'):
-                        obj_options = [config['visible'], config['persistent'],
-                                    config['awake']]
-
+                        obj_options = [config['visible'], config['persistent'], config['awake']]
                         for i in range(len(obj_options)):
                             obj_options[i] = str(obj_options[i]).lower()
-
                         csx_lines.append((templates.ADD_OBJECT.replace(
                             "FILE_NAME", config['obj_name']
                         ).format(*obj_options)))
@@ -249,18 +261,11 @@ def parse_folder(declared_elements=None, current_chapter=0):
 
             elem_identifier, queue_op = get_command_variable(config)
 
-            if (filename[0] != '.'):
+            if (real_filename[0] != '.'):
                 csx_lines.append(f'importGroup.{queue_op}({elem_identifier},\n@"{gml_code}");')
-
 
             execute_actions(config['actions'], config, csx_lines)
 
-
-
-
-        # --- SCRIPT PROCESSING ---
-
-        """"""
         update_cwd('..')
 
     return csx_lines

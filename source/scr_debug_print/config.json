@@ -1,5 +1,5 @@
 {
-	"gml_GlobalScript_scr_debug_print.gml": {
-		"mode": "replace"
-	}
+	"mode": "replace",
+	"gml_GlobalScript_scr_debug_print.gml": {},
+	"gml_GlobalScript_scr_debug_print_persistent.gml": {}
 }
