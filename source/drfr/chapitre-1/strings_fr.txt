@@ -1,0 +1,32 @@
+Données De Sauvegarde DELTARUNE
+chargement en cours
+Plaine - Labyrinthe Mortel
+(B)RETOUR
+(E)  FIN
+sauvegarde en cours
+Jouer au Chapitre 2
+Retourner au Chapitre 1
+Rien
+Bouton
+[VIDE]
+Choix du chap.
+CHOIX DU CHAP.
+FRANÇAIS
+Français
+Quitter
+CHAPITRE 1
+Producteurs de la Localisation
+Programmation Supplémentaire
+Conception de Colhivert & Petit Monstre
+Gigi DG (Vêtements & Aide à la Couleur)
+Betty Kwong (Conception Temmie)
+256graph (Graphismes JP)
+Ryan Alyea (Site Internet)
+Brian Coia (Site Internet)
+Tout 8-4 & l'Équipe de Fangamer
+Ce programme est destiné aux joueurs#étant déjà familiers avec UNDERTALE.
+Voulez-vous voir la page d'UNDERTALE d'abord ?
+Non
+Oui
+Voir UNDERTALE
+Démarrer DELTARUNE

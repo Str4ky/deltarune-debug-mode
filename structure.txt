@@ -1,0 +1,36 @@
+UTMT
+
+
+DELTARUNE/
+	DELTARUNE.exe
+	data.win -> copy into data.win.bak
+	chapter{1..4}_windows/data.win -> copy into chapter{1..4}_windows/data.win.bak
+	mods/
+		sources/
+			drfr_mode.zip
+			debug_mode.zip
+			Cache/
+				drfr_mode/
+					image.png
+					[drfr_mode_content]
+				debug_mode/
+					[debug_mode_content]
+			mods.json -> [
+				"drfr_mode": {
+					"version": 1.0
+					"dependancies": [
+						"debug_mode"
+					]
+				},
+				"debug_mode": {
+					"version": 3.0
+					"dependancies": [
+					]
+				}
+			]
+
+		output/
+			drfr_mode/
+				chapter{0..4}.csx
+			debug_mode/
+				chapter{0..4}.csx

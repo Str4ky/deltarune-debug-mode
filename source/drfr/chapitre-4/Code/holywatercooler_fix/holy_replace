@@ -1,0 +1,45 @@
+    if (actingsus == 1 && actconsus == 1)
+    {
+        var rand = choose(0, 1, 2);
+        var _text;
+        if (amimissmizzle)
+        {
+            if (rand == 0)
+            {
+                _text = stringsetloc("* Susie gargouille bruyamment !", "obj_holywatercooler_enemy_slash_Step_0_gml_896_0");
+            }
+            if (rand == 1)
+            {
+                _text = stringsetloc("* Susie trébuche sur du sol glissant !", "obj_holywatercooler_enemy_slash_Step_0_gml_897_0");
+            }
+            if (rand == 2)
+            {
+                _text = stringsetloc("* Susie ronfle éveillée !", "obj_holywatercooler_enemy_slash_Step_0_gml_898_0");
+            }
+            scr_mercyadd(myself, 4);
+        }
+        else
+        {
+            if (rand == 0)
+            {
+                _text = stringsetloc("* Susie fait craquer un gobelet !", "obj_watercooler_enemy_slash_Step_0_gml_313_0");
+            }
+            if (rand == 1)
+            {
+                _text = stringsetloc("* Susie met un gobelet sur&Ralsei !", "obj_watercooler_enemy_slash_Step_0_gml_314_0");
+            }
+            if (rand == 2)
+            {
+                _text = stringsetloc("* Susie met des gobelets sur les yeux de Kris !", "obj_watercooler_enemy_slash_Step_0_gml_315_0");
+            }
+            actingsus = 0;
+            scr_mercyadd(myself, 4);
+        }
+        msgset(0, _text + "/%");
+        scr_battletext_default();
+        with (obj_face)
+        {
+            instance_destroy();
+        }
+        actconsus = 20;
+    }

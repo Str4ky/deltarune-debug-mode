@@ -1,0 +1,1 @@
+int curChap = PATCHER_CURRENT_CHAPTER;

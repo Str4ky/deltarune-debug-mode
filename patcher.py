@@ -1,316 +1,173 @@
 import os
 import sys
-import re
-import json
-import templates
+import shutil
 
-ALL_CHAPTERS = list(range(1, 8))
-OWD = os.path.abspath('.')
-CWD = '.'
-SRC_FOLDER = "source"
+ALL_CHAPTERS = list(range(0, 5))
+OWD = os.path.dirname(os.path.abspath(sys.argv[0]))
+CWD = OWD
+os.chdir(OWD)
 
-def set_double_quote(gml_code):
-    return gml_code.replace('"', '""')
+PATCH_FILE_PREFIX = ".csx"
+CHAPTER_LOCK_FILE = ".chapter_lock"
 
-def get_file_pos(filename):
-    return (os.path.join(CWD, filename))
+SOURCE_DIR = os.path.abspath("source")
+OUTPUT_DIR = os.path.abspath("output")
+OUTPUT_NAME = "chapter{}.csx"
+
+CURRENT_OUTPUT = ""
+CURRENT_CHAPTER = 0
 
 def update_cwd(new_dir):
     global CWD
-    if (new_dir == OWD):
-        CWD = '.'
-    else:
-        CWD = os.path.normpath(os.path.join(CWD, new_dir))
+    CWD = os.path.normpath(os.path.join(CWD, new_dir))
     os.chdir(new_dir)
 
-def parse_chapter_config(chap_list):
-    chap_list = list(set(chap_list))
+def set_double_quote(text):
+    return (text.replace('"', '""'))
+
+def read_file(filename):
+    with open(filename) as f:
+        content = f.read()
+    return (content)
+
+def save_output(modname, chapter, content):
+    os.chdir('..')
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    os.makedirs(f"{OUTPUT_DIR}/{modname}", exist_ok=True)
+    with open(f"{OUTPUT_DIR}/{modname}/{OUTPUT_NAME.format(chapter)}", "w") as f:
+        f.write(content)
+    os.chdir(SOURCE_DIR)
+
+def respect_chapter_lock():
+    default_return = CURRENT_CHAPTER != 0
+    if (not os.path.exists(CHAPTER_LOCK_FILE)):
+        return (default_return)
+
+    file_loc = f"{SOURCE_DIR}/{CUR_MOD_NAME}/{CURRENT_LOOKUP_DIR}/{CHAPTER_LOCK_FILE}"
+    chapter_lock_content = read_file(CHAPTER_LOCK_FILE).strip()
+    if (chapter_lock_content == ''):
+        print(f"Warning: empty {CHAPTER_LOCK_FILE} at `{file_loc}', ignoring file")
+        return (default_return)
+
+    chapter_lock_content = chapter_lock_content.replace("\t", " ")
+    parsed = ""
+    for i in range(len(chapter_lock_content)):
+        c = chapter_lock_content[i]
+        if (c.isdigit() or c == '-'):
+            parsed += c
+        elif (c == ',' or c == ' '):
+            parsed += ' '
+        else:
+            print(f"Error: unrecognized token `{c}' in {file_loc}:1:{i}, ignoring file")
+            return (default_return)
+
+    lookup_type = 0
+    for i in range(len(parsed)):
+        c = parsed[i]
+        if (lookup_type == 0):
+            if (c == '-'):
+                lookup_type = 1
+            elif (c.isdigit()):
+                lookup_type = 2
+    
+        elif (lookup_type == 1):
+            if (not c.isdigit()):
+                print(f"Error: excepting digit after '-' sign at {file_loc}:1:{i}, ignoring file")
+                return (default_return)
+            lookup_type = 2
+
+        elif (lookup_type == 2):
+            if (c == '-'):
+                print(f"Error: '-' sign not a start of a number at {file_loc}:1:{i}, ignoring file")
+                return (default_return)
+            if (c == ' '):
+                lookup_type = 0
+
+    splitted = parsed.split(' ')
+    splitted = [sp for sp in splitted if sp.strip()]
+    chap_list = list(set(list(map(int, splitted))))
+    if (CURRENT_CHAPTER == 0 and min(chap_list) < 0):
+        return (False)
+
     if (min(chap_list) < 0):
         if (max(chap_list) >= 0):
-            print(f"Warning: invalid chapter values in `{get_file_pos(json_name)}'. Skipping.")
+            print(f"Warning: invalid chapter values in `{file_loc}', ignore file")
             print("Rules: only positive or negative numbers but no mix")
-            return ({})
+            return (default_return)
         parsed = ALL_CHAPTERS.copy()
         for chap in chap_list:
             parsed.remove(-chap)
         chap_list = parsed
 
-    return (chap_list)
+    return (CURRENT_CHAPTER in chap_list)
 
+if (os.path.isdir(OUTPUT_DIR)):
+    shutil.rmtree(OUTPUT_DIR)
 
-def execute_actions(action_list, config, csx_lines):
-    file_suffix = "_file"
-    gml_name = config['gml_name']
-    for action in action_list:
-        for method, params in action.items():
-            params_copy = params.copy()
-            for key, value in params_copy.items():
-                if (key.endswith(file_suffix)):
-                    with open(value, encoding="utf-8") as f:
-                        params[key[:-len(file_suffix)]] = f.read()
-            if (method == "find_replace"):
-                csx_lines.append(f'importGroup.QueueFindReplace("{config["gml_name"]}",\n@"{set_double_quote(params["find"])}",\n@"{set_double_quote(params["replace"])}");')
-            if (method == "regex_find_replace"):
-                csx_lines.append(f'importGroup.QueueRegexFindReplace("{config["gml_name"]}",\n@"{set_double_quote(params["find"])}",\n@"{set_double_quote(params["replace"])}");')
-            elif (method == "append"):
-                csx_lines.append(f'importGroup.QueueAppend("{config["gml_name"]}",\n@"{set_double_quote(params["content"])}");')
-            elif (method == "replace"):
-                csx_lines.append(f'importGroup.QueueReplace("{config["gml_name"]}",\n@"{set_double_quote(params["content"])}");')
+mod_list = []
+update_cwd(SOURCE_DIR)
+if (len(sys.argv) == 1):
+    mod_list_temp = os.listdir(SOURCE_DIR)
 
-
-
-def get_command_variable(config):
-    elem_type = config['element_type']
-    mode = config['mode']
-    obj_name = config['obj_name']
-    gml_name = config['gml_name']
-
-    elem_identifier = ""
-    queue_op = ""
-    if (elem_type == 'scr'):
-        elem_identifier = f'"{gml_name}"'
-    elif (elem_type == 'obj'):
-        obj_methods = gml_name.split("_")[-2:]
-        elem_identifier = f"{obj_name}.EventHandlerFor(EventType.{obj_methods[0]}, (uint){obj_methods[1]}, Data)"
-
-    if (mode == "replace"):
-        queue_op = "QueueReplace"
-    elif (mode == "append"):
-        queue_op = "QueueAppend"
-    elif (mode == "prepend"):
-        queue_op = "QueuePrepend"
-
-    return (elem_identifier, queue_op)
-
-
-def init_basic_json(foldername, json_name):
-    if (not os.path.exists(json_name)):
-        print(f"Warning: `get_file_pos(json_name)' doesn't exist. Skipping", file=sys.stderr)
-        return ({})
-    with open(json_name, "r", encoding="utf-8") as f:
-        try:
-            data = json.load(f)
-        except json.JSONDecodeError:
-            print(f"Error: Malformed config.json in `{CWD}'.", file=sys.stderr)
-            return ({})
-
-    res = {}
-    defaults = {
-        'mode': 'append',
-        'chapters': ALL_CHAPTERS.copy(),
-        'pre_actions': [],
-        'actions': [],
-        'create_new': False,
-        'persistent': True,
-        'visible': True,
-        'awake': True,
-    }
-
-    for key, value in defaults.items():
-        defaults[key] = data.get(key, value)
-
-    optionals = ["gml_name", "element_type"]
-    for opt in optionals:
-        if (data.get(opt) != None):
-            defaults[opt] = data[opt]
-    
-    defaults['chapters'] = parse_chapter_config(defaults['chapters'])
-    for filename, file in data.items():
-        if (defaults.get(filename) != None):
-            continue
-        if (filename[0] != '.' and not os.path.exists(filename)):
-            print(f"Error: `{filename}' doesn't exist in {CWD}, skipping", file=sys.stderr)
-            continue
-
-        for key, value in defaults.items():
-            file[key] = file.get(key, value)
-
-        file['chapters'] = parse_chapter_config(file['chapters'])
-
-        type_predic = ""
-        gml_types = [
-                ['gml_GlobalScript_', 'scr'],
-                ['gml_Object_', 'obj'], 
-                ['gml_RoomCC_', 'room']
-        ]
-
-        gml_predic = ""
-        if (filename.startswith("gml_")):
-            gml_predic = filename
+    for mod in mod_list_temp:
+        if (os.path.isdir(mod)):
+            mod_list.append(mod)
         else:
-            for elem, type in gml_types:
-                if (filename.startswith(type)):
-                    gml_predic = elem + filename
+            print(f"Warning: non folder element `{mod}' in source folder", file=sys.stderr)
+else:
+    mod_list = sys.argv[1:]
 
-        file['gml_name'] = file.get("gml_name", gml_predic)
+def apply_patch_file(filename):
+    global CURRENT_OUTPUT, CURRENT_CHAPTER
 
-        gml_extension = '.gml'
-        if (file['gml_name'].endswith(gml_extension)):
-            file['gml_name'] = file['gml_name'][:-len(gml_extension)]
+    if (not filename.endswith(PATCH_FILE_PREFIX)):
+        return 
+    patch_content = read_file(filename)
+    patch_content = patch_content.replace("PATCHER_CURRENT_CHAPTER", str(CURRENT_CHAPTER))
+    if (CURRENT_LOOKUP_DIR == ""):
+        CURRENT_OUTPUT += patch_content
+    else:
+        CURRENT_OUTPUT += f'Patcher.UpdateDir("{CURRENT_LOOKUP_DIR}");'
+        CURRENT_OUTPUT += "\n{\n" + patch_content
+        if (patch_content[-1] != '\n'):
+            CURRENT_OUTPUT += '\n'
+        CURRENT_OUTPUT += "}\n\n"
 
-        for elem, type in gml_types:
-            if (file['gml_name'].startswith(elem)):
-                type_predic = type
-                break
+CURRENT_LOOKUP_DIR = ""
+def search_folder(folder, depth_level):
+    global CURRENT_LOOKUP_DIR
+    cur_dir = os.path.abspath('.')
+    update_cwd(folder)
+    CURRENT_LOOKUP_DIR = CWD.removeprefix(CUR_MOD)[1:]
+    if (depth_level == 0 or respect_chapter_lock()):
+        dir_content = os.listdir('.')
+        files_list = []
+        dir_list = []
 
-        file['element_type'] = file.get('element_type', type_predic)
-        if (not file['element_type'] in [obj[1] for obj in gml_types]):
-            print(f"Error: unknown element type `{file['element_type']}' for file `{filename}' in `{get_file_pos(json_name)}'")
-            continue
+        for elem in dir_content:
+            if (os.path.isdir(elem)):
+                dir_list.append(elem)
+            elif (os.path.isfile(elem)):
+                files_list.append(elem)
 
-        left_index = 2
-        right_index = -2
-        if (file['element_type'] == 'scr'):
-            file['obj_name'] = "_".join(file['gml_name'].split("_")[left_index:])
-        else:
-            file['obj_name'] = "_".join(file['gml_name'].split("_")[left_index:right_index])
-        if (file['element_type'] == 'obj' and not file['gml_name'].endswith("Create_0")):
-            file['create_new'] = False
+        for file in files_list:
+            apply_patch_file(file)
 
-        if (file['element_type'] == "scr"):
-            file['variable_type'] = "UndertaleScript"
-            file['class_id'] = "Scripts"
-        elif (file['element_type'] == "obj"):
-            file['variable_type'] = "UndertaleGameObject"
-            file['class_id'] = "GameObjects"
+        for fold in dir_list:
+            search_folder(fold, depth_level + 1)
 
-        res[filename] = file
+    update_cwd(cur_dir)
 
-    return res
+CUR_MOD = ""
+OUTPUT_BASE = '#load "../../patcher_classes/patcher_class.csx"\n\n'
 
-def parse_folder(declared_elements=None, current_chapter=0):
-
-    """Process a folder and generate CSX lines while tracking declarations."""
-    if declared_elements is None:
-        declared_elements = set()
-        
-    csx_lines = []
-    master_config_path = "config.json"
-    folder_order = []
-    if os.path.exists(master_config_path):
-        with open(master_config_path, 'r', encoding='utf-8') as f:
-            try:
-                master_config = json.load(f)
-                folder_order = master_config.get("order", [])
-            except json.JSONDecodeError:
-                print(f"Error: Malformed master {get_file_pos(master_config_path)}.")
-
-    folders = []
-    for fold in folder_order:
-        if (not os.path.exists(fold)):
-            print(f"Warning: {master_config_path} `{fold}' doesn't exist)", file=sys.stderr)
-        elif (not os.path.isdir(fold)):
-            print(f"Warning: `{fold}' isn't a folder", file=sys.stderr)
-
-        else:
-            folders.append(fold)
-
-    for fold in os.listdir('.'):
-        if (fold[0] != '.' and os.path.isdir(fold) and
-            not fold in folders):
-            print(f"Warning: `{fold}' module not used", file=sys.stderr)
-
-    for folder in folders:
-        if folder.startswith('.'):
-            continue
-
-        update_cwd(folder)
-        folder_config = init_basic_json(folder, master_config_path)
-
-        for filename, config in folder_config.items():
-            if (filename[0] != '.'):
-                with open(filename, 'r', encoding='utf-8') as f:
-                    gml_code = set_double_quote(f.read())
-            create_new = config.get("create_new", False)
-            if (not current_chapter in config['chapters']):
-                continue
-            csx_lines.append("\n")
-            create_new = config['create_new']
-            execute_actions(config['pre_actions'], config, csx_lines)
-            if (not config['obj_name'] in declared_elements):
-                declared_elements.append(config['obj_name'])
-                if (create_new):
-                    if (config['element_type'] == 'scr'):
-                        csx_lines.append((templates.ADD_SCRIPT.replace(
-                            "FILE_NAME", config['obj_name']
-                        )))
-                    elif (config['element_type'] == 'obj'):
-                        obj_options = [config['visible'], config['persistent'],
-                                    config['awake']]
-
-                        for i in range(len(obj_options)):
-                            obj_options[i] = str(obj_options[i]).lower()
-
-                        csx_lines.append((templates.ADD_OBJECT.replace(
-                            "FILE_NAME", config['obj_name']
-                        ).format(*obj_options)))
-                else:
-                    csx_lines.append(f'{config["variable_type"]} {config["obj_name"]} = Data.{config["class_id"]}.ByName("{config["obj_name"]}");')
-
-            elem_identifier, queue_op = get_command_variable(config)
-
-            if (filename[0] != '.'):
-                csx_lines.append(f'importGroup.{queue_op}({elem_identifier},\n@"{gml_code}");')
-
-
-            execute_actions(config['actions'], config, csx_lines)
-
-
-
-
-        # --- SCRIPT PROCESSING ---
-
-        """"""
-        update_cwd('..')
-
-    return csx_lines
-
-def compile_utmt_mod(source_folder, template_file):
-    """Main build loop for Chapters 1-4."""
-    if not os.path.exists(source_folder) or not os.path.exists(template_file):
-        print("Error: 'source' folder or 'template.csx' missing.")
-        return
-
-    with open(template_file, 'r', encoding='utf-8') as f:
-        template_content = f.read()
-
-    if "// BOTTOM" not in template_content:
-        print("Error: '// BOTTOM' marker missing in template.csx.")
-        return
-        
-    template_parts = template_content.split("// BOTTOM")
-    template_top = template_parts[0].replace("// TOP", "").strip() 
-    template_bottom = template_parts[1].strip()
-
-    for i in range(1, 5):
-        element_memory = []
-        
-        output_file = f"debug_mode_chap{i}.csx"
-        final_lines = []
-        
-        current_top = template_top.replace("CHAPTER_NUMBER", str(i))
-        current_bottom = template_bottom.replace("CHAPTER_NUMBER", str(i))
-
-        final_lines.append(current_top)
-        
-        update_cwd(source_folder)
-        print(f"Parsing common code for Chapter {i}...")
-        common_lines = parse_folder(element_memory, i)
-        
-        if common_lines:
-            final_lines.append(f"\n// --- COMMON CODE ---")
-            final_lines.extend(common_lines)
-        
-        update_cwd(OWD)
-        final_lines.append("\n" + current_bottom)
-
-        with open(output_file, 'w', encoding='utf-8') as out_file:
-            out_file.write('\n'.join(final_lines))
-            
-        print(f"Success: '{output_file}' generated.\n")
-
-# --- Execution ---
-source_fol = "source"
-if (len(sys.argv) == 2):
-    source_fol = sys.argv[1]
-compile_utmt_mod(source_folder=source_fol, template_file="debug_mode_template.csx")
+for mod in mod_list:
+    CUR_MOD = os.path.join(OWD, SOURCE_DIR, mod)
+    CUR_MOD_NAME = mod
+    for i in ALL_CHAPTERS:
+        CURRENT_CHAPTER = i
+        CURRENT_OUTPUT = OUTPUT_BASE
+        search_folder(mod, 0)
+        if (CURRENT_OUTPUT != OUTPUT_BASE):
+            CURRENT_OUTPUT += "\nPatcher.CommitChanges();\n"
+            save_output(mod, i, CURRENT_OUTPUT)

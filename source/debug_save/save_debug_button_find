@@ -1,4 +1,0 @@
-    if (mpos == 3)
-    {
-        draw_set_color(c_yellow);
-    }

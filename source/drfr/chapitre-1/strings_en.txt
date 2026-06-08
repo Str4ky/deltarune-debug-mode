@@ -1,0 +1,32 @@
+DELTARUNE Save Data
+load in progress
+Field - Maze of Death
+(B)BACK
+(E)END
+save in progress
+Continue to Chapter 2
+Keep Playing Chapter 1
+None
+Button
+[EMPTY]
+Chapter Select
+CHAPTER SELECT
+ENGLISH
+English
+End Program
+CHAPTER 1
+Localization Producers
+Additional Programming
+Snowdrake & Monster Kid Design
+Gigi DG (Outfit & Color Assist)
+Betty Kwong (Temmie Design)
+256graph (JP Graphics)
+Ryan Alyea (Website)
+Brian Coia (Website)
+All 8-4 & Fangamer Staff
+This program is intended for players#who are already familiar with UNDERTALE.
+Would you like to check out UNDERTALE first?
+No
+Yes
+Check Out UNDERTALE
+Start DELTARUNE

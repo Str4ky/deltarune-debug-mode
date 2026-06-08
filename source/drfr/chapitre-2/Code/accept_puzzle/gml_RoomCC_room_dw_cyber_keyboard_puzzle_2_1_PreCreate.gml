@@ -1,0 +1,2 @@
+myScring = "A"
+jaString = "Y"

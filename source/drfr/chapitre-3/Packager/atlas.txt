@@ -1,0 +1,8 @@
+source_tex, atlas_tex, x, y, width, height
+/home/gabio/drfr/deltatest/debugmode/source/drfr/chapitre-3/Fonts/fnt_mainbig.png, /home/gabio/drfr/deltatest/debugmode/source/drfr/chapitre-3/Packager/atlas000.png, 0, 0, 512, 256
+/home/gabio/drfr/deltatest/debugmode/source/drfr/chapitre-3/Fonts/fnt_8bit.png, /home/gabio/drfr/deltatest/debugmode/source/drfr/chapitre-3/Packager/atlas000.png, 514, 0, 256, 256
+/home/gabio/drfr/deltatest/debugmode/source/drfr/chapitre-3/Fonts/fnt_dotumche.png, /home/gabio/drfr/deltatest/debugmode/source/drfr/chapitre-3/Packager/atlas000.png, 0, 258, 256, 256
+/home/gabio/drfr/deltatest/debugmode/source/drfr/chapitre-3/Fonts/fnt_tinynoelle.png, /home/gabio/drfr/deltatest/debugmode/source/drfr/chapitre-3/Packager/atlas000.png, 772, 0, 128, 128
+/home/gabio/drfr/deltatest/debugmode/source/drfr/chapitre-3/Fonts/fnt_main.png, /home/gabio/drfr/deltatest/debugmode/source/drfr/chapitre-3/Packager/atlas000.png, 258, 258, 256, 256
+/home/gabio/drfr/deltatest/debugmode/source/drfr/chapitre-3/Fonts/fnt_comicsans.png, /home/gabio/drfr/deltatest/debugmode/source/drfr/chapitre-3/Packager/atlas000.png, 0, 516, 256, 256
+/home/gabio/drfr/deltatest/debugmode/source/drfr/chapitre-3/Fonts/fnt_small.png, /home/gabio/drfr/deltatest/debugmode/source/drfr/chapitre-3/Packager/atlas000.png, 772, 130, 128, 32

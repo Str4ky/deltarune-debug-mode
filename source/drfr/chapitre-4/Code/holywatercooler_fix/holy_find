@@ -1,0 +1,71 @@
+    if (actingsus == 1 && actconsus == 1)
+    {
+        if (amimissmizzle)
+        {
+            var rand = choose(0, 1, 2);
+            if (rand == 0)
+            {
+                msgsetloc(0, <string>, "obj_holywatercooler_enemy_slash_Step_0_gml_896_0");
+            }
+            if (rand == 1)
+            {
+                msgsetloc(0, <string>, "obj_holywatercooler_enemy_slash_Step_0_gml_897_0");
+            }
+            if (rand == 2)
+            {
+                msgsetloc(0, <string>, "obj_holywatercooler_enemy_slash_Step_0_gml_898_0");
+            }
+            scr_mercyadd(myself, 4);
+            scr_simultext("susie");
+            if (simulordersus == 0)
+            {
+                actconsus = 20;
+            }
+            else
+            {
+                actconsus = 0;
+            }
+        }
+        else
+        {
+            var _text = "_";
+            var rand = choose(0, 1, 2);
+            if (rand == 0)
+            {
+                _text = stringsetloc(<string>, "obj_watercooler_enemy_slash_Step_0_gml_313_0");
+            }
+            if (rand == 1)
+            {
+                _text = stringsetloc(<string>, "obj_watercooler_enemy_slash_Step_0_gml_314_0");
+            }
+            if (rand == 2)
+            {
+                _text = stringsetloc(<string>, "obj_watercooler_enemy_slash_Step_0_gml_315_0");
+            }
+            if (simultotal == 1)
+            {
+                msgset(0, _text + "/%");
+                scr_battletext_default();
+                with (obj_face)
+                {
+                    instance_destroy();
+                }
+                actconsus = 20;
+            }
+            else
+            {
+                msgset(0, _text);
+                scr_simultext("susie");
+                if (simulordersus == 0)
+                {
+                    actconsus = 20;
+                }
+                else
+                {
+                    actconsus = 0;
+                }
+            }
+            actingsus = 0;
+            scr_mercyadd(myself, 4);
+        }
+    }
