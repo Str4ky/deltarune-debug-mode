@@ -1,0 +1,11 @@
+source_tex, atlas_tex, x, y, width, height
+/home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Fonts/fnt_ja_mainbig.png, /home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Packager/atlas000.png, 0, 0, 2048, 1024
+/home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Fonts/fnt_ja_main.png, /home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Packager/atlas000.png, 0, 1026, 1024, 512
+/home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Fonts/fnt_mainbig.png, /home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Packager/atlas000.png, 1026, 1026, 512, 256
+/home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Fonts/fnt_8bit.png, /home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Packager/atlas000.png, 0, 1540, 256, 256
+/home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Fonts/fnt_dotumche.png, /home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Packager/atlas000.png, 1540, 1026, 256, 256
+/home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Fonts/fnt_legend.png, /home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Packager/atlas000.png, 1026, 1284, 256, 128
+/home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Fonts/fnt_main.png, /home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Packager/atlas000.png, 258, 1540, 256, 256
+/home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Fonts/fnt_tinynoelle.png, /home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Packager/atlas000.png, 0, 1798, 128, 128
+/home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Fonts/fnt_small.png, /home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Packager/atlas000.png, 1798, 1026, 128, 32
+/home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Fonts/fnt_comicsans.png, /home/gabio/drfr/deltatest/debugmode/source/drfr/patch_game/Packager/atlas000.png, 516, 1540, 256, 256

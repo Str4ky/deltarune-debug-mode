@@ -1,1 +1,0 @@
-int currentChapter = 0;

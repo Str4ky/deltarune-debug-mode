@@ -12,8 +12,26 @@ static public class Patcher
     public static UndertaleData Data { get; set; }
     public static CodeImportGroup ImportGroup { get; set; }
     public static GlobalDecompileContext GlobalContext { get; set; }
-	private static string BaseDir = System.IO.Directory.GetCurrentDirectory();
+	private static string SourcesDir;
+	private static string BaseDir = SetModFolder();
 	public static string CurrentDir = "";
+	private static bool ModsFolderSet = false;
+
+	private static string SetModFolder()
+	{
+		const string ModsOrderFile = ".patcher_mod_order";
+		const string CurModIndexFile = ".patcher_cur_mod_index";
+
+		int CurModIndex = Int32.Parse(File.ReadAllText(CurModIndexFile));
+		string mods = File.ReadAllText(ModsOrderFile);
+		string[] splitted = mods.Split("|");
+
+		SourcesDir = System.IO.Directory.GetCurrentDirectory();
+		string res = SourcesDir + "/" + splitted[CurModIndex];
+
+		File.WriteAllText(CurModIndexFile, (CurModIndex + 1).ToString());
+		return (res);
+	}
 
 	public static string[][] RegexTags = {
 		new string[2] {"<string>", @"['""]((?:\\.|[^""\\])*)['""]"},
@@ -151,9 +169,9 @@ static public class Patcher
     {
         Console.WriteLine("Committing changes...");
         ImportGroup.Import();
+		Directory.SetCurrentDirectory(SourcesDir);
     }
 }
 
 EnsureDataLoaded();
 Patcher.Initialize(Data);
-

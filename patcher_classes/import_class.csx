@@ -723,149 +723,366 @@ public class PackerPolice
     }
 }
 
+//Sound stuff
+UndertaleEmbeddedAudio audioFile = null;
+int  audioID                = -1;
+int  audioGroupID           = -1;
+int  embAudioID             = -1;
+bool usesAGRP               = (Data.AudioGroups.Count > 0);
+bool autoSpecifyEverySound = true;
+bool manuallySpecifyEverySound = !autoSpecifyEverySound;
+bool GeneralSound_embedSound = false;
+bool GeneralSound_decodeLoad = false;
+bool GeneralSound_needAGRP = false;
 
-public static class ResourceImporter
+static string GetFolder(string path)
 {
-	public static UndertaleData Data {get; set; }
-	public static void importFontFolder(string importFolder)
+	return Path.GetDirectoryName(path) + Path.DirectorySeparatorChar;
+}
+
+void importSound(string filepath)
+{
+	string fname = Path.GetFileName(filepath);
+	string temp = fname.ToLower();
+	if (((temp.EndsWith(".ogg")) || (temp.EndsWith(".wav"))) == false)
+		return ;
+	string sound_name = Path.GetFileNameWithoutExtension(filepath);
+	string FolderName = Path.GetDirectoryName(filepath);
+	bool isOGG = Path.GetExtension(fname) == ".ogg";
+	bool embedSound = false;
+	bool decodeLoad = false;
+	if ((isOGG) && (manuallySpecifyEverySound == false))
 	{
-		if (importFolder == null)
-			throw new ScriptException("Dossier d'import non sélectionné.");
+		embedSound = GeneralSound_embedSound;
+		decodeLoad = GeneralSound_decodeLoad;
+	}
+	else
+	{
+		// How can a .wav be external?
+		embedSound = true;
+		decodeLoad = false;
+	}
+	string AGRPname = "";
+	bool needAGRP = false;
+	bool ifRightAGRP = false;
+	string[] splitArr = new string[2];
+	splitArr[0] = sound_name;
+	splitArr[1] = FolderName;
 
-		string packagerDirPath = Path.Combine(System.IO.Directory.GetCurrentDirectory(), "Packager");
-		string sourcePath = importFolder;
-		string searchPattern = "*.png";
-		string outName = Path.Combine(packagerDirPath, "atlas.txt");
-		int textureSize = 2048;
-		int border = 2;
-		bool debug = false;
+	bool soundExists = false;
 
-		Directory.CreateDirectory(packagerDirPath);
-		PackerPolice packer = new PackerPolice();
-		packer.ProcessPolice(sourcePath, searchPattern, textureSize, border, debug);
-		packer.SaveAtlasPoliceses(outName);
+	UndertaleSound existing_snd = null;
 
-		int lastTextPage = Data.EmbeddedTextures.Count - 1;
-		int lastTextPageItem = Data.TexturePageItems.Count - 1;
-
-		static void fontUpdate(UndertaleFont newFont, string sourcePath, UndertaleData Data)
+	for (var i = 0; i < Data.Sounds.Count; i++)
+	{
+		if (Data.Sounds[i].Name.Content == sound_name)
 		{
-			using (StreamReader reader = new StreamReader(Path.Combine(sourcePath, $"glyphs_{newFont.Name.Content}.csv")))
+			soundExists = true;
+			existing_snd = Data.Sounds[i];
+			break;
+		}
+	}
+
+	if (embedSound && usesAGRP && !soundExists)
+	{
+		needAGRP = GeneralSound_needAGRP;
+	}
+
+	if (needAGRP && usesAGRP && embedSound)
+	{
+		AGRPname = splitArr[1];
+		ifRightAGRP = (needAGRP && embedSound);
+		if (ifRightAGRP)
+		{
+			while (audioGroupID == -1)
 			{
-				newFont.Glyphs.Clear();
-				string line;
-				int head = 0;
-				bool hadError = false;
-				while ((line = reader.ReadLine()) != null)
+				for (int i = 0; i < Data.AudioGroups.Count; i++)
 				{
-					string[] s = line.Split(';');
-
-					// Skip blank lines like ";;;;;;;"
-					if (s.All(x => x.Length == 0))
-						continue;
-
-					try
+					string name = Data.AudioGroups[i].Name.Content;
+					if (name == AGRPname)
 					{
-						if (head == 1)
-						{
-							newFont.RangeStart = UInt16.Parse(s[0]);
-							head++;
-						}
-
-						if (head == 0)
-						{
-							String namae = s[0].Replace("\"", "");
-							newFont.DisplayName = Data.Strings.MakeString(namae);
-							newFont.EmSize = UInt16.Parse(s[1]);
-							newFont.Bold = Boolean.Parse(s[2]);
-							newFont.Italic = Boolean.Parse(s[3]);
-							newFont.Charset = Byte.Parse(s[4]);
-							newFont.AntiAliasing = Byte.Parse(s[5]);
-							newFont.ScaleX = UInt16.Parse(s[6]);
-							newFont.ScaleY = UInt16.Parse(s[7]);
-							head++;
-						}
-
-						if (head > 1)
-						{
-							newFont.Glyphs.Add(new UndertaleFont.Glyph()
-							{
-								Character = UInt16.Parse(s[0]),
-								SourceX = UInt16.Parse(s[1]),
-								SourceY = UInt16.Parse(s[2]),
-								SourceWidth = UInt16.Parse(s[3]),
-								SourceHeight = UInt16.Parse(s[4]),
-								Shift = Int16.Parse(s[5]),
-								Offset = Int16.Parse(s[6]),
-							});
-							newFont.RangeEnd = UInt32.Parse(s[0]);
-						}
-					}
-					catch
-					{
-						hadError = true;
+						audioGroupID = i;
+						break;
 					}
 				}
-
-				if (hadError)
+				if (audioGroupID == -1)
 				{
-					hadError = false;
+					File.WriteAllBytes(GetFolder(FilePath) + "audiogroup" + Data.AudioGroups.Count + ".dat", Convert.FromBase64String("Rk9STQwAAABBVURPBAAAAAAAAAA="));
+					var newAudioGroup = new UndertaleAudioGroup()
+					{
+						Name = Data.Strings.MakeString(FolderName),
+					};
+					Data.AudioGroups.Add(newAudioGroup);
 				}
 			}
 		}
-		string prefix = outName.Replace(Path.GetExtension(outName), "");
-		int atlasCount = 0;
-		foreach (AtlasPolice atlas in packer.AtlasPoliceses)
+		else
 		{
-			string atlasName = $"{prefix}{atlasCount:000}.png";
-			UndertaleEmbeddedTexture texture = new UndertaleEmbeddedTexture();
-			texture.Name = new UndertaleString($"Texture {++lastTextPage}");
-			texture.TextureData.Image = GMImage.FromPng(File.ReadAllBytes(atlasName)); // TODO: generate other formats
-			Data.EmbeddedTextures.Add(texture);
-			foreach (NodePolice n in atlas.NodePolices)
+			return;
+		}
+	}
+
+	if (soundExists)
+	{
+		for (int i = 0; i < Data.Sounds.Count; i++)
+		{
+			string name = sound_name;
+			if (name == Data.Sounds[i].Name.Content)
 			{
-				if (n.Texture != null)
+				audioGroupID = Data.Sounds[i].GroupID;
+				break;
+			}
+		}
+	}
+	if (audioGroupID == 0) //If the audiogroup is zero then
+		needAGRP = false;
+
+	UndertaleEmbeddedAudio soundData = null;
+
+	if ((embedSound && !needAGRP) || (needAGRP))
+	{
+		soundData = new UndertaleEmbeddedAudio() { Data = File.ReadAllBytes(FolderName + "/" + fname) };
+		Data.EmbeddedAudio.Add(soundData);
+		if (soundExists)
+			Data.EmbeddedAudio.Remove(existing_snd.AudioFile);
+		embAudioID = Data.EmbeddedAudio.Count - 1;
+	}
+
+	if (needAGRP)
+	{
+		var audioGroupReadStream =
+		(
+			new FileStream(GetFolder(FilePath) + "audiogroup" + audioGroupID.ToString() + ".dat", FileMode.Open, FileAccess.Read)
+		); // Load the audiogroup dat into memory
+		UndertaleData audioGroupDat = UndertaleIO.Read(audioGroupReadStream); // Load as UndertaleData
+		audioGroupReadStream.Dispose();
+		audioGroupDat.EmbeddedAudio.Add(soundData); // Adds the embeddedaudio entry to the dat data in memory
+		if (soundExists)
+			audioGroupDat.EmbeddedAudio.Remove(existing_snd.AudioFile);
+		audioID = audioGroupDat.EmbeddedAudio.Count - 1;
+		var audioGroupWriteStream =
+		(
+			new FileStream(GetFolder(FilePath) + "audiogroup" + audioGroupID.ToString() + ".dat", FileMode.Create)
+		);
+		UndertaleIO.Write(audioGroupWriteStream, audioGroupDat); // Write it to the disk
+		audioGroupWriteStream.Dispose();
+	}
+
+	UndertaleSound.AudioEntryFlags flags = UndertaleSound.AudioEntryFlags.Regular;
+
+	if (isOGG && embedSound && decodeLoad)  // OGG, embed, decode on load.
+		flags = UndertaleSound.AudioEntryFlags.IsEmbedded | UndertaleSound.AudioEntryFlags.IsCompressed | UndertaleSound.AudioEntryFlags.Regular;
+	if (isOGG && embedSound && !decodeLoad) // OGG, embed, not decode on load.
+		flags = UndertaleSound.AudioEntryFlags.IsCompressed | UndertaleSound.AudioEntryFlags.Regular;
+	if (!isOGG)                                // WAV, always embed.
+		flags = UndertaleSound.AudioEntryFlags.IsEmbedded | UndertaleSound.AudioEntryFlags.Regular;
+	if (isOGG && !embedSound)                // OGG, external.
+	{
+		flags = UndertaleSound.AudioEntryFlags.Regular;
+		audioID = -1;
+	}
+
+	UndertaleEmbeddedAudio RaudioFile = null;
+	if (!embedSound)
+		RaudioFile = null;
+	if (embedSound && !needAGRP)
+		RaudioFile = Data.EmbeddedAudio[embAudioID];
+	if (embedSound && needAGRP)
+		RaudioFile = null;
+	string soundfname = sound_name;
+
+	UndertaleAudioGroup groupID = null;
+	if (!usesAGRP)
+		groupID = null;
+	else
+		groupID = needAGRP ? Data.AudioGroups[audioGroupID] : Data.AudioGroups[Data.GetBuiltinSoundGroupID()];
+
+	if (!soundExists)
+	{
+		var snd_to_add = new UndertaleSound()
+		{
+			Name = Data.Strings.MakeString(soundfname),
+			Flags = flags,
+			Type = (isOGG ? Data.Strings.MakeString(".ogg") : Data.Strings.MakeString(".wav")),
+			File = Data.Strings.MakeString(fname),
+			Effects = 0,
+			Volume = 1.0F,
+			Pitch = 1.0F,
+			AudioID = audioID,
+			AudioFile = RaudioFile,
+			AudioGroup = groupID,
+			GroupID = (needAGRP ? audioGroupID : Data.GetBuiltinSoundGroupID())
+		};
+		Data.Sounds.Add(snd_to_add);
+	}
+	else
+	{
+		var snd_to_add = Data.Sounds.ByName(soundfname);
+		snd_to_add.Name = Data.Strings.MakeString(soundfname);
+		snd_to_add.Flags = flags;
+		snd_to_add.Type = (isOGG ? Data.Strings.MakeString(".ogg") : Data.Strings.MakeString(".wav"));
+		snd_to_add.File = Data.Strings.MakeString(fname);
+		snd_to_add.Effects = 0;
+		snd_to_add.Volume = 1.0F;
+		snd_to_add.Pitch = 1.0F;
+		snd_to_add.AudioID = audioID;
+		snd_to_add.AudioFile = RaudioFile;
+		snd_to_add.AudioGroup = groupID;
+		snd_to_add.GroupID = (needAGRP ? audioGroupID : Data.GetBuiltinSoundGroupID());
+	}
+}
+
+void importSoundFolder(string importFolder)
+{
+	string[] dirFiles = Directory.GetFiles(importFolder);
+	string FolderName = new DirectoryInfo(importFolder).Name;
+
+	SyncBinding("AudioGroups, EmbeddedAudio, Sounds, Strings", true);
+	foreach (string file in dirFiles) {
+		importSound(file);
+	}
+	DisableAllSyncBindings();
+}
+
+
+//Font stuff
+static void fontUpdate(UndertaleFont newFont, string sourcePath, UndertaleData Data)
+{
+	using (StreamReader reader = new StreamReader(Path.Combine(sourcePath, $"glyphs_{newFont.Name.Content}.csv")))
+	{
+		newFont.Glyphs.Clear();
+		string line;
+		int head = 0;
+		bool hadError = false;
+		while ((line = reader.ReadLine()) != null)
+		{
+			string[] s = line.Split(';');
+
+			// Skip blank lines like ";;;;;;;"
+			if (s.All(x => x.Length == 0))
+				continue;
+
+			try
+			{
+				if (head == 1)
 				{
-					UndertaleTexturePageItem texturePageItem = new UndertaleTexturePageItem();
-					texturePageItem.Name = new UndertaleString($"PageItem {++lastTextPageItem}");
-					texturePageItem.SourceX = (ushort)n.Bounds.X;
-					texturePageItem.SourceY = (ushort)n.Bounds.Y;
-					texturePageItem.SourceWidth = (ushort)n.Bounds.Width;
-					texturePageItem.SourceHeight = (ushort)n.Bounds.Height;
-					texturePageItem.TargetX = 0;
-					texturePageItem.TargetY = 0;
-					texturePageItem.TargetWidth = (ushort)n.Bounds.Width;
-					texturePageItem.TargetHeight = (ushort)n.Bounds.Height;
-					texturePageItem.BoundingWidth = (ushort)n.Bounds.Width;
-					texturePageItem.BoundingHeight = (ushort)n.Bounds.Height;
-					texturePageItem.TexturePage = texture;
-					Data.TexturePageItems.Add(texturePageItem);
-					string spriteName = Path.GetFileNameWithoutExtension(n.Texture.Source);
+					newFont.RangeStart = UInt16.Parse(s[0]);
+					head++;
+				}
 
-					UndertaleFont font = null;
-					font = Data.Fonts.ByName(spriteName);
+				if (head == 0)
+				{
+					String namae = s[0].Replace("\"", "");
+					newFont.DisplayName = Data.Strings.MakeString(namae);
+					newFont.EmSize = UInt16.Parse(s[1]);
+					newFont.Bold = Boolean.Parse(s[2]);
+					newFont.Italic = Boolean.Parse(s[3]);
+					newFont.Charset = Byte.Parse(s[4]);
+					newFont.AntiAliasing = Byte.Parse(s[5]);
+					newFont.ScaleX = UInt16.Parse(s[6]);
+					newFont.ScaleY = UInt16.Parse(s[7]);
+					head++;
+				}
 
-					if (font == null)
+				if (head > 1)
+				{
+					newFont.Glyphs.Add(new UndertaleFont.Glyph()
 					{
-						UndertaleString fontUTString = Data.Strings.MakeString(spriteName);
-						UndertaleFont newFont = new UndertaleFont();
-						newFont.Name = fontUTString;
-
-						fontUpdate(newFont, sourcePath, Data);
-						newFont.Texture = texturePageItem;
-						Data.Fonts.Add(newFont);
-						continue;
-					}
-
-					fontUpdate(font, sourcePath, Data);
-					font.Texture = texturePageItem;
-					UndertaleSprite.TextureEntry texentry = new UndertaleSprite.TextureEntry();
-					texentry.Texture = texturePageItem;
+						Character = UInt16.Parse(s[0]),
+						SourceX = UInt16.Parse(s[1]),
+						SourceY = UInt16.Parse(s[2]),
+						SourceWidth = UInt16.Parse(s[3]),
+						SourceHeight = UInt16.Parse(s[4]),
+						Shift = Int16.Parse(s[5]),
+						Offset = Int16.Parse(s[6]),
+					});
+					newFont.RangeEnd = UInt32.Parse(s[0]);
 				}
 			}
-			atlasCount++;
+			catch
+			{
+				hadError = true;
+			}
+		}
+
+		if (hadError)
+		{
+			hadError = false;
 		}
 	}
 }
 
-ResourceImporter.Data = Patcher.Data;
+void importFontFolder(string importFolder)
+{
+	if (importFolder == null)
+		throw new ScriptException("Dossier d'import non sélectionné.");
+
+	string packagerDirPath = Path.Combine(System.IO.Directory.GetCurrentDirectory(), "Packager");
+	string sourcePath = importFolder;
+	string searchPattern = "*.png";
+	string outName = Path.Combine(packagerDirPath, "atlas.txt");
+	int textureSize = 2048;
+	int border = 2;
+	bool debug = false;
+
+	Directory.CreateDirectory(packagerDirPath);
+	PackerPolice packer = new PackerPolice();
+	packer.ProcessPolice(sourcePath, searchPattern, textureSize, border, debug);
+	packer.SaveAtlasPoliceses(outName);
+
+	int lastTextPage = Data.EmbeddedTextures.Count - 1;
+	int lastTextPageItem = Data.TexturePageItems.Count - 1;
+
+	string prefix = outName.Replace(Path.GetExtension(outName), "");
+	int atlasCount = 0;
+	foreach (AtlasPolice atlas in packer.AtlasPoliceses)
+	{
+		string atlasName = $"{prefix}{atlasCount:000}.png";
+		UndertaleEmbeddedTexture texture = new UndertaleEmbeddedTexture();
+		texture.Name = new UndertaleString($"Texture {++lastTextPage}");
+		texture.TextureData.Image = GMImage.FromPng(File.ReadAllBytes(atlasName)); // TODO: generate other formats
+		Data.EmbeddedTextures.Add(texture);
+		foreach (NodePolice n in atlas.NodePolices)
+		{
+			if (n.Texture != null)
+			{
+				UndertaleTexturePageItem texturePageItem = new UndertaleTexturePageItem();
+				texturePageItem.Name = new UndertaleString($"PageItem {++lastTextPageItem}");
+				texturePageItem.SourceX = (ushort)n.Bounds.X;
+				texturePageItem.SourceY = (ushort)n.Bounds.Y;
+				texturePageItem.SourceWidth = (ushort)n.Bounds.Width;
+				texturePageItem.SourceHeight = (ushort)n.Bounds.Height;
+				texturePageItem.TargetX = 0;
+				texturePageItem.TargetY = 0;
+				texturePageItem.TargetWidth = (ushort)n.Bounds.Width;
+				texturePageItem.TargetHeight = (ushort)n.Bounds.Height;
+				texturePageItem.BoundingWidth = (ushort)n.Bounds.Width;
+				texturePageItem.BoundingHeight = (ushort)n.Bounds.Height;
+				texturePageItem.TexturePage = texture;
+				Data.TexturePageItems.Add(texturePageItem);
+				string spriteName = Path.GetFileNameWithoutExtension(n.Texture.Source);
+
+				UndertaleFont font = null;
+				font = Data.Fonts.ByName(spriteName);
+
+				if (font == null)
+				{
+					UndertaleString fontUTString = Data.Strings.MakeString(spriteName);
+					UndertaleFont newFont = new UndertaleFont();
+					newFont.Name = fontUTString;
+
+					fontUpdate(newFont, sourcePath, Data);
+					newFont.Texture = texturePageItem;
+					Data.Fonts.Add(newFont);
+					continue;
+				}
+
+				fontUpdate(font, sourcePath, Data);
+				font.Texture = texturePageItem;
+				UndertaleSprite.TextureEntry texentry = new UndertaleSprite.TextureEntry();
+				texentry.Texture = texturePageItem;
+			}
+		}
+		atlasCount++;
+	}
+}

@@ -1241,9 +1241,9 @@ function dmenu_state_interact()
                 break;
             }
             
+			var real_index = dbutton_indices[dgiver_button_selected];
             if (dgiver_menu_state == "objects")
             {
-                var real_index = dbutton_indices[dgiver_button_selected - 1];
                 
                 for (var i = 0; i < abs(dgiver_amount); i++)
                 {
@@ -1274,8 +1274,6 @@ function dmenu_state_interact()
             {
                 if (dgiver_amount > 0)
                 {
-                    var real_index = dbutton_indices[dgiver_button_selected - 1];
-                    
                     for (var i = 0; i < dgiver_amount; i++)
                         scr_armorget(real_index);
                     
@@ -1283,8 +1281,6 @@ function dmenu_state_interact()
                 }
                 else if (dgiver_amount < 0)
                 {
-                    var real_index = dbutton_indices[dgiver_button_selected - 1];
-                    
                     for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_armorremove(real_index);
                     
@@ -1296,8 +1292,6 @@ function dmenu_state_interact()
             {
                 if (dgiver_amount > 0)
                 {
-                    var real_index = dbutton_indices[dgiver_button_selected - 1];
-                    
                     for (var i = 0; i < dgiver_amount; i++)
                         scr_weaponget(real_index);
                     
@@ -1305,8 +1299,6 @@ function dmenu_state_interact()
                 }
                 else if (dgiver_amount < 0)
                 {
-                    var real_index = dbutton_indices[dgiver_button_selected - 1];
-                    
                     for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_weaponremove(real_index);
                     
@@ -1318,8 +1310,6 @@ function dmenu_state_interact()
             {
                 if (dgiver_amount > 0)
                 {
-                    var real_index = dbutton_indices[dgiver_button_selected - 1];
-                    
                     for (var i = 0; i < dgiver_amount; i++)
                         scr_keyitemget(real_index);
                     
@@ -1327,8 +1317,6 @@ function dmenu_state_interact()
                 }
                 else if (dgiver_amount < 0)
                 {
-                    var real_index = dbutton_indices[dgiver_button_selected - 1];
-                    
                     for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_keyitemremove(real_index);
                     
