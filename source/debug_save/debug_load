@@ -665,17 +665,6 @@ function scr_debug_load(arg0)
                 global.currentroom = room_id;
             }
             
-            if (global.filechoice != 9)
-            {
-                if (scr_completed_chapter_any_slot(4) && global.plot >= 243)
-                {
-                    global.flag[1658] = 1;
-                    
-                    if (global.flag[1659] == 0)
-                        global.currentroom = scr_get_id_by_room_index(261);
-                }
-            }
-            
             break;
     }
     

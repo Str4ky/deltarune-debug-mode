@@ -3,5 +3,16 @@
 	"gml_Object_obj_debug_gui_Create_0.gml": {},
 	"gml_Object_obj_debug_gui_Step_0.gml": {},
 	"gml_Object_obj_debug_gui_Draw_64.gml": {},
-	"gml_Object_obj_debug_gui_CleanUp_0.gml": {}
+	"gml_Object_obj_debug_gui_CleanUp_0.gml": {},
+	"gml_Object_obj_debug_gui_persistent_Create_0.gml": [
+        {
+            "chapters": [1, 2],
+            "create_new": true
+        },
+        {
+            "chapters": [3, 4]
+        }
+    ],
+	"gml_Object_obj_debug_gui_persistent_Step_0.gml": {},
+	"gml_Object_obj_debug_gui_persistent_Draw_64.gml": {}
 }

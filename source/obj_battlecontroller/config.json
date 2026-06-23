@@ -16,5 +16,17 @@
 				}
 			}
 		]
+	},
+	".wincombat_recruit_feat": {
+		"chapters": [-1],
+		"gml_name": "gml_GlobalScript_scr_wincombat",
+		"actions": [
+			{
+				"find_replace": {
+					"find": "scr_monsterdefeat();",
+					"replace_file": "wincombat_recruit_feat"
+				}
+			}
+		]
 	}
 }
