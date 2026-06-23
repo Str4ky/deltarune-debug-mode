@@ -37,6 +37,12 @@
                     "find": "if (scr_debug())",
                     "replace": "if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))"
                 }
+            },
+            {
+                "find_replace": {
+                    "find": "if (sunkus_kb_check_pressed(ord(\"R\")))",
+                    "replace": "if (sunkus_kb_check_pressed(ord(\"R\")) && !sunkus_kb_check(vk_backspace))"
+                }
             }
         ]
     },

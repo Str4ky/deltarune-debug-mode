@@ -71,6 +71,9 @@ function scr_debug_load(arg0)
         }
     }
     
+    var bk_simplify_vfx = global.flag[8];
+    var bk_autorun = global.flag[11];
+    var bk_audio_vol = global.flag[17];
     var file = string(arg0);
     
     if (file == "" || string_length(file) < 3)
@@ -707,5 +710,8 @@ function scr_debug_load(arg0)
         room_goto(__loadedroom);
     }
     
+    global.flag[8] = bk_simplify_vfx;
+    global.flag[11] = bk_autorun;
+    global.flag[17] = bk_audio_vol;
     global.dload_cur_inv = 0;
 }

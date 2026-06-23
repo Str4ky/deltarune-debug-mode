@@ -2399,6 +2399,11 @@ UndertaleGameObject obj_savemenu = Data.GameObjects.ByName("obj_savemenu");
 importGroup.QueueAppend(obj_savemenu.EventHandlerFor(EventType.Step, (uint)0, Data),
 @"if (menuno == 98)
 {
+    var _script_id = asset_get_index(""scr_get_debug_save_list"");
+    
+    with (obj_dmenu_system)
+        script_execute(_script_id);
+    
     obj_dmenu_system.dmenu_popup_launch = 1;
     obj_dmenu_system.dmenu_state = ""debug_save"";
     obj_dmenu_system.dmenu_start_index = 0;
@@ -3289,6 +3294,9 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
         }
     }
     
+    var bk_simplify_vfx = global.flag[8];
+    var bk_autorun = global.flag[11];
+    var bk_audio_vol = global.flag[17];
     var file = string(arg0);
     
     if (file == """" || string_length(file) < 3)
@@ -3925,6 +3933,9 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
         room_goto(__loadedroom);
     }
     
+    global.flag[8] = bk_simplify_vfx;
+    global.flag[11] = bk_autorun;
+    global.flag[17] = bk_audio_vol;
     global.dload_cur_inv = 0;
 }");
 
@@ -7855,6 +7866,9 @@ importGroup.QueueAppend(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint
     
     if (keyboard_check_pressed(ord(""L"")) && keyboard_check(vk_alt))
     {
+        with (obj_dmenu_system)
+            script_execute(scr_get_debug_save_list);
+
         obj_dmenu_system.dmenu_popup_launch = 1;
         obj_dmenu_system.dmenu_state = ""debug_save"";
         obj_dmenu_system.dmenu_start_index = 0;
@@ -7900,6 +7914,9 @@ importGroup.QueueAppend("gml_Object_obj_overworldc_Step_0",
 {
     if (sunkus_kb_check_pressed(ord(""L"")) && keyboard_check(vk_alt))
     {
+        with (obj_dmenu_system)
+            script_execute(scr_get_debug_save_list);
+
         obj_dmenu_system.dmenu_popup_launch = 1;
         obj_dmenu_system.dmenu_state = ""debug_save"";
         obj_dmenu_system.dmenu_start_index = 0;
@@ -7919,6 +7936,9 @@ importGroup.QueueAppend("gml_Object_obj_overworldc_Step_0",
 importGroup.QueueFindReplace("gml_Object_obj_overworldc_Step_0",
 @"if (scr_debug())",
 @"if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))");
+importGroup.QueueFindReplace("gml_Object_obj_overworldc_Step_0",
+@"if (sunkus_kb_check_pressed(ord(""R"")))",
+@"if (sunkus_kb_check_pressed(ord(""R"")) && !sunkus_kb_check(vk_backspace))");
 
 
 importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, Data),

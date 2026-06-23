@@ -1,5 +1,10 @@
 if (menuno == 98)
 {
+    var _script_id = asset_get_index("scr_get_debug_save_list");
+    
+    with (obj_dmenu_system)
+        script_execute(_script_id);
+    
     obj_dmenu_system.dmenu_popup_launch = 1;
     obj_dmenu_system.dmenu_state = "debug_save";
     obj_dmenu_system.dmenu_start_index = 0;

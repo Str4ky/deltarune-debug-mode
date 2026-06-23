@@ -4,6 +4,9 @@ if (scr_debug())
         instance_create(0, 0, obj_savemenu);
     if (keyboard_check_pressed(ord("L")) && keyboard_check(vk_alt))
     {
+        with (obj_dmenu_system)
+            script_execute(scr_get_debug_save_list);
+
         obj_dmenu_system.dmenu_popup_launch = 1;
         obj_dmenu_system.dmenu_state = "debug_save";
         obj_dmenu_system.dmenu_start_index = 0;
