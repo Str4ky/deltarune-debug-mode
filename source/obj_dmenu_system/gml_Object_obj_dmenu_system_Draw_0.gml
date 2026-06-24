@@ -79,16 +79,37 @@ if (dmenu_active)
     draw_set_color(c_white);
     draw_text(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, string(dmenu_title));
     
-    if (dmenu_state == "debug" && global.darkzone == 1)
+    if (dmenu_state == "debug")
     {
         draw_set_halign(fa_right);
         draw_set_font(fnt_main);
+        var text_scale = (global.darkzone == 1) ? 1 : 0.5;
         draw_set_color(c_gray);
-        var str_ = string(scr_dmode_get_text("ui_m_keys"));
+        
+        var str_ = string(dstr("M - Keys", "M - Touches"));
+        
         var draw_x = (((xcenter + (menu_width / 2)) - 10) * d) + xx;
         var draw_y = (((ycenter + (menu_length / 2)) - 15) * d) + yy;
-        draw_text(draw_x, draw_y, str_);
-        draw_set_font(fnt_mainbig);
+        
+        draw_text_transformed(draw_x, draw_y, str_, text_scale, text_scale, 0);
+        
+        var _fnt = (global.darkzone == 1) ? fnt_mainbig : fnt_main;
+        draw_set_font(_fnt);
+        draw_set_halign(fa_left);
+    }
+
+    if (dmenu_state == "debug")
+    {
+        draw_set_halign(fa_right);
+        draw_set_font(fnt_main);
+        var text_scale = (global.darkzone == 1) ? 1 : 0.5;
+        draw_set_color(c_gray);
+        var str_ = string(dstr("F - French", "F - Anglais"));
+        var draw_x = (((xcenter + (menu_width / 2)) - 10) * d) + xx;
+        var draw_y = (((ycenter - (menu_length / 2)) + 8) * d) + yy;
+        draw_text_transformed(draw_x, draw_y, str_, text_scale, text_scale, 0);
+        var _fnt = (global.darkzone == 1) ? 7 : 8;
+        draw_set_font(_fnt);
         draw_set_halign(fa_left);
     }
     
@@ -100,7 +121,7 @@ if (dmenu_active)
         var padding = 8 * d;
         var draw_x = (right_border + xx) - padding;
         var draw_y = (((ycenter - (menu_length / 2)) + 8) * d) + yy;
-        draw_text(draw_x, draw_y, string(scr_dmode_get_text("ui_esc_cancel")));
+        draw_text(draw_x, draw_y, string(dstr("Esc - Cancel", "Esc - Annuler")));
         draw_set_halign(fa_left);
     }
     
@@ -137,7 +158,7 @@ if (dmenu_active)
             var thickness = 1 * d;
             var visual_offset = -2;
             var cursor_padding = 3 * d;
-            var w_prefix = string_length(string(scr_dmode_get_text("ui_contains"))) * mono_spacing;
+            var w_prefix = string_length(string(dstr("Contains: ", "Contient : "))) * mono_spacing;
             var w_name = string_length(string(dkeyboard_input)) * mono_spacing;
             var x1_start = base_x + w_prefix;
             var x2_start = x1_start + w_name;
@@ -155,7 +176,7 @@ if (dmenu_active)
             var thickness = 1 * d;
             var visual_offset = -2;
             var cursor_padding = 3 * d;
-            var w_prefix = string_length(string(scr_dmode_get_text("ui_plot_value"))) * mono_spacing;
+            var w_prefix = string_length(string(dstr("Plot Value: ", "Valeur de plot : "))) * mono_spacing;
             var w_name = string_length(string(dkeyboard_input)) * mono_spacing;
             var x1_start = base_x + w_prefix;
             var x2_start = x1_start + w_name;
@@ -250,7 +271,7 @@ if (dmenu_active)
                 draw_x += (text_width + x_spacing);
             }
             
-            draw_y += 30;
+            draw_y += 15 * d;
         }
     }
     
@@ -276,7 +297,7 @@ if (dmenu_active)
                 var cur_btn = string(dbutton_options[button_index]);
                 draw_monospace(x_start + xx, y_start + (i * y_spacing) + yy, cur_btn);
                 var mono_spacing = (global.darkzone == 1) ? 15 : 8;
-                var needs_arrows = (is_cur_line && dmenu_state == "flag_misc") || (dmenu_state == "warp_options" && (button_index == 3 || button_index == 4)) || (dmenu_state == "debug_save_options" && button_index == 1);
+                var needs_arrows = (is_cur_line && dmenu_state == "flag_misc") || (dmenu_state == "warp_options" && (button_index == 3 || button_index == 4)) || (dmenu_state == "debug_save_options" && button_index == 0);
                 
                 if (needs_arrows)
                 {
@@ -353,18 +374,18 @@ if (dmenu_active)
         if (dmenu_state == "recruits")
         {
             if (dhorizontal_page != 0)
-                draw_text(draw_x, draw_y, "(" + string(scr_dmode_get_text("ui_chap_short")) + " " + string(dhorizontal_page) + ")");
+                draw_text(draw_x, draw_y, "(" + string(dstr("chap")) + " " + string(dhorizontal_page) + ")");
             else
-                draw_text(draw_x, draw_y, string(scr_dmode_get_text("ui_chap_all")));
+                draw_text(draw_x, draw_y, string(dstr("(all chap)", "(tout chap)")));
         }
         else if (dhorizontal_page == 0)
         {
-            draw_text(draw_x + 30 + (global.darkzone * 30), draw_y, string(scr_dmode_get_text("ui_world_dark")));
+            draw_text(draw_x + 30 + (global.darkzone * 30), draw_y, string(dstr("(Darkworld)")));
             draw_sprite_ext(spr_morearrow, 0, draw_x + 35 + (global.darkzone * 35) + dmenu_arrow_yoffset, draw_y + side_arrows_mult[1], darrow_scale, -darrow_scale, 270, c_white, 1);
         }
         else
         {
-            draw_text(draw_x + 30 + (global.darkzone * 30), draw_y, string(scr_dmode_get_text("ui_world_light")));
+            draw_text(draw_x + 30 + (global.darkzone * 30), draw_y, string(dstr("(Lightworld)")));
             draw_sprite_ext(spr_morearrow, 0, draw_x + -55 + (global.darkzone * -55) + dmenu_arrow_yoffset, draw_y + side_arrows_mult[0], darrow_scale, -darrow_scale, 90, c_white, 1);
         }
         
@@ -389,28 +410,28 @@ if (dmenu_active)
                 scr_litemcheck(0);
             
             max_items = (dhorizontal_page == 0) ? 12 : 8;
-            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, string(scr_dmode_get_text("ui_inv_items")) + string(max_items - itemcount) + " / " + string(max_items));
+            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, string(dstr("ITEMs: ", "OBJETs : ")) + string(max_items - itemcount) + " / " + string(max_items));
         }
         
         if (dgiver_menu_state == "armors")
         {
             itemreminder = "[" + string(dgiver_bname) + "]";
             scr_armorcheck_inventory(0);
-            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, string(scr_dmode_get_text("ui_inv_armors")) + string(48 - itemcount) + " / 48");
+            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, string(dstr("ARMORs: ", "ARMUREs : ")) + string(48 - itemcount) + " / 48");
         }
         
         if (dgiver_menu_state == "weapons")
         {
             itemreminder = "[" + string(dgiver_bname) + "]";
             scr_weaponcheck_inventory(0);
-            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, string(scr_dmode_get_text("ui_inv_weapons")) + string(48 - itemcount) + " / 48");
+            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, string(dstr("WEAPONs: ", "ARMEs : ")) + string(48 - itemcount) + " / 48");
         }
         
         if (dgiver_menu_state == "keyitems")
         {
             itemreminder = "[" + string(dgiver_bname) + "]";
             scr_keyitemcheck(0);
-            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, string(scr_dmode_get_text("ui_inv_keyitems")) + string(12 - itemcount) + " / 12");
+            draw_text(x_start + xx, ((ycenter + 25) * d) + yy, string(dstr("KEY ITEMs: ", "OBJETs CLÉs : ")) + string(12 - itemcount) + " / 12");
         }
         
         var text_width = string_width(itemreminder);
@@ -536,20 +557,25 @@ if (dmenu_active)
 
 if (dkeys_helper == 1)
 {
-    dkeys_data = [string(scr_dmode_get_text("key_0")), string(scr_dmode_get_text("key_1")), string(scr_dmode_get_text("key_2")), string(scr_dmode_get_text("key_3")), string(scr_dmode_get_text("key_4")), string(scr_dmode_get_text("key_5")), string(scr_dmode_get_text("key_6")), string(scr_dmode_get_text("key_7")), string(scr_dmode_get_text("key_8")), string(scr_dmode_get_text("key_9")), string(scr_dmode_get_text("key_10")), string(scr_dmode_get_text("key_11")), string(scr_dmode_get_text("key_12")), string(scr_dmode_get_text("key_13")), string(scr_dmode_get_text("key_14"))];
-    x_padding = 7;
-    y_start = 50 * d;
-    x_spacing = 10 * d;
-    y_spacing = 10.5 * d;
-    x_start = (((xcenter - (menu_width / 2)) + x_padding) * d) - 35;
+    dkeys_data = [string(dstr("F10 - Toggle debug mode", "F10 - Activer/désactiver le debug mode")), string(dstr("S - Save game", "S - Sauvegarder la partie")), string(dstr("L - Load last save", "L - Charger la dernière sauvegarde")), string(dstr("R - Reload room | Backspace+R - Restart game", "R - Charger la salle | Retour arrière+R - Redémarrer le jeu")), string(dstr("P - Pause/resume game", "P - Mettre en pause/reprendre le jeu")), string(dstr("M+1 | M+2 - Add/remove 100 D$", "M+1 | M+2 - Ajouter/retirer 100 D$")), string(dstr("Delete - Go to previous room", "Suppr - Se rendre à la salle précédente")), string(dstr("Insert - Go to next room", "Insert - Se rendre à la salle suivante")), string(dstr("G - Toggle godmode", "Activer/désactiver le godmode")), string(dstr("W - Skip battle | Shift+W - Skip battle with recruit", "W - Sauter un combat | Shift+W - Sauter un combat avec recrue")), string(dstr("V - Skip enemy turn", "V - Passer le tour de l'ennemi")), string(dstr("H - Restore party HP", "H - Restaurer les HP du party")), string(dstr("T - Fill/empty TP bar", "T - Remplir/vider la barre de TP")), string(dstr("O - Toggle 30, 60, 120 FPS", "O - Basculer entre 30, 60 et 120 FPS")), string(dstr("Backspace - Skip intro sequence (Ch1)", "Retour arrière - Passer le segment d'intro (Ch1)")), string(dstr("Middle Click - Room Editor", "Clic milieu - Éditeur de salle"))];
+    
     menu_width = 264;
     menu_length = 204;
     xcenter = 160;
     ycenter = 120;
+    x_padding = 14 * d;
+    y_start = 50 * d;
+    x_spacing = 10 * d;
+    y_spacing = 10.5 * d;
+    x_start = (((xcenter - (menu_width / 2))) * d) + x_padding;
+    
     draw_set_color(c_white);
     draw_rectangle(((xcenter - (menu_width / 2) - 3) * d) + xx, ((ycenter - (menu_length / 2) - 3) * d) + yy, ((xcenter + (menu_width / 2) + 3) * d) + xx, ((ycenter + (menu_length / 2) + 3) * d) + yy, false);
     draw_set_color(c_black);
     draw_rectangle(((xcenter - (menu_width / 2)) * d) + xx, ((ycenter - (menu_length / 2)) * d) + yy, ((xcenter + (menu_width / 2)) * d) + xx, ((ycenter + (menu_length / 2)) * d) + yy, false);
+    
+    var text_scale = (global.darkzone == 1) ? 1 : 0.5;
+    
     draw_set_font(fnt_mainbig);
     draw_set_halign(fa_right);
     draw_set_color(c_gray);
@@ -557,16 +583,20 @@ if (dkeys_helper == 1)
     var padding = 8 * d;
     var draw_x = (right_border + xx) - padding;
     var draw_y = (((ycenter - (menu_length / 2)) + 8) * d) + yy;
-    draw_text(draw_x, draw_y, string(scr_dmode_get_text("ui_m_close")));
+    
+    draw_text_transformed(draw_x, draw_y, string(dstr("M - Close", "M - Fermer")), text_scale, text_scale, 0);
+    
     draw_set_halign(fa_left);
     draw_set_color(c_white);
-    draw_text(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, string(scr_dmode_get_text("ui_keys_title")));
+    
+    draw_text_transformed(x_start + xx, (((ycenter - (menu_length / 2)) + 8) * d) + yy, string(dstr("Debug Mode Keys", "Touches du debug mode")), text_scale, text_scale, 0);
     
     for (var i = 0; i < array_length(dkeys_data); i++)
     {
         draw_set_font(fnt_main);
         draw_set_color(c_white);
-        draw_text(x_start + xx, y_start + yy + (i * y_spacing), string(dkeys_data[i]));
+        
+        draw_text_transformed(x_start + xx, y_start + yy + (i * y_spacing), string(dkeys_data[i]), text_scale, text_scale, 0);
     }
 }
 

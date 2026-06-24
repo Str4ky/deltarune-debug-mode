@@ -3,7 +3,7 @@ function dmenu_state_update()
     switch (dmenu_state)
     {
         case "debug":
-            dmenu_title = scr_dmode_get_text("menu_debug");
+            dmenu_title = dstr("Debug Menu", "Menu Debug");
             dbutton_options_2d = dbutton_options_original;
             dmenu_box = 0;
             dbutton_layout = 0;
@@ -11,14 +11,14 @@ function dmenu_state_update()
         
         case "debug_save":
             dmenu_title = "Debug save";
-            dbutton_options = ["New save", "Search"];
+            dbutton_options = [dstr("New save", "Nouvelle sauvegarde"), dstr("Search", "Recherche")];
             dbutton_indices = [-2, -2];
             var subs = [];
             
             if (global.dreading_custom_flag || dkeyboard_input != "")
-                dbutton_options[1] = scr_dmode_get_text("ui_contains") + dkeyboard_input;
+                dbutton_options[1] = dstr("Contains: ", "Contient : ") + dkeyboard_input;
             else
-                dbutton_options[1] = scr_dmode_get_text("btn_search") + dkeyboard_input;
+                dbutton_options[1] = dstr("Search", "Recherche") + dkeyboard_input;
             
             for (var i = 0; i < array_length(debug_save_names); i++)
             {
@@ -68,19 +68,19 @@ function dmenu_state_update()
             break;
         
         case "debug_save_options":
-            dmenu_title = "Options: " + string(global.debug_selected_save_name);
-            dbutton_options = ["Save", "Load", "Export", "Save management", "Delete"];
+            dmenu_title = dstr("Options: ", "Options : ") + string(global.debug_selected_save_name);
+            dbutton_options = [dstr("Load", "Charger"), dstr("Save", "Sauver"), dstr("Export", "Exporter"), dstr("Save management", "Gestion sauvegardes"), dstr("Delete", "Supprimer")];
             dbutton_indices = [-2, -2, -1, -1, -2];
             var subs = array_create(array_length(dbutton_options), 0);
-            subs[2] = ["Debug mode save", "Default Deltarune save"];
-            subs[3] = ["Rename", "Edit description", "Change category"];
+            subs[2] = [dstr("Debug mode save", "Sauvegarde mode debug"), dstr("Default Deltarune save", "Sauvegarde Deltarune par défaut")];
+            subs[3] = [dstr("Rename", "Renommer"), dstr("Edit description", "Modifier description"), dstr("Change category", "Changer catégorie")];
             dmenu_process_submenus(subs, "");
             
             if (!variable_global_exists("dload_cur_inv"))
                 global.dload_cur_inv = 0;
             
-            var load_options = [" (Normal)", "  (Current inventory)"];
-            dbutton_options[1] += load_options[global.dload_cur_inv];
+            var load_options = [" (Normal)", dstr("  (Current inventory)", "  (Inventaire actuel)")];
+            dbutton_options[0] += load_options[global.dload_cur_inv];
             dmenu_box = 1;
             dbutton_layout = 1;
             break;
@@ -89,23 +89,23 @@ function dmenu_state_update()
         case "dsave_edit_desc":
         case "dsave_edit_cat":
             if (dmenu_state == "dsave_edit_name")
-                dmenu_title = "Rename save";
+                dmenu_title = dstr("Rename save", "Renommer sauvegarde");
             else if (dmenu_state == "dsave_edit_desc")
-                dmenu_title = "Edit description";
+                dmenu_title = dstr("Edit description", "Modifier description");
             else if (dmenu_state == "dsave_edit_cat")
-                dmenu_title = "Change category";
+                dmenu_title = dstr("Change category", "Changer catégorie");
             
-            dbutton_options_2d = [[""], ["Save", "Cancel"]];
+            dbutton_options_2d = [[""], [dstr("Save", "Sauver"), dstr("Cancel", "Annuler")]];
             dbutton_options = ["", ""];
             var target_path = global.debug_selected_save_section;
             var default_text = "";
             
             if (dmenu_state == "dsave_edit_name")
-                default_text = "Enter save name";
+                default_text = dstr("Enter save name", "Entrer nom de sauvegarde");
             else if (dmenu_state == "dsave_edit_desc")
-                default_text = "Enter description";
+                default_text = dstr("Enter description", "Entrer description");
             else if (dmenu_state == "dsave_edit_cat")
-                default_text = "Enter category";
+                default_text = dstr("Enter category", "Entrer catégorie");
             
             for (var i = 0; i < array_length(debug_save_sections); i++)
             {
@@ -177,8 +177,8 @@ function dmenu_state_update()
         
         case "new_debug_save":
             dmenu_title = "New debug save";
-            dbutton_options_2d = [["Enter save name"], ["Save", "Cancel"]];
-            var cur_btn = "Enter save name";
+            dbutton_options_2d = [[dstr("Enter save name", "Entrer nom de sauvegarde")], [dstr("Save", "Sauver"), dstr("Cancel", "Annuler")]];
+            var cur_btn = dstr("Enter save name", "Entrer nom de sauvegarde");
             
             if (global.dreading_custom_flag || dkeyboard_input != "")
             {
@@ -234,14 +234,14 @@ function dmenu_state_update()
             break;
         
         case "warp":
-            dmenu_title = scr_dmode_get_text("room_list");
-            dbutton_options = [scr_dmode_get_text("btn_current_room"), scr_dmode_get_text("btn_search")];
+            dmenu_title = dstr("Room List", "Liste des salles");
+            dbutton_options = [dstr("Current Room", "Salle actuelle"), dstr("Search", "Recherche")];
             dbutton_indices = [-1, -1];
             
             if (global.dreading_custom_flag || dkeyboard_input != "")
-                dbutton_options[1] = scr_dmode_get_text("ui_contains");
+                dbutton_options[1] = dstr("Contains: ", "Contient : ");
             else
-                dbutton_options[1] = scr_dmode_get_text("btn_search");
+                dbutton_options[1] = dstr("Search", "Recherche");
             
             dbutton_options[1] += dkeyboard_input;
             
@@ -260,31 +260,31 @@ function dmenu_state_update()
             break;
         
         case "warp_options":
-            dmenu_title = scr_dmode_get_text("warp_options");
-            dbutton_options = [scr_dmode_get_text("btn_cancel"), scr_dmode_get_text("ui_is_darkworld"), scr_dmode_get_text("ui_plot_value"), scr_dmode_get_text("ui_teammate2"), scr_dmode_get_text("ui_teammate3"), scr_dmode_get_text("btn_warp")];
+            dmenu_title = dstr("Warp Options", "Options du saut");
+            dbutton_options = [dstr("Cancel", "Annuler"), dstr("Is Darkworld: ", "Est un Darkworld : "), dstr("Plot Value: ", "Valeur de plot : "), dstr("Teammate 2:  ", "Équipier 2 :  "), dstr("Teammate 3:  ", "Équipier 3 :  "), dstr("Warp", "Sauter")];
             dbutton_indices = [0, 1, 2, 3, 4, 5];
-            dbutton_options[1] += drooms_options.target_is_darkzone ? scr_dmode_get_text("opt_yes") : scr_dmode_get_text("opt_no");
+            dbutton_options[1] += drooms_options.target_is_darkzone ? dstr("Yes", "Oui") : dstr("No", "Non");
             
             if (global.dreading_custom_flag)
                 dbutton_options[2] += dkeyboard_input;
             else
                 dbutton_options[2] += string(drooms_options.target_plot);
             
-            teammates = [scr_dmode_get_text("ui_nobody"), "Kris", "Susie", "Ralsei", "Noëlle"];
+            teammates = [dstr("Nobody", "Personne"), "Kris", "Susie", "Ralsei", "Noëlle"];
             dbutton_options[3] += teammates[drooms_options.target_member_2];
             dbutton_options[4] += teammates[drooms_options.target_member_3];
             break;
         
         case "give":
-            dmenu_title = scr_dmode_get_text("item_type");
-            dbutton_options_2d = [[scr_dmode_get_text("type_items"), scr_dmode_get_text("type_armors"), scr_dmode_get_text("type_weapons"), scr_dmode_get_text("type_keyitems")]];
+            dmenu_title = dstr("Item Type", "Type d'items");
+            dbutton_options_2d = [[dstr("Items", "Objets"), dstr("Armors", "Armures"), dstr("Weapons", "Armes"), dstr("Key Items", "Obj Clés")]];
             dmenu_box = 0;
             dbutton_layout = 0;
             break;
         
         case "objects":
-            dmenu_title = scr_dmode_get_text("item_list");
-            dbutton_options = [scr_dmode_get_text("ui_chapter")];
+            dmenu_title = dstr("Item List", "Liste d'objets");
+            dbutton_options = [dstr("Chapter: ", "Chapitre : ")];
             dbutton_indices = [-1];
             dbutton_options[0] += string(ditem_chap);
             var max_len = 33;
@@ -315,7 +315,7 @@ function dmenu_state_update()
                 for (var i = 0; i < array_length(dlight_objects); i++)
                 {
                     scr_litemcheck(dlight_objects[i][0]);
-                    var combined = dlight_objects[i][1] + " - " + string(itemcount) + " " + scr_dmode_get_text("ui_held");
+                    var combined = dlight_objects[i][1] + " - " + string(itemcount) + " " + dstr("held", "possédé(s)");
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, dlight_objects[i][0]);
                 }
@@ -326,8 +326,8 @@ function dmenu_state_update()
             break;
         
         case "armors":
-            dmenu_title = scr_dmode_get_text("armor_list");
-            dbutton_options = [scr_dmode_get_text("ui_chapter")];
+            dmenu_title = dstr("Armor List", "Liste d'armures");
+            dbutton_options = [dstr("Chapter: ", "Chapitre : ")];
             dbutton_indices = [-1];
             dbutton_options[0] += string(ditem_chap);
             var max_len = 33;
@@ -360,7 +360,7 @@ function dmenu_state_update()
                     var combined = dlight_armors[i][1];
                     
                     if (global.larmor == dlight_armors[i][0])
-                        combined += (" (" + scr_dmode_get_text("ui_equipped") + ")");
+                        combined += (" (" + dstr("Equipped", "Équipé") + ")");
                     
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
@@ -372,8 +372,8 @@ function dmenu_state_update()
             break;
         
         case "weapons":
-            dmenu_title = scr_dmode_get_text("weapon_list");
-            dbutton_options = [scr_dmode_get_text("ui_chapter")];
+            dmenu_title = dstr("Weapon List", "Liste d'armes");
+            dbutton_options = [dstr("Chapter: ", "Chapitre : ")];
             dbutton_indices = [-1];
             dbutton_options[0] += string(ditem_chap);
             var max_len = 33;
@@ -406,7 +406,7 @@ function dmenu_state_update()
                     var combined = dlight_weapons[i][1];
                     
                     if (global.lweapon == dlight_weapons[i][0])
-                        combined += (" (" + scr_dmode_get_text("ui_equipped") + ")");
+                        combined += (" (" + dstr("Equipped", "Équipé") + ")");
                     
                     array_push(dbutton_options, combined);
                     array_push(dbutton_indices, i);
@@ -418,8 +418,8 @@ function dmenu_state_update()
             break;
         
         case "keyitems":
-            dmenu_title = scr_dmode_get_text("keyitem_list");
-            dbutton_options = [scr_dmode_get_text("ui_chapter")];
+            dmenu_title = dstr("Key Item List", "Liste d'objets clés");
+            dbutton_options = [dstr("Chapter: ", "Chapitre : ")];
             dbutton_indices = [-1];
             dbutton_options[0] += string(ditem_chap);
             var max_len = 33;
@@ -445,16 +445,16 @@ function dmenu_state_update()
             break;
         
         case "givertab":
-            dmenu_title = scr_dmode_get_text("add_how_many");
+            dmenu_title = dstr("Add how many to inventory?", "Ajouter combien à l'inventaire ?");
             dgiver_amount = 1;
             dmenu_box = 0;
             dbutton_layout = 2;
             break;
         
         case "recruits":
-            dmenu_title = scr_dmode_get_text("recruit_list");
-            dbutton_options = [scr_dmode_get_text("btn_presets")];
-            dbutton_indices = [scr_dmode_get_text("btn_presets")];
+            dmenu_title = dstr("Recruit List", "Liste des recrues");
+            dbutton_options = [dstr("Presets", "Préréglages")];
+            dbutton_indices = [dstr("Presets", "Préréglages")];
             var max_len = 40;
             
             if (dhorizontal_page != 0)
@@ -490,14 +490,14 @@ function dmenu_state_update()
             break;
         
         case "recruit_presets":
-            dmenu_title = scr_dmode_get_text("recruit_presets");
-            dbutton_options = [scr_dmode_get_text("btn_recruit_all"), scr_dmode_get_text("btn_lose_all")];
+            dmenu_title = dstr("Recruit Presets", "Préréglages des recrues");
+            dbutton_options = [dstr("Recruit All", "Recruter tous"), dstr("Lose All", "Perdre tous")];
             
             if (dhorizontal_page)
             {
-                dmenu_title += (" (" + scr_dmode_get_text("ui_chap_short") + " " + string(dhorizontal_page) + ")");
-                dbutton_options[0] += " " + scr_dmode_get_text("ui_of_chapter") + " " + string(dhorizontal_page);
-                dbutton_options[1] += " " + scr_dmode_get_text("ui_of_chapter") + " " + string(dhorizontal_page);
+                dmenu_title += (" (" + dstr("chap") + " " + string(dhorizontal_page) + ")");
+                dbutton_options[0] += " " + dstr("of chapter", "du chapitre") + " " + string(dhorizontal_page);
+                dbutton_options[1] += " " + dstr("of chapter", "du chapitre") + " " + string(dhorizontal_page);
             }
             
             dmenu_box = 0;
@@ -505,14 +505,14 @@ function dmenu_state_update()
             break;
         
         case "flag_categories":
-            dmenu_title = scr_dmode_get_text("misc");
+            dmenu_title = dstr("Misc", "Divers");
             dbutton_options = [];
             dbutton_indices = [-1];
             categories_len = array_length(dother_categories);
             var max_len = 40;
             
             if (!global.dreading_custom_flag)
-                array_push(dbutton_options, scr_dmode_get_text("ui_custom"));
+                array_push(dbutton_options, dstr("Custom"));
             else
                 array_push(dbutton_options, "global.flag[" + dcustom_flag_text[0] + "] = |" + dcustom_flag_text[1] + "|");
             
@@ -530,7 +530,7 @@ function dmenu_state_update()
             break;
         
         case "flag_misc":
-            dmenu_title = scr_dmode_get_text("misc");
+            dmenu_title = dstr("Misc", "Divers");
             dbutton_options = [];
             dbutton_indices = [];
             other_len = array_length(dother_options);
@@ -540,7 +540,7 @@ function dmenu_state_update()
             {
                 cur_option = dother_options[i];
                 flag_number = global.flag[cur_option[2]];
-                var combined = cur_option[1] + " - " + scr_dmode_get_text("ui_problem");
+                var combined = cur_option[1] + " - " + dstr("problem lol", "problème lol");
                 
                 if (i == dvertical_index)
                     option_index = dhorizontal_index;
@@ -561,7 +561,7 @@ function dmenu_state_update()
             break;
         
         case "globals_changer":
-            dmenu_title = "Global changer";
+            dmenu_title = dstr("Global changer", "Changeur de global");
             dbutton_options = [];
             dmenu_box = 1;
             dbutton_layout = 1;
@@ -608,9 +608,9 @@ function dmenu_state_update()
                     text += ("[" + string(lookup_index) + "]");
                     
                     if (typeof(cur_global_value) != "array")
-                        cur_global_value = "(Not an array)";
+                        cur_global_value = dstr("(Not an array)", "(Pas une array)");
                     else if (lookup_index >= array_length(cur_global_value))
-                        cur_global_value = "(Index too high)";
+                        cur_global_value = dstr("(Index too high)", "(Index trop élevé)");
                     else
                         cur_global_value = cur_global_value[lookup_index];
                 }
@@ -655,7 +655,7 @@ function dmenu_state_interact()
         case "debug":
             dvertical_index = 0;
             
-            if (selected_name == scr_dmode_get_text("warps"))
+            if (selected_name == dstr("Warps", "Sauts"))
             {
                 dmenu_state = "warp";
                 dhorizontal_index = 0;
@@ -663,16 +663,16 @@ function dmenu_state_interact()
                 drooms_options.target_plot = global.plot;
                 drooms_options.target_is_darkzone = global.darkzone;
             }
-            else if (selected_name == scr_dmode_get_text("items"))
+            else if (selected_name == dstr("Items"))
             {
                 dmenu_state = "give";
             }
-            else if (selected_name == scr_dmode_get_text("recruits"))
+            else if (selected_name == dstr("Recruits", "Recrues"))
             {
                 dmenu_state = "recruits";
                 dhorizontal_page = 0;
             }
-            else if (selected_name == scr_dmode_get_text("misc"))
+            else if (selected_name == dstr("Misc", "Divers"))
             {
                 dmenu_state = "flag_categories";
             }
@@ -735,12 +735,12 @@ function dmenu_state_interact()
             var target_sec = global.debug_selected_save_section;
             var target_name = global.debug_selected_save_name;
             
-            if (check_name == "Save")
+            if (check_name == dstr("Save", "Sauver"))
             {
                 var target_path = global.debug_selected_save_section;
                 global.debug_save_category = "";
                 global.debug_save_name = target_name;
-                global.debug_save_description = "No description available.";
+                global.debug_save_description = dstr("No description available.", "Aucune description disponible.");
                 
                 if (file_exists(target_path))
                 {
@@ -788,10 +788,10 @@ function dmenu_state_interact()
                 dkeyboard_input = "";
                 global.interact = 0;
                 scr_debug_save();
-                scr_debug_print("Overwrote save: " + target_name);
+                scr_debug_print(dstr("Overwrote save: ", "Sauvegarde écrasée : ") + target_name);
                 snd_play(snd_save);
             }
-            else if (string_copy(check_name, 1, 4) == "Load")
+            else if (string_copy(check_name, 1, 4) == dstr("Load", "Charger"))
             {
                 var target_path = global.debug_selected_save_section;
                 
@@ -812,10 +812,10 @@ function dmenu_state_interact()
                 else
                 {
                     snd_play(snd_error);
-                    scr_debug_print("Error: Save file '" + target_name + "' could not be found on disk.");
+                    scr_debug_print(dstr("Error: Save file '", "Erreur : Le fichier de sauvegarde '") + target_name + dstr("' could not be found on disk", "' n'a pu être trouvé"));
                 }
             }
-            else if (check_name == "Delete")
+            else if (check_name == dstr("Delete", "Supprimer"))
             {
                 dremove_false_history();
                 var target_path = global.debug_selected_save_section;
@@ -824,13 +824,13 @@ function dmenu_state_interact()
                 {
                     file_delete(target_path);
                     scr_debug_cleanup_folder(target_path);
-                    scr_debug_print("Save file permanently deleted.");
+                    scr_debug_print(dstr("Save file permanently deleted", "Fichier de sauvegarde supprimé"));
                     snd_play(snd_badexplosion);
                     scr_get_debug_save_list();
                 }
                 else
                 {
-                    scr_debug_print("Error: File already missing.");
+                    scr_debug_print(dstr("Error: File already missing", "Erreur : Fichier déjà manquant"));
                 }
                 
                 dpop_history();
@@ -838,7 +838,7 @@ function dmenu_state_interact()
                 dbutton_layout = 0;
                 dmenu_start_index = 0;
             }
-            else if (check_name == "- Debug mode save")
+            else if (check_name == "- " + dstr("Debug mode save", "Sauvegarde mode debug"))
             {
                 dremove_false_history();
                 dmenu_skip_reindexing = true;
@@ -854,17 +854,17 @@ function dmenu_state_interact()
                             file_delete(export_path);
                         
                         file_copy(source_file, export_path);
-                        scr_debug_print("Exported custom .save successfully!");
+                        scr_debug_print(dstr("Exported custom .save successfully!", "Fichier .save exporté avec succès !"));
                         snd_play(snd_shineselect);
                     }
                     else
                     {
-                        scr_debug_print("Error: Base save file not found.");
+                        scr_debug_print(dstr("Error: Base save file not found", "Erreur : Fichier de sauvegarde de base introuvable"));
                         snd_play(snd_error);
                     }
                 }
             }
-            else if (check_name == "- Default Deltarune save")
+            else if (check_name == "- " + dstr("Default Deltarune save", "Sauvegarde Deltarune par défaut"))
             {
                 dremove_false_history();
                 dmenu_skip_reindexing = true;
@@ -923,29 +923,29 @@ function dmenu_state_interact()
                             file_copy(source_file, export_path);
                         }
                         
-                        scr_debug_print("Exported '" + string(target_name) + "' successfully!");
+                        scr_debug_print("'" + string(target_name) + "' exporté avec succès !");
                         snd_play(snd_shineselect);
                     }
                     else
                     {
-                        scr_debug_print("Export cancelled.");
+                        scr_debug_print(dstr("Export cancelled", "Exportation annulée"));
                     }
                 }
                 else
                 {
-                    scr_debug_print("Error: Could not find the source save file.");
+                    scr_debug_print(dstr("Error: Could not find the source save file", "Erreur : Impossible de trouver le fichier de sauvegarde source"));
                     snd_play(snd_error);
                 }
             }
-            else if (check_name == "- Rename" || check_name == "- Edit description" || check_name == "- Change category")
+            else if (check_name == "- " + dstr("Rename", "Renommer") || check_name == "- " + dstr("Edit description", "Modifier description") || check_name == "- " + dstr("Change category", "Changer description"))
             {
-                if (check_name == "- Rename")
+                if (check_name == "- " + dstr("Rename", "Renommer"))
                     dmenu_state = "dsave_edit_name";
                 
-                if (check_name == "- Edit description")
+                if (check_name == "- " + dstr("Edit description", "Modifier description"))
                     dmenu_state = "dsave_edit_desc";
                 
-                if (check_name == "- Change category")
+                if (check_name == "- " + dstr("Change category", "Changer description"))
                     dmenu_state = "dsave_edit_cat";
             }
             
@@ -1015,10 +1015,10 @@ function dmenu_state_interact()
                 if (dkeyboard_input != "")
                     global.debug_save_name = dkeyboard_input;
                 else
-                    global.debug_save_name = "Untitled";
+                    global.debug_save_name = dstr("Untitled", "Sans titre");
                 
                 dkeyboard_input = "";
-                scr_debug_print("Save created: " + string(global.debug_save_name));
+                scr_debug_print(dstr("Save created: ", "Sauvegarde créée : ") + string(global.debug_save_name));
                 global.debug_saving = 1;
                 scr_debug_save();
                 dmenu_popup_launch = 0;
@@ -1237,7 +1237,7 @@ function dmenu_state_interact()
             
             if (dgiver_amount == 0)
             {
-                scr_debug_print(scr_dmode_get_text("msg_cancelled"));
+                scr_debug_print(dstr("Cancelled", "Annulé"));
                 break;
             }
             
@@ -1265,9 +1265,9 @@ function dmenu_state_interact()
                 }
                 
                 if (dgiver_amount < 0)
-                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + scr_dmode_get_text("msg_removed_inv"));
+                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + dstr(" removed from inventory", " retiré de l'inventaire"));
                 else
-                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + scr_dmode_get_text("msg_added_inv"));
+                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + dstr(" added to inventory", " ajouté à l'inventaire"));
             }
             
             if (dgiver_menu_state == "armors")
@@ -1279,7 +1279,7 @@ function dmenu_state_interact()
                     for (var i = 0; i < dgiver_amount; i++)
                         scr_armorget(real_index);
                     
-                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + scr_dmode_get_text("msg_added_inv"));
+                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + dstr(" added to inventory", " ajouté à l'inventaire"));
                 }
                 else if (dgiver_amount < 0)
                 {
@@ -1288,7 +1288,7 @@ function dmenu_state_interact()
                     for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_armorremove(real_index);
                     
-                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + scr_dmode_get_text("msg_removed_inv"));
+                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + dstr(" removed from inventory", " retiré de l'inventaire"));
                 }
             }
             
@@ -1301,7 +1301,7 @@ function dmenu_state_interact()
                     for (var i = 0; i < dgiver_amount; i++)
                         scr_weaponget(real_index);
                     
-                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + scr_dmode_get_text("msg_added_inv"));
+                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + dstr(" added to inventory", " ajouté à l'inventaire"));
                 }
                 else if (dgiver_amount < 0)
                 {
@@ -1310,7 +1310,7 @@ function dmenu_state_interact()
                     for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_weaponremove(real_index);
                     
-                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + scr_dmode_get_text("msg_removed_inv"));
+                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + dstr(" removed from inventory", " retiré de l'inventaire"));
                 }
             }
             
@@ -1323,7 +1323,7 @@ function dmenu_state_interact()
                     for (var i = 0; i < dgiver_amount; i++)
                         scr_keyitemget(real_index);
                     
-                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + scr_dmode_get_text("msg_added_inv"));
+                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + dstr(" added to inventory", " ajouté à l'inventaire"));
                 }
                 else if (dgiver_amount < 0)
                 {
@@ -1332,7 +1332,7 @@ function dmenu_state_interact()
                     for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_keyitemremove(real_index);
                     
-                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + scr_dmode_get_text("msg_removed_inv"));
+                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + dstr(" removed from inventory", " retiré de l'inventaire"));
                 }
             }
             
@@ -1355,9 +1355,11 @@ function dmenu_state_interact()
                         array_push(dother_options, options);
                 }
                 
-                dhorizontal_index = find_subarray_index(dother_options[0][2], dother_options[0][3]);
+                dmenu_skip_reindexing = true;
                 dmenu_state = "flag_misc";
+                dmenu_start_index = 0;
                 dvertical_index = 0;
+                dhorizontal_index = find_subarray_index(dother_options[0][2], dother_options[0][3]);
             }
             else
             {
@@ -1481,6 +1483,6 @@ function dmenu_state_interact()
         
         default:
             snd_play(snd_error);
-            scr_debug_print(scr_dmode_get_text("msg_invalid"));
+            scr_debug_print(dstr("Invalid selection!", "Sélection invalide !"));
     }
 }

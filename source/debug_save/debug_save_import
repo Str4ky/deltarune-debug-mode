@@ -4,7 +4,7 @@ function scr_debug_save_import()
     
     if (import_path == "")
     {
-        scr_debug_print("Import cancelled.");
+        scr_debug_print(dstr("Import cancelled", "Importation annulée"));
         exit;
     }
     
@@ -113,6 +113,6 @@ function scr_debug_save_import()
     var out_file = file_text_open_write(new_file_path);
     file_text_write_string(out_file, json_stringify(export_data, true));
     file_text_close(out_file);
-    scr_debug_print("Save file '" + file_only_name + "' imported successfully!");
+    scr_debug_print(dstr("Save file '", "Sauvegarde '") + file_only_name + dstr("' imported successfully!", "' importée avec succès !"));
     snd_play(snd_shineselect);
 }

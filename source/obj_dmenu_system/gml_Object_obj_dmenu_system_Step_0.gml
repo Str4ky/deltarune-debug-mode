@@ -139,14 +139,14 @@ function evaluate_custom_flag(arg0, arg1)
         if (proper_exit)
             scr_debug_print("global.flag[" + string(real(dcustom_flag_text[0])) + "] = |" + string(global.flag[real(dcustom_flag_text[0])]) + "|");
         else
-            scr_debug_print(scr_dmode_get_text("dbg_empty_val"));
+            scr_debug_print(dstr("Empty value", "Valeur vide"));
         
         proper_exit = 0;
     }
     
     if (proper_exit)
     {
-        scr_debug_print(scr_dmode_get_text("dbg_updated") + "global.flag[" + string(real(dcustom_flag_text[0])) + "]" + scr_dmode_get_text("dbg_from") + "|" + string(global.flag[real(dcustom_flag_text[0])]) + "|" + scr_dmode_get_text("dbg_to") + "|" + dcustom_flag_text[1] + "|");
+        scr_debug_print(dstr("Updated ", "Mise à jour de ") + "global.flag[" + string(real(dcustom_flag_text[0])) + "]" + dstr(" from ", " de ") + "|" + string(global.flag[real(dcustom_flag_text[0])]) + "|" + dstr(" to ", " à ") + "|" + dcustom_flag_text[1] + "|");
         global.flag[real(dcustom_flag_text[0])] = real(dcustom_flag_text[1]);
     }
     
@@ -396,7 +396,7 @@ else if (dmenu_active)
             if (playsound)
             {
                 global.flag[cur_options[2]] = cur_options[3][dhorizontal_index][1];
-                scr_debug_print(scr_dmode_get_text("dbg_updated") + "global.flag[" + string(cur_options[2]) + "]" + scr_dmode_get_text("dbg_to") + "|" + string(cur_options[3][dhorizontal_index][1]) + "|");
+                scr_debug_print(dstr("Updated ", "Mise à jour de ") + "global.flag[" + string(cur_options[2]) + "]" + dstr(" to ", " à ") + "|" + string(cur_options[3][dhorizontal_index][1]) + "|");
                 snd_play(snd_menumove);
             }
         }
@@ -486,7 +486,7 @@ else if (dmenu_active)
                     dmenu_state_update();
                 }
             }
-            else if (dmenu_state == "debug_save_options" && dvertical_index == 1)
+            else if (dmenu_state == "debug_save_options" && dvertical_index == 0)
             {
                 var new_setting = -1;
                 
@@ -707,7 +707,7 @@ else if (dmenu_active)
                             dgiver_bname = dlight_objects[real_index][1];
                         }
                         
-                        scr_debug_print(dgiver_bname + scr_dmode_get_text("msg_selected"));
+                        scr_debug_print(dgiver_bname + dstr(" selected!", " sélectionné !"));
                     }
                     
                     break;
@@ -727,7 +727,7 @@ else if (dmenu_active)
                             dgiver_bname = dlight_armors[real_index][1];
                         }
                         
-                        scr_debug_print(string(dgiver_bname) + scr_dmode_get_text("msg_selected"));
+                        scr_debug_print(string(dgiver_bname) + dstr(" selected!", " sélectionné !"));
                     }
                     
                     break;
@@ -747,7 +747,7 @@ else if (dmenu_active)
                             dgiver_bname = dlight_weapons[real_index][1];
                         }
                         
-                        scr_debug_print(string(dgiver_bname) + scr_dmode_get_text("msg_selected"));
+                        scr_debug_print(string(dgiver_bname) + dstr(" selected!", " sélectionné !"));
                     }
                     
                     break;
@@ -758,7 +758,7 @@ else if (dmenu_active)
                         var real_index = dbutton_indices[dvertical_index];
                         scr_keyiteminfo(real_index);
                         dgiver_bname = tempkeyitemname;
-                        scr_debug_print(string(dgiver_bname) + scr_dmode_get_text("msg_selected"));
+                        scr_debug_print(string(dgiver_bname) + dstr(" selected!", " sélectionné !"));
                     }
                     
                     break;
@@ -766,7 +766,7 @@ else if (dmenu_active)
         }
         else if (dmenu_state == "warp" && dvertical_index == 1)
         {
-            scr_debug_print(scr_dmode_get_text("msg_search_selected"));
+            scr_debug_print(dstr("Search selected!", "Recherche sélectionné !"));
         }
         else if (dmenu_state != "givertab" && dmenu_state != "flag_misc" && dmenu_state != "warp_options" && (dmenu_state != "recruits" || dvertical_index == 0) && dmenu_state != "new_debug_save")
         {
@@ -777,7 +777,7 @@ else if (dmenu_active)
             else
                 option_name = string(dbutton_options[dvertical_index]);
             
-            scr_debug_print(option_name + scr_dmode_get_text("msg_selected"));
+            scr_debug_print(option_name + dstr(" selected!", " sélectionné !"));
         }
         
         dmenu_skip_reindexing = false;
@@ -823,14 +823,14 @@ else if (dmenu_active)
             if (new_room == -1)
                 new_room = room;
             
-            dhinter_text = scr_dmode_get_text("hint_room") + room_get_name(new_room);
+            dhinter_text = dstr("Selected room: ", "Salle sélectionnée : ") + room_get_name(new_room);
         }
         
         if (dmenu_state == "debug_save")
         {
             if (dvertical_index == 0)
             {
-                dhinter_text = "[I] - Import individual   [Alt+I] - Batch import";
+                dhinter_text = dstr("[I] - Import individual\n[Alt+I] - Batch import", "[I] - Importer individuellement\n[Alt+I] - Importation par lot");
             }
             else if (dvertical_index > 0 && dvertical_index < array_length(dbutton_options))
             {
@@ -864,7 +864,7 @@ else if (dmenu_active)
         {
             if (dhorizontal_page == 0 && dvertical_index == 0)
             {
-                dhinter_text = scr_dmode_get_text("hint_press") + scr_get_input_name(4) + scr_dmode_get_text("hint_change_chap");
+                dhinter_text = dstr("Press ", "Appuyez sur ") + scr_get_input_name(4) + dstr(" to change chapter", " pour changer de chapitre");
             }
             else if (dhorizontal_page == 0 && dvertical_index != 0)
             {
@@ -933,7 +933,7 @@ else if (dmenu_active)
     }
 }
 
-if ((dmenu_active == 1 && dmenu_state == "debug" && global.darkzone == 1) || dkeys_helper == 1)
+if ((dmenu_active == 1 && dmenu_state == "debug") || dkeys_helper == 1)
 {
     if (keyboard_check_pressed(ord("M")))
     {
@@ -943,5 +943,20 @@ if ((dmenu_active == 1 && dmenu_state == "debug" && global.darkzone == 1) || dke
             snd_play(snd_smallswing);
         
         dkeys_helper = !dkeys_helper;
+    }
+}
+
+if (dmenu_active == 1 && dmenu_state == "debug")
+{
+    if (keyboard_check_pressed(ord("F")))
+    {
+        global.dlang = (global.dlang == "en") ? "fr" : "en";
+        
+        with (obj_dmenu_system)
+        {
+            event_perform(ev_create, 0); 
+        }
+
+        scr_debug_print(dstr("Debug menu now in English!", "Menu debug désormais en français !"));
     }
 }

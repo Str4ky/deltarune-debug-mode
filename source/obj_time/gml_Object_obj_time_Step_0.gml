@@ -3,9 +3,9 @@ if (keyboard_check_pressed(vk_f10))
     global.debug = !global.debug;
     
     if (global.debug)
-        scr_debug_print(scr_dmode_get_text("dmode_activated"));
+        scr_debug_print(dstr("Debug Mode activated!", "Mode Debug activé !"));
     else
-        scr_debug_print(scr_dmode_get_text("dmode_desactivated"));
+        scr_debug_print(dstr("Debug Mode deactivated!", "Mode Debug désactivé !"));
 }
 
 if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
@@ -19,13 +19,13 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
         {
             global.speed_fps = 1;
             game_set_speed(1, gamespeed_fps);
-            scr_debug_print(scr_dmode_get_text("fps_1"));
+            scr_debug_print(dstr("FPS to 1", "FPS à 1"));
         }
         else
         {
             global.speed_fps = 30;
             game_set_speed(30, gamespeed_fps);
-            scr_debug_print(scr_dmode_get_text("fps_30"));
+            scr_debug_print(dstr("FPS to 30", "FPS à 30"));
         }
     }
     if (keyboard_check_pressed(ord("G")))
@@ -33,9 +33,9 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
 		global.dgodmode = !global.dgodmode;
 
         if (global.dgodmode)
-			scr_debug_print("Godmode enabled");
+			scr_debug_print(dstr("Godmode enabled", "Godmode activé"));
 		else
-			scr_debug_print("Godmode disabled");
+			scr_debug_print(dstr("Godmode disabled", "Godmode désactivé"));
     }
     
     if (keyboard_check_pressed(ord("O")))
@@ -47,19 +47,19 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
         {
             global.speed_fps = 60;
             game_set_speed(60, gamespeed_fps);
-            scr_debug_print(scr_dmode_get_text("fps_60"));
+            scr_debug_print(dstr("FPS to 60", "FPS à 60"));
         }
         else if (global.speed_fps == 60)
         {
             global.speed_fps = 120;
             game_set_speed(120, gamespeed_fps);
-            scr_debug_print(scr_dmode_get_text("fps_120"));
+            scr_debug_print(dstr("FPS to 120", "FPS à 120"));
         }
         else
         {
             global.speed_fps = 30;
             game_set_speed(30, gamespeed_fps);
-            scr_debug_print(scr_dmode_get_text("fps_30"));
+            scr_debug_print(dstr("FPS to 30", "FPS à 30"));
         }
     }
 }

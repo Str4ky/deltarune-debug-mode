@@ -2,7 +2,7 @@ function scr_debug_save_modify_info(arg0, arg1, arg2)
 {
     if (!file_exists(arg0))
     {
-        scr_debug_print("Error: Save file not found on disk.");
+        scr_debug_print(dstr("Error: Save file not found on disk.", "Erreur : Fichier de sauvegarde introuvable"));
         return "";
     }
     
@@ -27,13 +27,13 @@ function scr_debug_save_modify_info(arg0, arg1, arg2)
     }
     catch (e)
     {
-        scr_debug_print("Error: JSON is corrupted.");
+        scr_debug_print(dstr("Error: JSON is corrupted", "Erreur : JSON corrompu"));
         return "";
     }
     
     if (!is_struct(parsed_data) || !variable_struct_exists(parsed_data, "metadata"))
     {
-        scr_debug_print("Error: Invalid save structure.");
+        scr_debug_print(dstr("Error: Invalid save structure", "Erreur : Structure de sauvegarde invalide"));
         return "";
     }
     
@@ -69,6 +69,6 @@ function scr_debug_save_modify_info(arg0, arg1, arg2)
     }
     
     snd_play(snd_save);
-    scr_debug_print("Updated " + arg1 + " to: " + string(arg2));
+    scr_debug_print(dstr("Updated ", "Mise à jour de ") + arg1 + dstr(" to: ", " à : ") + string(arg2));
     return new_path;
 }

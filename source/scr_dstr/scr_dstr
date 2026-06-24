@@ -1,0 +1,19 @@
+function scr_dstr()
+{
+    if (argument_count == 1 || global.dlang != "fr")
+    {
+        return argument[0];
+    }
+    
+    return argument[1];
+}
+
+function dstr()
+{
+    if (argument_count == 1)
+    {
+        return scr_dstr(argument[0]);
+    }
+    
+    return scr_dstr(argument[0], argument[1]);
+}

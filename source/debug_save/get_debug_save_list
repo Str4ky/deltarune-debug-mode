@@ -110,7 +110,7 @@ function scr_get_debug_save_list()
         }
         catch (e)
         {
-            scr_debug_print("Error parsing save file: " + filename_name(save_path));
+            scr_debug_print(dstr("Error parsing save file: ", "Erreur lors de l'analyse du fichier de sauvegarde : ") + filename_name(save_path));
         }
     }
     

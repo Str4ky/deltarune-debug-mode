@@ -1,15 +1,13 @@
 {
     "order": [
-        "scr_dmode_init_lang",
         "scr_gamestart",
         "scr_debug_print",
-        "scr_dmode_init_lang",
         "obj_debug_gui",
         "obj_debug_xy",
         "obj_debug_windows",
         "debug_save",
 		"scr_read_keyboard",
-        "scr_dmode_get_text",
+        "scr_dstr",
 		"scr_string_respect_type",
         "obj_dmenu_system",
         "scr_debug",

@@ -5,7 +5,7 @@ function scr_debug_save_scan_imports()
     if (!directory_exists(import_dir))
     {
         directory_create(import_dir);
-        scr_debug_print("Created 'import' folder. Place your folders/saves inside!");
+        scr_debug_print(dstr("Created 'import' folder. Place your folders/saves inside!", "Dossier 'import' créé. Placez y vos dossiers/sauvegardes !"));
         snd_play(snd_noise);
         exit;
     }
@@ -38,7 +38,7 @@ function scr_debug_save_scan_imports()
     
     if (array_length(files_to_import) == 0)
     {
-        scr_debug_print("No files found to import.");
+        scr_debug_print(dstr("No files found to import", "Aucun fichier à importer trouvé"));
         exit;
     }
     
@@ -199,6 +199,6 @@ function scr_debug_save_scan_imports()
     if (directory_exists(import_dir))
         directory_destroy(import_dir);
     
-    scr_debug_print(string(success_count) + " files imported successfully!");
+    scr_debug_print(string(success_count) + dstr(" files imported successfully!", " fichiers importés avec succès !"));
     snd_play(snd_shineselect);
 }
