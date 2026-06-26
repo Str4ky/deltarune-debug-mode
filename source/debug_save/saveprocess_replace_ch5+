@@ -1,0 +1,4 @@
+if (global.debug_saving == 1)
+        file = "debug_save/filech" + string(global.chapter) + "_" + string(arg0) + global.filechoice_route;
+    else
+        file = "filech" + string(global.chapter) + "_" + string(arg0) + global.filechoice_route;

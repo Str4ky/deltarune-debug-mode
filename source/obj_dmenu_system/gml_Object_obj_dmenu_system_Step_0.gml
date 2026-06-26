@@ -958,5 +958,6 @@ if (dmenu_active == 1 && dmenu_state == "debug")
         }
 
         scr_debug_print(dstr("Debug menu now in English!", "Menu debug désormais en français !"));
+        global.interact = 0;
     }
 }

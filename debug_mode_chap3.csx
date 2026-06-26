@@ -158,6 +158,10 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_print_persistent",
     }
 }
 
+function debug_print_bitmask_persistent(arg0, arg1, arg2)
+{
+}
+
 function debug_print_persistent(arg0, arg1)
 {
     scr_debug_print_persistent(arg0, arg1);
@@ -2118,10 +2122,16 @@ function scr_debug_save()
     scr_saveprocess(temp_id);
     var raw_file_path = """";
     
+    var _route_suffix = """";
+    if (variable_global_exists(""filechoice_route"")) 
+    {
+        _route_suffix = string(global.filechoice_route);
+    }
+
     if (global.debug_saving == 1)
-        raw_file_path = ""debug_save/filech"" + string(global.chapter) + ""_"" + string(temp_id);
+        raw_file_path = ""debug_save/filech"" + string(global.chapter) + ""_"" + string(temp_id) + _route_suffix;
     else
-        raw_file_path = ""filech"" + string(global.chapter) + ""_"" + string(temp_id);
+        raw_file_path = ""filech"" + string(global.chapter) + ""_"" + string(temp_id) + _route_suffix;
     
     var safe_name = scr_debug_sanitize_filename(global.debug_save_name);
     var safe_cat = scr_debug_sanitize_filename(global.debug_save_category, true);
@@ -2200,7 +2210,8 @@ function scr_debug_save()
             UraBoss: uraboss,
             Date: date_current_datetime(),
             InitLang: global.flag[912],
-            Version: current_version
+            Version: current_version,
+            FilechoiceRoute: variable_global_exists(""filechoice_route"") ? string(global.filechoice_route) : """"
         },
         save_file: save_content
     };
@@ -2338,7 +2349,13 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
     var file = string(arg0);
     
     if (file == """" || string_length(file) < 3)
-        file = ""debug_save/filech"" + string(global.chapter) + ""_"" + string(arg0);
+    {
+        var _route_suffix = """";
+        if (variable_global_exists(""filechoice_route""))
+            _route_suffix = string(global.filechoice_route);
+        
+        file = ""debug_save/filech"" + string(global.chapter) + ""_"" + string(arg0) + _route_suffix;
+    }
     
     var raw_file_to_read = file;
     var target_chapter = global.chapter;
@@ -2375,10 +2392,25 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
                 if (variable_struct_exists(parsed_data, ""metadata"") && variable_struct_exists(parsed_data.metadata, ""Chapter""))
                     target_chapter = parsed_data.metadata.Chapter;
                 
+                if (variable_struct_exists(parsed_data, ""metadata"") && variable_struct_exists(parsed_data.metadata, ""FilechoiceRoute""))
+                {
+                    if (variable_global_exists(""filechoice_route""))
+                        global.filechoice_route = parsed_data.metadata.FilechoiceRoute;
+                }
+                else
+                {
+                    if (variable_global_exists(""filechoice_route""))
+                        global.filechoice_route = """";
+                }
+                
                 if (variable_struct_exists(parsed_data, ""save_file""))
                 {
                     var raw_content = parsed_data.save_file;
-                    var temp_raw_path = ""filech"" + string(target_chapter) + ""_999"";
+                    
+                    var _route_suffix = """";
+                    if (variable_global_exists(""filechoice_route"")) _route_suffix = string(global.filechoice_route);
+                    
+                    var temp_raw_path = ""filech"" + string(target_chapter) + ""_999"" + _route_suffix;
                     var out_file = ossafe_file_text_open_write(temp_raw_path);
                     ossafe_file_text_write_string(out_file, raw_content);
                     ossafe_file_text_close(out_file);
@@ -2399,6 +2431,8 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
             target_chapter = 3;
         else if (string_pos(""ch4"", fn) > 0)
             target_chapter = 4;
+        else if (string_pos(""ch5"", fn) > 0)
+            target_chapter = 5;
     }
     
     global.chapter = target_chapter;
@@ -2916,7 +2950,7 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
             
             break;
         
-        case 4:
+        default:
             var room_id = global.currentroom;
             
             if (room_id < 10000)
@@ -2942,8 +2976,10 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
             __loadedroom = choose(226, 271);
         else if (global.chapter == 3)
             __loadedroom = 83;
-        else
+        else if (global.chapter == 4)
             __loadedroom = 92;
+        else if (global.chapter == 5)
+            __loadedroom = 98;
     }
     
     scr_tempsave();
@@ -2978,7 +3014,7 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
 }");
 
 
-
+UndertaleScript scr_read_keyboard = Data.Scripts.ByName("scr_read_keyboard");
 importGroup.QueueReplace("gml_GlobalScript_scr_read_keyboard",
 @"function scr_read_keyboard()
 {
@@ -3029,7 +3065,7 @@ function dstr()
 }");
 
 
-
+UndertaleScript scr_string_respect_type = Data.Scripts.ByName("scr_string_respect_type");
 importGroup.QueueAppend("gml_GlobalScript_scr_string_respect_type",
 @"function scr_string_respect_type(arg0, arg1, arg2, arg3)
 {
@@ -3137,10 +3173,10 @@ dscroll_speed = 1;
 dbackspace_timer = 0;
 dmenu_title = dstr(""Debug Menu"", ""Menu Debug"");
 dbutton_options_original = [[dstr(""Warps"", ""Sauts""), dstr(""Items""), dstr(""Recruits"", ""Recrues""), dstr(""Misc"", ""Divers"")], [dstr(""Globals""), dstr(""Debug save"")]];
-dnumber_litems = [0, 11, 14, 14, 18];
+dnumber_litems = [0, 11, 14, 14, 18, 23];
 dlight_weapons = [];
 dlight_armors = [[3, dstr(""Bandage"", ""Pansement"")], [14, dstr(""Wristwatch"", ""Montre"")]];
-dlight_objects = [[1, dstr(""Hot Chocolate"", ""Chocolat Chaud"")], [2, dstr(""Pencil"", ""Crayon"")], [3, dstr(""Bandage"", ""Pansement"")], [4, dstr(""Bouquet"")], [5, dstr(""Ball of Junk"", ""Boule de Trucs"")], [6, dstr(""Halloween Pencil"", ""Crayon Halloween"")], [7, dstr(""Lucky Pencil"", ""Crayon Fétiche"")], [8, dstr(""Egg"", ""Œuf"")], [9, dstr(""Cards"", ""Cartes"")], [10, dstr(""Box of Heart Candy"", ""Boîte de ChocoCœurs"")], [11, dstr(""Glass"", ""Verre"")], [12, dstr(""Eraser"", ""Gomme"")], [13, dstr(""Mech. Pencil"", ""Critérium"")], [14, dstr(""Wristwatch"", ""Montre"")], [15, dstr(""Holiday Pencil"", ""Crayon de Noël"")], [16, dstr(""CactusNeedle"", ""Épine de Cactus"")], [17, dstr(""BlackShard"", ""ÉclatNoir"")], [18, dstr(""QuillPen"", ""Stylo-Plume"")]];
+dlight_objects = [[1, dstr(""Hot Chocolate"", ""Chocolat Chaud"")], [2, dstr(""Pencil"", ""Crayon"")], [3, dstr(""Bandage"", ""Pansement"")], [4, dstr(""Bouquet"")], [5, dstr(""Ball of Junk"", ""Boule de Trucs"")], [6, dstr(""Halloween Pencil"", ""Crayon Halloween"")], [7, dstr(""Lucky Pencil"", ""Crayon Fétiche"")], [8, dstr(""Egg"", ""Œuf"")], [9, dstr(""Cards"", ""Cartes"")], [10, dstr(""Box of Heart Candy"", ""Boîte de ChocoCœurs"")], [11, dstr(""Glass"", ""Verre"")], [12, dstr(""Eraser"", ""Gomme"")], [13, dstr(""Mech. Pencil"", ""Critérium"")], [14, dstr(""Wristwatch"", ""Montre"")], [15, dstr(""Holiday Pencil"", ""Crayon de Noël"")], [16, dstr(""CactusNeedle"", ""Épine de Cactus"")], [17, dstr(""BlackShard"", ""ÉclatNoir"")], [18, dstr(""QuillPen"", ""Stylo-Plume"")], [19, dstr(""Honey Toast"")], [20, dstr(""Bread"")], [21, dstr(""Seeds"")], [22, dstr(""Pencil2"")], [23, dstr(""Petal"")]];
 dhinter_active = false;
 itemdescb = """";
 armordesctemp = """";
@@ -3197,14 +3233,42 @@ dgiver_bname = 0;
 dbutton_indices = [];
 ditem_types = [""objects"", ""armors"", ""weapons"", ""keyitems""];
 ditem_chap = 1;
-ditemcount_all = [1, 15, 18, 6, 4];
-ditem_gaps = [0, 0, 0, 20, 0];
-darmorcount_all = [1, 7, 15, 5, 5];
-darmor_gaps = [0, 0, 0, 22, 0];
-dweaponcount_all = [1, 10, 12, 4, 5];
-dweapon_gaps = [0, 0, 0, 23, 0];
-dkeyitemcount_all = [1, 7, 8, 4, 2];
-dkeyitem_gaps = [0, 0, 0, 10, 0];
+
+global.ditem_data = [
+    [],
+    [ { start_id: 1,  count: 15 } ],
+    [ { start_id: 16, count: 18 } ],
+    [ { start_id: 34, count: 6  } ],
+    [ { start_id: 60, count: 4  } ],
+    [ { start_id: 40, count: 4  }, { start_id: 64, count: 7 } ]
+];
+
+global.darmor_data = [
+    [],
+    [ { start_id: 1,  count: 7 } ],
+    [ { start_id: 8, count: 15 } ],
+    [ { start_id: 23, count: 5  } ],
+    [ { start_id: 50, count: 5  } ],
+    [ { start_id: 30, count: 9  }]
+];
+
+global.dweapon_data = [
+    [],
+    [ { start_id: 1,  count: 10 } ],
+    [ { start_id: 11, count: 12 } ],
+    [ { start_id: 23, count: 4  } ],
+    [ { start_id: 50, count: 5  } ],
+    [ { start_id: 30, count: 8  }]
+];
+
+global.dkeyitem_data = [
+    [],
+    [ { start_id: 1,  count: 7 } ],
+    [ { start_id: 8, count: 8 } ],
+    [ { start_id: 16, count: 4  } ],
+    [ { start_id: 30, count: 2  } ],
+    [ { start_id: 20, count: 10  }, { start_id: 32, count: 2} ]
+];
 
 dpop_history = function()
 {
@@ -3263,61 +3327,45 @@ dremove_false_history = function()
 ditem_index_data = function(arg0)
 {
     var _chap = arg0;
-    var _start_at = 0;
     
-    for (var i = 0; i < _chap; i++)
-        _start_at += (ditemcount_all[i] + ditem_gaps[i]);
+    if (_chap < 0 || _chap >= array_length(global.ditem_data)) {
+        return []; 
+    }
     
-    return 
-    {
-        start_id: _start_at,
-        count: ditemcount_all[_chap]
-    };
+    return global.ditem_data[_chap];
 };
 
 darmor_index_data = function(arg0)
 {
     var _chap = arg0;
-    var _start_at = 0;
     
-    for (var i = 0; i < _chap; i++)
-        _start_at += (darmorcount_all[i] + darmor_gaps[i]);
+    if (_chap < 0 || _chap >= array_length(global.darmor_data)) {
+        return []; 
+    }
     
-    return 
-    {
-        start_id: _start_at,
-        count: darmorcount_all[_chap]
-    };
+    return global.darmor_data[_chap];
 };
 
 dweapon_index_data = function(arg0)
 {
     var _chap = arg0;
-    var _start_at = 0;
     
-    for (var i = 0; i < _chap; i++)
-        _start_at += (dweaponcount_all[i] + dweapon_gaps[i]);
+    if (_chap < 0 || _chap >= array_length(global.dweapon_data)) {
+        return []; 
+    }
     
-    return 
-    {
-        start_id: _start_at,
-        count: dweaponcount_all[_chap]
-    };
+    return global.dweapon_data[_chap];
 };
 
 dkeyitem_index_data = function(arg0)
 {
     var _chap = arg0;
-    var _start_at = 0;
     
-    for (var i = 0; i < _chap; i++)
-        _start_at += (dkeyitemcount_all[i] + dkeyitem_gaps[i]);
+    if (_chap < 0 || _chap >= array_length(global.dkeyitem_data)) {
+        return []; 
+    }
     
-    return 
-    {
-        start_id: _start_at,
-        count: dkeyitemcount_all[_chap]
-    };
+    return global.dkeyitem_data[_chap];
 };
 
 extract_global_infos = function(arg0)
@@ -4707,6 +4755,7 @@ if (dmenu_active == 1 && dmenu_state == ""debug"")
         }
 
         scr_debug_print(dstr(""Debug menu now in English!"", ""Menu debug désormais en français !""));
+        global.interact = 0;
     }
 }");
 
@@ -5002,23 +5051,27 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             dbutton_indices = [-1];
             dbutton_options[0] += string(ditem_chap);
             var max_len = 33;
-            var _data = ditem_index_data(ditem_chap);
-            var my_start = _data.start_id;
-            var my_count = _data.count;
+            var _ranges = ditem_index_data(ditem_chap);
             
             if (dhorizontal_page == 0)
             {
-                for (var i = my_start; i < (my_start + my_count); i++)
+                for (var r = 0; r < array_length(_ranges); r++)
                 {
-                    scr_iteminfo(i);
-                    var cleaned_desc = string_replace_all(itemdescb, ""#"", "" "");
-                    var combined = itemnameb;
+                    var my_start = _ranges[r].start_id;
+                    var my_count = _ranges[r].count;
                     
-                    if (string_length(combined) > max_len)
-                        combined = string_copy(combined, 1, max_len - 3) + ""..."";
-                    
-                    array_push(dbutton_options, combined);
-                    array_push(dbutton_indices, i);
+                    for (var i = my_start; i < (my_start + my_count); i++)
+                    {
+                        scr_iteminfo(i);
+                        var cleaned_desc = string_replace_all(itemdescb, ""#"", "" "");
+                        var combined = itemnameb;
+                        
+                        if (string_length(combined) > max_len)
+                            combined = string_copy(combined, 1, max_len - 3) + ""..."";
+                        
+                        array_push(dbutton_options, combined);
+                        array_push(dbutton_indices, i);
+                    }
                 }
             }
             else
@@ -5045,23 +5098,27 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             dbutton_indices = [-1];
             dbutton_options[0] += string(ditem_chap);
             var max_len = 33;
-            var _data = darmor_index_data(ditem_chap);
-            var my_start = _data.start_id;
-            var my_count = _data.count;
+            var _ranges = darmor_index_data(ditem_chap);
             
             if (dhorizontal_page == 0)
             {
-                for (var i = my_start; i < (my_start + my_count); i++)
+                for (var r = 0; r < array_length(_ranges); r++)
                 {
-                    scr_armorinfo(i);
-                    var cleaned_desc = string_replace_all(armordesctemp, ""#"", "" "");
-                    var combined = armornametemp;
-                    
-                    if (string_length(combined) > max_len)
-                        combined = string_copy(combined, 1, max_len - 3) + ""..."";
-                    
-                    array_push(dbutton_options, combined);
-                    array_push(dbutton_indices, i);
+                    var my_start = _ranges[r].start_id;
+                    var my_count = _ranges[r].count;
+                
+                    for (var i = my_start; i < (my_start + my_count); i++)
+                    {
+                        scr_armorinfo(i);
+                        var cleaned_desc = string_replace_all(armordesctemp, ""#"", "" "");
+                        var combined = armornametemp;
+                        
+                        if (string_length(combined) > max_len)
+                            combined = string_copy(combined, 1, max_len - 3) + ""..."";
+                        
+                        array_push(dbutton_options, combined);
+                        array_push(dbutton_indices, i);
+                    }
                 }
             }
             else
@@ -5091,23 +5148,27 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             dbutton_indices = [-1];
             dbutton_options[0] += string(ditem_chap);
             var max_len = 33;
-            var _data = dweapon_index_data(ditem_chap);
-            var my_start = _data.start_id;
-            var my_count = _data.count;
+            var _ranges = dweapon_index_data(ditem_chap);
             
             if (dhorizontal_page == 0)
             {
-                for (var i = my_start; i < (my_start + my_count); i++)
+                for (var r = 0; r < array_length(_ranges); r++)
                 {
-                    scr_weaponinfo(i);
-                    var cleaned_desc = string_replace_all(weapondesctemp, ""#"", "" "");
-                    var combined = weaponnametemp;
-                    
-                    if (string_length(combined) > max_len)
-                        combined = string_copy(combined, 1, max_len - 3) + ""..."";
-                    
-                    array_push(dbutton_options, combined);
-                    array_push(dbutton_indices, i);
+                    var my_start = _ranges[r].start_id;
+                    var my_count = _ranges[r].count;
+
+                    for (var i = my_start; i < (my_start + my_count); i++)
+                    {
+                        scr_weaponinfo(i);
+                        var cleaned_desc = string_replace_all(weapondesctemp, ""#"", "" "");
+                        var combined = weaponnametemp;
+                        
+                        if (string_length(combined) > max_len)
+                            combined = string_copy(combined, 1, max_len - 3) + ""..."";
+                        
+                        array_push(dbutton_options, combined);
+                        array_push(dbutton_indices, i);
+                    }
                 }
             }
             else
@@ -5137,21 +5198,25 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             dbutton_indices = [-1];
             dbutton_options[0] += string(ditem_chap);
             var max_len = 33;
-            var _data = dkeyitem_index_data(ditem_chap);
-            var my_start = _data.start_id;
-            var my_count = _data.count;
+            var _ranges = dkeyitem_index_data(ditem_chap);
             
-            for (var i = my_start; i < (my_start + my_count); i++)
+            for (var r = 0; r < array_length(_ranges); r++)
             {
-                scr_keyiteminfo(i);
-                var cleaned_desc = string_replace_all(tempkeyitemdesc, ""#"", "" "");
-                var combined = tempkeyitemname;
-                
-                if (string_length(combined) > max_len)
-                    combined = string_copy(combined, 1, max_len - 3) + ""..."";
-                
-                array_push(dbutton_options, combined);
-                array_push(dbutton_indices, i);
+                var my_start = _ranges[r].start_id;
+                var my_count = _ranges[r].count;
+            
+                for (var i = my_start; i < (my_start + my_count); i++)
+                {
+                    scr_keyiteminfo(i);
+                    var cleaned_desc = string_replace_all(tempkeyitemdesc, ""#"", "" "");
+                    var combined = tempkeyitemname;
+                    
+                    if (string_length(combined) > max_len)
+                        combined = string_copy(combined, 1, max_len - 3) + ""..."";
+                    
+                    array_push(dbutton_options, combined);
+                    array_push(dbutton_indices, i);
+                }
             }
             
             dmenu_box = 2;
@@ -5587,7 +5652,13 @@ function dmenu_state_interact()
                 
                 if (file_exists(source_file) || ossafe_file_exists(source_file))
                 {
-                    var suggested_name = ""filech"" + string(global.chapter) + ""_0"";
+                    var _route_suffix = """";
+                    if (variable_global_exists(""filechoice_route"")) 
+                    {
+                        _route_suffix = string(global.filechoice_route);
+                    }
+                    
+                    var suggested_name = ""filech"" + string(global.chapter) + ""_0"" + _route_suffix;
                     var export_path = get_save_filename(""Deltarune Save|*"", suggested_name);
                     
                     if (export_path != """")
@@ -5957,7 +6028,7 @@ function dmenu_state_interact()
             
             if (dgiver_menu_state == ""objects"")
             {
-                var real_index = dbutton_indices[dgiver_button_selected - 1];
+                var real_index = dbutton_indices[dgiver_button_selected];
                 
                 for (var i = 0; i < abs(dgiver_amount); i++)
                 {
@@ -5988,7 +6059,7 @@ function dmenu_state_interact()
             {
                 if (dgiver_amount > 0)
                 {
-                    var real_index = dbutton_indices[dgiver_button_selected - 1];
+                    var real_index = dbutton_indices[dgiver_button_selected];
                     
                     for (var i = 0; i < dgiver_amount; i++)
                         scr_armorget(real_index);
@@ -5997,7 +6068,7 @@ function dmenu_state_interact()
                 }
                 else if (dgiver_amount < 0)
                 {
-                    var real_index = dbutton_indices[dgiver_button_selected - 1];
+                    var real_index = dbutton_indices[dgiver_button_selected];
                     
                     for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_armorremove(real_index);
@@ -6010,7 +6081,7 @@ function dmenu_state_interact()
             {
                 if (dgiver_amount > 0)
                 {
-                    var real_index = dbutton_indices[dgiver_button_selected - 1];
+                    var real_index = dbutton_indices[dgiver_button_selected];
                     
                     for (var i = 0; i < dgiver_amount; i++)
                         scr_weaponget(real_index);
@@ -6019,7 +6090,7 @@ function dmenu_state_interact()
                 }
                 else if (dgiver_amount < 0)
                 {
-                    var real_index = dbutton_indices[dgiver_button_selected - 1];
+                    var real_index = dbutton_indices[dgiver_button_selected];
                     
                     for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_weaponremove(real_index);
@@ -6032,7 +6103,7 @@ function dmenu_state_interact()
             {
                 if (dgiver_amount > 0)
                 {
-                    var real_index = dbutton_indices[dgiver_button_selected - 1];
+                    var real_index = dbutton_indices[dgiver_button_selected];
                     
                     for (var i = 0; i < dgiver_amount; i++)
                         scr_keyitemget(real_index);
@@ -6041,7 +6112,7 @@ function dmenu_state_interact()
                 }
                 else if (dgiver_amount < 0)
                 {
-                    var real_index = dbutton_indices[dgiver_button_selected - 1];
+                    var real_index = dbutton_indices[dgiver_button_selected];
                     
                     for (var i = 0; i < abs(dgiver_amount); i++)
                         scr_keyitemremove(real_index);
@@ -6313,7 +6384,7 @@ if (dmenu_active)
         var draw_x = (((xcenter + (menu_width / 2)) - 10) * d) + xx;
         var draw_y = (((ycenter - (menu_length / 2)) + 8) * d) + yy;
         draw_text_transformed(draw_x, draw_y, str_, text_scale, text_scale, 0);
-        var _fnt = (global.darkzone == 1) ? 7 : 8;
+        var _fnt = (global.darkzone == 1) ? fnt_mainbig : fnt_main;
         draw_set_font(_fnt);
         draw_set_halign(fa_left);
     }
@@ -6847,6 +6918,7 @@ importGroup.QueueReplace(obj_time.EventHandlerFor(EventType.Draw, (uint)0, Data)
     draw_set_color(c_green);
     draw_text_transformed((__view_get(0, 0) + __view_get(2, 0)) - (string_width(room_get_name(room)) * text_scale), __view_get(1, 0), room_get_name(room), text_scale, text_scale, 0);
     draw_text_transformed((__view_get(0, 0) + __view_get(2, 0)) - (string_width(""plot "" + string(global.plot)) * text_scale), __view_get(1, 0) + (15 * text_scale), ""plot "" + string(global.plot), text_scale, text_scale, 0);
+    draw_set_color(c_white);
 }");
 
 
@@ -7250,7 +7322,7 @@ importGroup.QueueReplace("gml_GlobalScript_scr_turn_skip",
     if (global.turntimer > 0 && instance_exists(obj_growtangle) && scr_isphase(""bullets""))
     {
         global.turntimer = 0;
-        scr_debug_print(scr_dmode_get_text(""turnskip""));
+        scr_debug_print(dstr(""Enemy's turn skipped"", ""Tour de l'ennemi passé""));
     }
 }");
 

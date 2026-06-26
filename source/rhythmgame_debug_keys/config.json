@@ -1,7 +1,7 @@
 {
     "gml_name": "gml_Object_obj_rhythmgame_Step_0",
     ".rhythmgame_debug_keys": {
-        "chapters": [-1, -2],
+        "chapters": [3, 4],
         "actions": [
             {
                 "find_replace": {
@@ -13,6 +13,33 @@
                 "find_replace": {
                     "find": "debug_print(\"debug mode disabled\");",
                     "replace": "scr_debug_delete_persistent(\"Debug keys\");\ndebug_print(\"debug mode disabled\");"
+                }
+            },
+            {
+                "append": {
+                    "content_file": "debug_keys_append.gml"
+                }
+            }
+        ]
+    },
+    ".rhythmgame_debug": {
+        "chapters": [5],
+        "actions": [
+            {
+                "append": {
+                    "content_file": "rhythmgame_debug.gml"
+                }
+            },
+            {
+                "find_replace": {
+                    "find": "var _truetrackpos = 0;",
+                    "replace_file": "pause_feature.gml"
+                }
+            },
+            {
+                "find_replace": {
+                    "find": "fame = clamp(fame, 0, max_fame);",
+                    "replace_file": "end_feature.gml"
                 }
             },
             {

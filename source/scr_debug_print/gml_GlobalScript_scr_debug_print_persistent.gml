@@ -41,6 +41,10 @@ function scr_debug_print_persistent(arg0, arg1)
     }
 }
 
+function debug_print_bitmask_persistent(arg0, arg1, arg2)
+{
+}
+
 function debug_print_persistent(arg0, arg1)
 {
     scr_debug_print_persistent(arg0, arg1);

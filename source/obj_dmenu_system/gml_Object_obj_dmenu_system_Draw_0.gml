@@ -108,7 +108,7 @@ if (dmenu_active)
         var draw_x = (((xcenter + (menu_width / 2)) - 10) * d) + xx;
         var draw_y = (((ycenter - (menu_length / 2)) + 8) * d) + yy;
         draw_text_transformed(draw_x, draw_y, str_, text_scale, text_scale, 0);
-        var _fnt = (global.darkzone == 1) ? 7 : 8;
+        var _fnt = (global.darkzone == 1) ? fnt_mainbig : fnt_main;
         draw_set_font(_fnt);
         draw_set_halign(fa_left);
     }

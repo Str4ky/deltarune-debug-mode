@@ -271,7 +271,7 @@ def parse_folder(declared_elements=None, current_chapter=0):
     return csx_lines
 
 def compile_utmt_mod(source_folder, template_file):
-    """Main build loop for Chapters 1-4."""
+    """Main build loop"""
     if not os.path.exists(source_folder) or not os.path.exists(template_file):
         print("Error: 'source' folder or 'template.csx' missing.")
         return
@@ -287,7 +287,7 @@ def compile_utmt_mod(source_folder, template_file):
     template_top = template_parts[0].replace("// TOP", "").strip() 
     template_bottom = template_parts[1].strip()
 
-    for i in range(1, 5):
+    for i in range(1, 6):
         element_memory = []
         
         output_file = f"debug_mode_chap{i}.csx"

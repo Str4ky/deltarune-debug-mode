@@ -12,10 +12,10 @@ dscroll_speed = 1;
 dbackspace_timer = 0;
 dmenu_title = dstr("Debug Menu", "Menu Debug");
 dbutton_options_original = [[dstr("Warps", "Sauts"), dstr("Items"), dstr("Recruits", "Recrues"), dstr("Misc", "Divers")], [dstr("Globals"), dstr("Debug save")]];
-dnumber_litems = [0, 11, 14, 14, 18];
+dnumber_litems = [0, 11, 14, 14, 18, 23];
 dlight_weapons = [];
 dlight_armors = [[3, dstr("Bandage", "Pansement")], [14, dstr("Wristwatch", "Montre")]];
-dlight_objects = [[1, dstr("Hot Chocolate", "Chocolat Chaud")], [2, dstr("Pencil", "Crayon")], [3, dstr("Bandage", "Pansement")], [4, dstr("Bouquet")], [5, dstr("Ball of Junk", "Boule de Trucs")], [6, dstr("Halloween Pencil", "Crayon Halloween")], [7, dstr("Lucky Pencil", "Crayon Fétiche")], [8, dstr("Egg", "Œuf")], [9, dstr("Cards", "Cartes")], [10, dstr("Box of Heart Candy", "Boîte de ChocoCœurs")], [11, dstr("Glass", "Verre")], [12, dstr("Eraser", "Gomme")], [13, dstr("Mech. Pencil", "Critérium")], [14, dstr("Wristwatch", "Montre")], [15, dstr("Holiday Pencil", "Crayon de Noël")], [16, dstr("CactusNeedle", "Épine de Cactus")], [17, dstr("BlackShard", "ÉclatNoir")], [18, dstr("QuillPen", "Stylo-Plume")]];
+dlight_objects = [[1, dstr("Hot Chocolate", "Chocolat Chaud")], [2, dstr("Pencil", "Crayon")], [3, dstr("Bandage", "Pansement")], [4, dstr("Bouquet")], [5, dstr("Ball of Junk", "Boule de Trucs")], [6, dstr("Halloween Pencil", "Crayon Halloween")], [7, dstr("Lucky Pencil", "Crayon Fétiche")], [8, dstr("Egg", "Œuf")], [9, dstr("Cards", "Cartes")], [10, dstr("Box of Heart Candy", "Boîte de ChocoCœurs")], [11, dstr("Glass", "Verre")], [12, dstr("Eraser", "Gomme")], [13, dstr("Mech. Pencil", "Critérium")], [14, dstr("Wristwatch", "Montre")], [15, dstr("Holiday Pencil", "Crayon de Noël")], [16, dstr("CactusNeedle", "Épine de Cactus")], [17, dstr("BlackShard", "ÉclatNoir")], [18, dstr("QuillPen", "Stylo-Plume")], [19, dstr("Honey Toast")], [20, dstr("Bread")], [21, dstr("Seeds")], [22, dstr("Pencil2")], [23, dstr("Petal")]];
 dhinter_active = false;
 itemdescb = "";
 armordesctemp = "";
@@ -72,14 +72,42 @@ dgiver_bname = 0;
 dbutton_indices = [];
 ditem_types = ["objects", "armors", "weapons", "keyitems"];
 ditem_chap = 1;
-ditemcount_all = [1, 15, 18, 6, 4];
-ditem_gaps = [0, 0, 0, 20, 0];
-darmorcount_all = [1, 7, 15, 5, 5];
-darmor_gaps = [0, 0, 0, 22, 0];
-dweaponcount_all = [1, 10, 12, 4, 5];
-dweapon_gaps = [0, 0, 0, 23, 0];
-dkeyitemcount_all = [1, 7, 8, 4, 2];
-dkeyitem_gaps = [0, 0, 0, 10, 0];
+
+global.ditem_data = [
+    [],
+    [ { start_id: 1,  count: 15 } ],
+    [ { start_id: 16, count: 18 } ],
+    [ { start_id: 34, count: 6  } ],
+    [ { start_id: 60, count: 4  } ],
+    [ { start_id: 40, count: 4  }, { start_id: 64, count: 7 } ]
+];
+
+global.darmor_data = [
+    [],
+    [ { start_id: 1,  count: 7 } ],
+    [ { start_id: 8, count: 15 } ],
+    [ { start_id: 23, count: 5  } ],
+    [ { start_id: 50, count: 5  } ],
+    [ { start_id: 30, count: 9  }]
+];
+
+global.dweapon_data = [
+    [],
+    [ { start_id: 1,  count: 10 } ],
+    [ { start_id: 11, count: 12 } ],
+    [ { start_id: 23, count: 4  } ],
+    [ { start_id: 50, count: 5  } ],
+    [ { start_id: 30, count: 8  }]
+];
+
+global.dkeyitem_data = [
+    [],
+    [ { start_id: 1,  count: 7 } ],
+    [ { start_id: 8, count: 8 } ],
+    [ { start_id: 16, count: 4  } ],
+    [ { start_id: 30, count: 2  } ],
+    [ { start_id: 20, count: 10  }, { start_id: 32, count: 2} ]
+];
 
 dpop_history = function()
 {
@@ -138,61 +166,45 @@ dremove_false_history = function()
 ditem_index_data = function(arg0)
 {
     var _chap = arg0;
-    var _start_at = 0;
     
-    for (var i = 0; i < _chap; i++)
-        _start_at += (ditemcount_all[i] + ditem_gaps[i]);
+    if (_chap < 0 || _chap >= array_length(global.ditem_data)) {
+        return []; 
+    }
     
-    return 
-    {
-        start_id: _start_at,
-        count: ditemcount_all[_chap]
-    };
+    return global.ditem_data[_chap];
 };
 
 darmor_index_data = function(arg0)
 {
     var _chap = arg0;
-    var _start_at = 0;
     
-    for (var i = 0; i < _chap; i++)
-        _start_at += (darmorcount_all[i] + darmor_gaps[i]);
+    if (_chap < 0 || _chap >= array_length(global.darmor_data)) {
+        return []; 
+    }
     
-    return 
-    {
-        start_id: _start_at,
-        count: darmorcount_all[_chap]
-    };
+    return global.darmor_data[_chap];
 };
 
 dweapon_index_data = function(arg0)
 {
     var _chap = arg0;
-    var _start_at = 0;
     
-    for (var i = 0; i < _chap; i++)
-        _start_at += (dweaponcount_all[i] + dweapon_gaps[i]);
+    if (_chap < 0 || _chap >= array_length(global.dweapon_data)) {
+        return []; 
+    }
     
-    return 
-    {
-        start_id: _start_at,
-        count: dweaponcount_all[_chap]
-    };
+    return global.dweapon_data[_chap];
 };
 
 dkeyitem_index_data = function(arg0)
 {
     var _chap = arg0;
-    var _start_at = 0;
     
-    for (var i = 0; i < _chap; i++)
-        _start_at += (dkeyitemcount_all[i] + dkeyitem_gaps[i]);
+    if (_chap < 0 || _chap >= array_length(global.dkeyitem_data)) {
+        return []; 
+    }
     
-    return 
-    {
-        start_id: _start_at,
-        count: dkeyitemcount_all[_chap]
-    };
+    return global.dkeyitem_data[_chap];
 };
 
 extract_global_infos = function(arg0)

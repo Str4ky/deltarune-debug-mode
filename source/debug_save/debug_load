@@ -77,7 +77,13 @@ function scr_debug_load(arg0)
     var file = string(arg0);
     
     if (file == "" || string_length(file) < 3)
-        file = "debug_save/filech" + string(global.chapter) + "_" + string(arg0);
+    {
+        var _route_suffix = "";
+        if (variable_global_exists("filechoice_route"))
+            _route_suffix = string(global.filechoice_route);
+        
+        file = "debug_save/filech" + string(global.chapter) + "_" + string(arg0) + _route_suffix;
+    }
     
     var raw_file_to_read = file;
     var target_chapter = global.chapter;
@@ -114,10 +120,25 @@ function scr_debug_load(arg0)
                 if (variable_struct_exists(parsed_data, "metadata") && variable_struct_exists(parsed_data.metadata, "Chapter"))
                     target_chapter = parsed_data.metadata.Chapter;
                 
+                if (variable_struct_exists(parsed_data, "metadata") && variable_struct_exists(parsed_data.metadata, "FilechoiceRoute"))
+                {
+                    if (variable_global_exists("filechoice_route"))
+                        global.filechoice_route = parsed_data.metadata.FilechoiceRoute;
+                }
+                else
+                {
+                    if (variable_global_exists("filechoice_route"))
+                        global.filechoice_route = "";
+                }
+                
                 if (variable_struct_exists(parsed_data, "save_file"))
                 {
                     var raw_content = parsed_data.save_file;
-                    var temp_raw_path = "filech" + string(target_chapter) + "_999";
+                    
+                    var _route_suffix = "";
+                    if (variable_global_exists("filechoice_route")) _route_suffix = string(global.filechoice_route);
+                    
+                    var temp_raw_path = "filech" + string(target_chapter) + "_999" + _route_suffix;
                     var out_file = ossafe_file_text_open_write(temp_raw_path);
                     ossafe_file_text_write_string(out_file, raw_content);
                     ossafe_file_text_close(out_file);
@@ -138,6 +159,8 @@ function scr_debug_load(arg0)
             target_chapter = 3;
         else if (string_pos("ch4", fn) > 0)
             target_chapter = 4;
+        else if (string_pos("ch5", fn) > 0)
+            target_chapter = 5;
     }
     
     global.chapter = target_chapter;
@@ -655,7 +678,7 @@ function scr_debug_load(arg0)
             
             break;
         
-        case 4:
+        default:
             var room_id = global.currentroom;
             
             if (room_id < 10000)
@@ -681,8 +704,10 @@ function scr_debug_load(arg0)
             __loadedroom = choose(226, 271);
         else if (global.chapter == 3)
             __loadedroom = 83;
-        else
+        else if (global.chapter == 4)
             __loadedroom = 92;
+        else if (global.chapter == 5)
+            __loadedroom = 98;
     }
     
     scr_tempsave();

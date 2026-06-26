@@ -1,7 +1,6 @@
 {
 	"gml_Object_obj_spritecomparer_Draw_0.gml": {
-		"chapters": [-1, -2],
-		"mode": "append",
+		"chapters": [-1, -2, -5],
 		"actions": [
 			{
 				"find_replace": {

@@ -28,14 +28,26 @@
       }
     ]
   },
-  ".saveprocess": {
-    "chapters": [-1],
+  ".saveprocess_ch5+": {
+    "chapters": [5],
     "gml_name": "gml_GlobalScript_scr_saveprocess",
     "actions": [
       {
         "find_replace": {
-          "find_file": "saveprocess_find",
-          "replace_file": "saveprocess_replace"
+          "find": "file = \"filech\" + string(global.chapter) + \"_\" + string(arg0) + global.filechoice_route;",
+          "replace_file": "saveprocess_replace_ch5+"
+        }
+      }
+    ]
+  },
+  ".saveprocess_ch2-4": {
+    "chapters": [2, 3, 4],
+    "gml_name": "gml_GlobalScript_scr_saveprocess",
+    "actions": [
+      {
+        "find_replace": {
+          "find": "file = \"filech\" + string(global.chapter) + \"_\" + string(arg0);",
+          "replace_file": "saveprocess_replace_ch2-4"
         }
       }
     ]

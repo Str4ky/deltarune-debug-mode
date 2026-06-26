@@ -18,8 +18,8 @@
         ]
     },
     
-    ".chap3-4": {
-        "chapters": [3, 4],
+    ".chap3+": {
+        "chapters": [-1, -2],
         "actions": [
             {
                 "find_replace": {
@@ -29,7 +29,7 @@
             },
             {
                 "append": {
-                    "content_file": "chap3-4_debug_load"
+                    "content_file": "chap3+_debug_load"
                 }
             },
             {

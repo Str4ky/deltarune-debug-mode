@@ -34,10 +34,16 @@ function scr_debug_save()
     scr_saveprocess(temp_id);
     var raw_file_path = "";
     
+    var _route_suffix = "";
+    if (variable_global_exists("filechoice_route")) 
+    {
+        _route_suffix = string(global.filechoice_route);
+    }
+
     if (global.debug_saving == 1)
-        raw_file_path = "debug_save/filech" + string(global.chapter) + "_" + string(temp_id);
+        raw_file_path = "debug_save/filech" + string(global.chapter) + "_" + string(temp_id) + _route_suffix;
     else
-        raw_file_path = "filech" + string(global.chapter) + "_" + string(temp_id);
+        raw_file_path = "filech" + string(global.chapter) + "_" + string(temp_id) + _route_suffix;
     
     var safe_name = scr_debug_sanitize_filename(global.debug_save_name);
     var safe_cat = scr_debug_sanitize_filename(global.debug_save_category, true);
@@ -116,7 +122,8 @@ function scr_debug_save()
             UraBoss: uraboss,
             Date: date_current_datetime(),
             InitLang: global.flag[912],
-            Version: current_version
+            Version: current_version,
+            FilechoiceRoute: variable_global_exists("filechoice_route") ? string(global.filechoice_route) : ""
         },
         save_file: save_content
     };

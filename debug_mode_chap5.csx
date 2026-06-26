@@ -6,10 +6,10 @@ if (!Data.IsVersionAtLeast(2023, 6))
     return;
 }
 
-if (Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapter 2" &&
-    Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapitre 2")
+if (Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapter 5" &&
+    Data?.GeneralInfo?.DisplayName?.Content.ToLower() != "deltarune chapitre 5")
 {
-    ScriptError("Erreur 1 : Ce script s'applique seulement au Chapitre 2.");
+    ScriptError("Erreur 1 : Ce script s'applique seulement au Chapitre 5.");
     return;
 }
 
@@ -1506,11 +1506,11 @@ importGroup.QueueFindReplace("gml_Object_obj_savemenu_Draw_0",
 
 UndertaleScript scr_saveprocess = Data.Scripts.ByName("scr_saveprocess");
 importGroup.QueueFindReplace("gml_GlobalScript_scr_saveprocess",
-@"file = ""filech"" + string(global.chapter) + ""_"" + string(arg0);",
+@"file = ""filech"" + string(global.chapter) + ""_"" + string(arg0) + global.filechoice_route;",
 @"if (global.debug_saving == 1)
-        file = ""debug_save/filech"" + string(global.chapter) + ""_"" + string(arg0);
+        file = ""debug_save/filech"" + string(global.chapter) + ""_"" + string(arg0) + global.filechoice_route;
     else
-        file = ""filech"" + string(global.chapter) + ""_"" + string(arg0);");
+        file = ""filech"" + string(global.chapter) + ""_"" + string(arg0) + global.filechoice_route;");
 
 
 UndertaleScript scr_get_debug_save_list = Data.Scripts.ByName("scr_get_debug_save_list");
@@ -6991,15 +6991,8 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
 }");
 
 
-importGroup.QueueAppend(obj_time.EventHandlerFor(EventType.Step, (uint)1, Data),
-@"if (scr_debug())
-{
-    if (mouse_check_button_pressed(mb_middle))
-        instance_create(0, 0, obj_debug_xy);
-}");
-importGroup.QueueFindReplace("gml_Object_obj_time_Step_1",
-@"if (scr_debug())",
-@"if (0)");
+importGroup.QueueReplace("gml_Object_obj_time_Draw_64",
+@"");
 
 
 UndertaleGameObject obj_darkcontroller = Data.GameObjects.ByName("obj_darkcontroller");
@@ -7019,15 +7012,16 @@ importGroup.QueueAppend(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint
             global.gold = 0;
         }
     }
+    
     if (keyboard_check_pressed(ord(""1"")) && keyboard_check(ord(""M"")))
     {
         global.gold += 100;
         scr_debug_print(""+ 100 D$"");
     }
-
-    if (keyboard_check_pressed(ord(""S"")))
+    
+    if (sunkus_kb_check_pressed(ord(""S"")))
         instance_create(0, 0, obj_savemenu);
-
+    
     if (keyboard_check_pressed(ord(""L"")) && keyboard_check(vk_alt))
     {
         with (obj_dmenu_system)
@@ -7045,23 +7039,23 @@ importGroup.QueueAppend(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint
         obj_dmenu_system.dmenu_active = true;
         snd_play(snd_egg);
     }
-
-    if (keyboard_check_pressed(ord(""L"")) && !keyboard_check(vk_alt))
+    
+    if (sunkus_kb_check_pressed(ord(""L"")) && !keyboard_check(vk_alt))
         scr_load();
-
-    if (keyboard_check_pressed(ord(""R"")) && keyboard_check(vk_backspace))
+    
+    if (sunkus_kb_check_pressed(ord(""R"")) && sunkus_kb_check(vk_backspace))
         game_restart_true();
-
-    if (keyboard_check_pressed(ord(""R"")) && !keyboard_check(vk_backspace))
+    
+    if (sunkus_kb_check_pressed(ord(""R"")) && !sunkus_kb_check(vk_backspace))
     {
         snd_free_all();
         room_restart();
         global.interact = 0;
     }
 }
+
 if (!instance_exists(obj_dmenu_system))
-    instance_create(0, 0, obj_dmenu_system);
-");
+    instance_create(0, 0, obj_dmenu_system);");
 
 
 importGroup.QueueFindReplace("gml_Object_obj_darkcontroller_Step_0",
@@ -7070,47 +7064,13 @@ importGroup.QueueFindReplace("gml_Object_obj_darkcontroller_Step_0",
 
 
 UndertaleGameObject obj_overworldc = Data.GameObjects.ByName("obj_overworldc");
-importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, Data),
-@"if (scr_debug())
-{
-    if (keyboard_check_pressed(ord(""S"")))
-        instance_create(0, 0, obj_savemenu);
-    if (keyboard_check_pressed(ord(""L"")) && keyboard_check(vk_alt))
-    {
-        with (obj_dmenu_system)
-            script_execute(scr_get_debug_save_list);
-
-        obj_dmenu_system.dmenu_popup_launch = 1;
-        obj_dmenu_system.dmenu_state = ""debug_save"";
-        obj_dmenu_system.dmenu_start_index = 0;
-        obj_dmenu_system.dmenu_vertical_index = 0;
-        obj_dmenu_system.dmenu_horizontal_index = 0;
-        obj_dmenu_system.dmenu_state_history = [];
-        obj_dmenu_system.dmenu_horizontal_index_history = [];
-        obj_dmenu_system.dmenu_vertical_index_history = [];
-        obj_dmenu_system.dmenu_page_index_history = [];
-        obj_dmenu_system.dmenu_active = true;
-        snd_play(snd_egg);
-    }
-    if (keyboard_check_pressed(ord(""L"")) && !keyboard_check(vk_alt))
-        scr_load();
-    if (keyboard_check_pressed(ord(""R"")) && keyboard_check(vk_backspace))
-        game_restart_true();
-
-    if (keyboard_check_pressed(ord(""R"")) && !keyboard_check(vk_backspace))
-    {
-        snd_free_all();
-        room_restart();
-        global.interact = 0;
-    }
-}
-");
+importGroup.QueueFindReplace("gml_Object_obj_overworldc_Step_0",
+@"if (sunkus_kb_check_pressed(ord(""L"")))",
+@"if (0)");
 importGroup.QueueAppend("gml_Object_obj_overworldc_Step_0",
 @"if (scr_debug())
 {
-    if (keyboard_check_pressed(ord(""S"")))
-        instance_create(0, 0, obj_savemenu);
-    if (keyboard_check_pressed(ord(""L"")) && keyboard_check(vk_alt))
+    if (sunkus_kb_check_pressed(ord(""L"")) && keyboard_check(vk_alt))
     {
         with (obj_dmenu_system)
             script_execute(scr_get_debug_save_list);
@@ -7127,22 +7087,16 @@ importGroup.QueueAppend("gml_Object_obj_overworldc_Step_0",
         obj_dmenu_system.dmenu_active = true;
         snd_play(snd_egg);
     }
-    if (keyboard_check_pressed(ord(""L"")) && !keyboard_check(vk_alt))
+    
+    if (sunkus_kb_check_pressed(ord(""L"")) && !keyboard_check(vk_alt))
         scr_load();
-    if (keyboard_check_pressed(ord(""R"")) && keyboard_check(vk_backspace))
-        game_restart_true();
-
-    if (keyboard_check_pressed(ord(""R"")) && !keyboard_check(vk_backspace))
-    {
-        snd_free_all();
-        room_restart();
-        global.interact = 0;
-    }
-}
-");
+}");
 importGroup.QueueFindReplace("gml_Object_obj_overworldc_Step_0",
 @"if (scr_debug())",
 @"if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))");
+importGroup.QueueFindReplace("gml_Object_obj_overworldc_Step_0",
+@"if (sunkus_kb_check_pressed(ord(""R"")))",
+@"if (sunkus_kb_check_pressed(ord(""R"")) && !sunkus_kb_check(vk_backspace))");
 
 
 importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, Data),
@@ -7249,6 +7203,198 @@ importGroup.QueueReplace("gml_GlobalScript_scr_turn_skip",
     }
 }");
 
+
+UndertaleGameObject obj_rhythmgame = Data.GameObjects.ByName("obj_rhythmgame");
+importGroup.QueueAppend("gml_Object_obj_rhythmgame_Step_0",
+@"if (scr_debug())
+{
+    if (keyboard_check_pressed(ord(""U"")))
+        event_user(4);
+    
+    if (keyboard_check_pressed(ord(""I"")) || (show_debug && (gamepad_button_check_pressed(0, gp_face3) || gamepad_button_check_pressed(1, gp_face3))))
+    {
+        if (tutorial > 0)
+        {
+            debug_print(""Can not alter autoplay during tutorial"");
+        }
+        else if (auto_play == 0)
+        {
+            auto_play = 1;
+            debug_print(""Autoplay enabled."");
+        }
+        else if (auto_play == 1)
+        {
+            auto_play = 0;
+            debug_print(""Autoplay disabled."");
+        }
+    }
+    
+    if (keyboard_check_pressed(ord(""N"")) || (show_debug && (gamepad_button_check_pressed(0, gp_select) || gamepad_button_check_pressed(1, gp_select))))
+    {
+        show_debug = !show_debug;
+        
+        if (show_debug)
+        {
+            debug_print(""debug mode enabled"");
+        }
+        else
+        {
+            scr_debug_delete_persistent(""Debug keys"");
+            debug_print(""debug mode disabled"");
+        }
+    }
+    
+    if (song_id == 0 && solo_con == 0)
+    {
+        if (keyboard_check_pressed(ord(""1"")))
+        {
+            solo_difficulty = 0;
+            scr_debug_print(""Solo difficulty set to easy."");
+        }
+        else if (keyboard_check_pressed(ord(""2"")))
+        {
+            solo_difficulty = 1;
+            scr_debug_print(""Solo difficulty set to medium."");
+        }
+        else if (keyboard_check_pressed(ord(""3"")))
+        {
+            solo_difficulty = 2;
+            scr_debug_print(""Solo difficulty set to hard."");
+        }
+        else if (keyboard_check_pressed(ord(""4"")))
+        {
+            solo_difficulty = -1;
+            scr_debug_print(""Solo difficulty set to auto."");
+        }
+    }
+    
+    var _vol = main_vol;
+    
+    if (sunkus_kb_check_pressed_with_repeat(189))
+        _vol -= (keyboard_check(vk_lshift) ? 0.5 : 0.1);
+    
+    if (sunkus_kb_check_pressed_with_repeat(187))
+        _vol += (keyboard_check(vk_lshift) ? 0.5 : 0.1);
+    
+    if (_vol != main_vol)
+    {
+        main_vol = clamp01(_vol);
+        mus_volume(track1_instance, main_vol, 0);
+        
+        if (oneAtATime)
+            mus_volume(track2_instance, 0, 0);
+        else
+            mus_volume(track2_instance, main_vol, 0);
+        
+        debug_print(""Song volume set to "" + string(main_vol * 100) + ""%"");
+    }
+}
+
+if (song_id == 4)
+{
+    if (scr_debug() && intro_con == 1 && keyboard_check_pressed(ord(""4"")))
+        intro_con = 2;
+}");
+importGroup.QueueFindReplace("gml_Object_obj_rhythmgame_Step_0",
+@"var _truetrackpos = 0;",
+@"if (scr_debug() && song_initialized == 1)
+{
+    if (keyboard_check_pressed(ord(""P"")) || (show_debug && (gamepad_button_check_pressed(0, gp_start) || gamepad_button_check_pressed(1, gp_start))))
+    {
+        paused = !paused;
+        
+        if (paused)
+        {
+            audio_pause_sound(track1_main);
+            audio_pause_sound(track2_main);
+            
+            if (song_id == 0)
+            {
+                audio_pause_sound(track1_solo);
+                audio_pause_sound(track2_solo);
+            }
+        }
+        else
+        {
+            audio_resume_sound(track1_main);
+            audio_resume_sound(track2_main);
+            
+            if (song_id == 0)
+            {
+                audio_resume_sound(track1_solo);
+                audio_resume_sound(track2_solo);
+            }
+        }
+    }
+}
+
+var _truetrackpos = 0;");
+importGroup.QueueFindReplace("gml_Object_obj_rhythmgame_Step_0",
+@"fame = clamp(fame, 0, max_fame);",
+@"fame = clamp(fame, 0, max_fame);
+    
+if (scr_debug())
+{
+    if (song_initialized && !song_done && loadsong == 3)
+    {
+        var _skip = false;
+        
+        if (keyboard_check_pressed(vk_f5))
+        {
+            _skip = true;
+            fame = 999999;
+        }
+        
+        if (keyboard_check_pressed(vk_f6))
+        {
+            fame = 0;
+            
+            if (lose_con == 0)
+                lose_con = 1;
+        }
+        
+        if (_skip)
+        {
+            total_fame = fame;
+            trackpos = track_length;
+            audio_stop_all();
+            scr_rhythmgame_notechart_clear();
+            performer.sprite_index = spr_kris_rock_2;
+            
+            with (drums)
+            {
+                performer.sprite_index = spr_susie_drum;
+                scr_rhythmgame_notechart_clear();
+                con = -1;
+                fade = 1;
+            }
+            
+            with (vocals)
+            {
+                performer.sprite_index = spr_ralsei_rock_1;
+                scr_rhythmgame_notechart_clear();
+                scr_rhythmgame_clear_all_lyrics();
+            }
+        }
+    }
+}");
+importGroup.QueueAppend("gml_Object_obj_rhythmgame_Step_0",
+@"if (scr_debug())
+{
+    if (show_debug)
+    {
+        var _key_data = ""[Shift + -/+] Change volume: "" + string(main_vol * 100) + ""%"";
+        _key_data += ""#[P] Pause song"";
+        _key_data += ""#[R] Restart song"";
+        _key_data += ""#[F5] End song"";
+        _key_data += ""#[F6] Go to end screen"";
+        _key_data += (""#[I] Autoplay: "" + (auto_play ? ""on"" : ""off""));
+        _key_data += (""#[U] Swap modes: "" + string(tutorial));
+        _key_data += ""#[N] Toggle rhythm game debug"";
+        scr_debug_print_persistent(""Debug keys"", _key_data);
+    }
+}");
+
 importGroup.Import();
 
-ScriptMessage("Mode Debug du Chapitre 2 ajouté.\r\n" + "Pour activer le Mode Debug en jeu, appuyer sur F10.");
+ScriptMessage("Mode Debug du Chapitre 5 ajouté.\r\n" + "Pour activer le Mode Debug en jeu, appuyer sur F10.");
