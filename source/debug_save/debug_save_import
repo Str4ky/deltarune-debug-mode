@@ -76,6 +76,7 @@ function scr_debug_save_import()
         meta.SaveName = file_only_name;
         meta.Category = "Imported";
         meta.Chapter = chapter_num;
+        meta.Plot = 0;
         meta.Description = "Raw save file imported directly.";
         meta.Name = "Unknown";
         meta.Level = 1;

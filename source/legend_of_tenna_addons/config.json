@@ -1,0 +1,21 @@
+{
+	"chapters": [3],
+	"lot_tp.gml": {
+		"mode": "append",
+		"gml_name": "gml_Object_obj_time_Step_0.gml"
+	},
+	"lot_key_helper.gml": {
+		"mode": "append",
+		"gml_name": "gml_Object_obj_ch3_gameshow_Step_0"
+	},
+	".set_variable": {
+		"gml_name": "gml_Object_obj_ch3_gameshow_Create_0",
+		"actions": [
+			{
+				"append": {
+					"content": "show_debug = 0;"
+				}
+			}
+		]
+	}
+}

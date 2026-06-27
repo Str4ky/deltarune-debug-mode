@@ -521,7 +521,7 @@ function dmenu_state_update()
             break;
         
         case "flag_categories":
-            dmenu_title = dstr("Misc", "Divers");
+            dmenu_title = dstr("Flags");
             dbutton_options = [];
             dbutton_indices = [-1];
             categories_len = array_length(dother_categories);
@@ -546,7 +546,7 @@ function dmenu_state_update()
             break;
         
         case "flag_misc":
-            dmenu_title = dstr("Misc", "Divers");
+            dmenu_title = dstr("Flags");
             dbutton_options = [];
             dbutton_indices = [];
             other_len = array_length(dother_options);
@@ -673,6 +673,12 @@ function dmenu_state_interact()
             
             if (selected_name == dstr("Warps", "Sauts"))
             {
+                drooms_id = scr_get_room_list();
+                drooms = [];
+                
+                for (var i = 0; i < array_length(drooms_id); i++)
+                    array_push(drooms, room_get_name(drooms_id[i].room_index));
+                    
                 dmenu_state = "warp";
                 dhorizontal_index = 0;
                 dkeyboard_input = "";
@@ -688,7 +694,7 @@ function dmenu_state_interact()
                 dmenu_state = "recruits";
                 dhorizontal_page = 0;
             }
-            else if (selected_name == dstr("Misc", "Divers"))
+            else if (selected_name == dstr("Flags"))
             {
                 dmenu_state = "flag_categories";
             }

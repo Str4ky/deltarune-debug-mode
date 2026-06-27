@@ -11,7 +11,7 @@ dscroll_delay = 15;
 dscroll_speed = 1;
 dbackspace_timer = 0;
 dmenu_title = dstr("Debug Menu", "Menu Debug");
-dbutton_options_original = [[dstr("Warps", "Sauts"), dstr("Items"), dstr("Recruits", "Recrues"), dstr("Misc", "Divers")], [dstr("Globals"), dstr("Debug save")]];
+dbutton_options_original = [[dstr("Warps", "Sauts"), dstr("Items"), dstr("Recruits", "Recrues"), dstr("Flags")], [dstr("Globals"), dstr("Debug save")]];
 dnumber_litems = [0, 11, 14, 14, 18, 23];
 dlight_weapons = [];
 dlight_armors = [[3, dstr("Bandage", "Pansement")], [14, dstr("Wristwatch", "Montre")]];
@@ -71,7 +71,7 @@ dgiver_amount = 1;
 dgiver_bname = 0;
 dbutton_indices = [];
 ditem_types = ["objects", "armors", "weapons", "keyitems"];
-ditem_chap = 1;
+ditem_chap = global.chapter;
 
 global.ditem_data = [
     [],

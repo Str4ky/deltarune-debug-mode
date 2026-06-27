@@ -1,5 +1,15 @@
 if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
 {
+    if (keyboard_check_pressed(ord("P")))
+    {
+        global.dpause_dialog = !global.dpause_dialog;
+
+        if (global.dpause_dialog)
+            scr_debug_print(dstr("Dialog autoskip disabled", "Autoskip des dialogues désactivé"));
+        else
+            scr_debug_print(dstr("Dialog autoskip enabled (default)", "Autoskip des dialogues activé (par défault)"));
+    }
+    
     if (keyboard_check_pressed(ord("T")))
     {
         if (global.tension < 250)

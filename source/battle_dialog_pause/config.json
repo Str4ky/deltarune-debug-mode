@@ -1,0 +1,47 @@
+{
+    "gml_name": "gml_GlobalScript_scr_blconskip",
+    ".chap4+": {
+        "chapters": [-1, -2, -3],
+        "actions": [
+            {
+                "find_replace": {
+                    "find": "if (arg0 >= 0)",
+                    "replace_file": "chap4+.gml"
+                }
+            }
+        ]
+    },
+    ".chap1": {
+        "chapters": [1],
+        "actions": [
+            {
+                "find_replace": {
+                    "find": "if (arg0 != -1)",
+                    "replace_file": "chap1.gml"
+                }
+            }
+        ]
+    },
+    ".chap2": {
+        "chapters": [2],
+        "actions": [
+            {
+                "find_replace": {
+                    "find": "if (arg0 >= 0)",
+                    "replace_file": "chap2.gml"
+                }
+            }
+        ]
+    },
+    ".chap3": {
+        "chapters": [3],
+        "actions": [
+            {
+                "find_replace": {
+                    "find": "if (arg0 >= 0)",
+                    "replace_file": "chap3.gml"
+                }
+            }
+        ]
+    }
+}

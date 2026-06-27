@@ -16,13 +16,15 @@
         "obj_overworldc",
         "obj_battlecontroller",
 		"godmode",
-		"legend_of_tenna_tp",
+		"legend_of_tenna_addons",
 		"chap1_room_changer",
 		"DEVICE_CONTACT",
 		"scr_flag_set_ch4_fix",
         "scr_debug_fullheal",
         "scr_turn_skip",
         "obj_spritecomparer",
-        "rhythmgame_debug_keys"
+        "rhythmgame_debug_keys",
+        "battle_dialog_pause",
+        "chap5_fix"
     ]
 }

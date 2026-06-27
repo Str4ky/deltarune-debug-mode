@@ -42,6 +42,7 @@ global.debug_save_name = -1;
 global.debug_saving = 0;
 global.dkeyboard_text = """";
 global.dlang = ""en"";
+global.dpause_dialog = 0;
 ");
 
 
@@ -1756,6 +1757,7 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_save_import",
         meta.SaveName = file_only_name;
         meta.Category = ""Imported"";
         meta.Chapter = chapter_num;
+        meta.Plot = 0;
         meta.Description = ""Raw save file imported directly."";
         meta.Name = ""Unknown"";
         meta.Level = 1;
@@ -1957,6 +1959,7 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_save_scan_imports",
             meta.SaveName = ext_name;
             meta.Category = ext_cat;
             meta.Chapter = chapter_num;
+            meta.Plot = 0;
             meta.Description = ""Raw save imported from folder structure."";
             meta.Name = ""Unknown"";
             meta.Level = 1;
@@ -2201,6 +2204,7 @@ function scr_debug_save()
             SaveName: global.debug_save_name,
             Category: global.debug_save_category,
             Chapter: global.chapter,
+            Plot: global.plot,
             Description: global.debug_save_description,
             Name: global.truename,
             Level: global.lv,
@@ -3172,7 +3176,7 @@ dscroll_delay = 15;
 dscroll_speed = 1;
 dbackspace_timer = 0;
 dmenu_title = dstr(""Debug Menu"", ""Menu Debug"");
-dbutton_options_original = [[dstr(""Warps"", ""Sauts""), dstr(""Items""), dstr(""Recruits"", ""Recrues""), dstr(""Misc"", ""Divers"")], [dstr(""Globals""), dstr(""Debug save"")]];
+dbutton_options_original = [[dstr(""Warps"", ""Sauts""), dstr(""Items""), dstr(""Recruits"", ""Recrues""), dstr(""Flags"")], [dstr(""Globals""), dstr(""Debug save"")]];
 dnumber_litems = [0, 11, 14, 14, 18, 23];
 dlight_weapons = [];
 dlight_armors = [[3, dstr(""Bandage"", ""Pansement"")], [14, dstr(""Wristwatch"", ""Montre"")]];
@@ -3232,7 +3236,7 @@ dgiver_amount = 1;
 dgiver_bname = 0;
 dbutton_indices = [];
 ditem_types = [""objects"", ""armors"", ""weapons"", ""keyitems""];
-ditem_chap = 1;
+ditem_chap = global.chapter;
 
 global.ditem_data = [
     [],
@@ -5284,7 +5288,7 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             break;
         
         case ""flag_categories"":
-            dmenu_title = dstr(""Misc"", ""Divers"");
+            dmenu_title = dstr(""Flags"");
             dbutton_options = [];
             dbutton_indices = [-1];
             categories_len = array_length(dother_categories);
@@ -5309,7 +5313,7 @@ importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)
             break;
         
         case ""flag_misc"":
-            dmenu_title = dstr(""Misc"", ""Divers"");
+            dmenu_title = dstr(""Flags"");
             dbutton_options = [];
             dbutton_indices = [];
             other_len = array_length(dother_options);
@@ -5436,6 +5440,12 @@ function dmenu_state_interact()
             
             if (selected_name == dstr(""Warps"", ""Sauts""))
             {
+                drooms_id = scr_get_room_list();
+                drooms = [];
+                
+                for (var i = 0; i < array_length(drooms_id); i++)
+                    array_push(drooms, room_get_name(drooms_id[i].room_index));
+                    
                 dmenu_state = ""warp"";
                 dhorizontal_index = 0;
                 dkeyboard_input = """";
@@ -5451,7 +5461,7 @@ function dmenu_state_interact()
                 dmenu_state = ""recruits"";
                 dhorizontal_page = 0;
             }
-            else if (selected_name == dstr(""Misc"", ""Divers""))
+            else if (selected_name == dstr(""Flags""))
             {
                 dmenu_state = ""flag_categories"";
             }
@@ -6935,24 +6945,6 @@ importGroup.QueueAppend(obj_time.EventHandlerFor(EventType.Step, (uint)0, Data),
 
 if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
 {
-    if (keyboard_check_pressed(ord(""P"")))
-    {
-        if (!variable_global_exists(""speed_fps""))
-            global.speed_fps = 30;
-        
-        if (global.speed_fps == 30)
-        {
-            global.speed_fps = 1;
-            game_set_speed(1, gamespeed_fps);
-            scr_debug_print(dstr(""FPS to 1"", ""FPS à 1""));
-        }
-        else
-        {
-            global.speed_fps = 30;
-            game_set_speed(30, gamespeed_fps);
-            scr_debug_print(dstr(""FPS to 30"", ""FPS à 30""));
-        }
-    }
     if (keyboard_check_pressed(ord(""G"")))
     {
 		global.dgodmode = !global.dgodmode;
@@ -7107,6 +7099,16 @@ UndertaleGameObject obj_battlecontroller = Data.GameObjects.ByName("obj_battleco
 importGroup.QueueAppend(obj_battlecontroller.EventHandlerFor(EventType.Step, (uint)0, Data),
 @"if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
 {
+    if (keyboard_check_pressed(ord(""P"")))
+    {
+        global.dpause_dialog = !global.dpause_dialog;
+
+        if (global.dpause_dialog)
+            scr_debug_print(dstr(""Dialog autoskip disabled"", ""Autoskip des dialogues désactivé""));
+        else
+            scr_debug_print(dstr(""Dialog autoskip enabled (default)"", ""Autoskip des dialogues activé (par défault)""));
+    }
+    
     if (keyboard_check_pressed(ord(""T"")))
     {
         if (global.tension < 250)
@@ -7295,6 +7297,77 @@ if (scr_debug() && i_ex(obj_board_solid))
 ");
 
 
+UndertaleGameObject obj_ch3_gameshow = Data.GameObjects.ByName("obj_ch3_gameshow");
+importGroup.QueueAppend(obj_ch3_gameshow.EventHandlerFor(EventType.Step, (uint)0, Data),
+@"if (scr_debug())
+{
+    scr_debug_print_persistent(""Debug keys"", ""#[U] Toggle LOT debug helper: "" + (show_debug ? ""on"" : ""off""));
+
+    if (keyboard_check_pressed(ord(""U"")))
+    {
+        show_debug = !show_debug;
+
+        if (show_debug)
+        {
+            debug_print(""Debug helper visible"");
+        }
+        else
+        {
+            debug_print(""Debug helper hidden"");
+        }
+    }
+
+    if (show_debug)
+    {
+        var _key_data = ""#[U] Toggle LOT debug helper: "" + (show_debug ? ""on"" : ""off"");
+        _key_data += ""#[1/2/3] Play as Kris/Susie/Ralsei"";
+        _key_data += ""#[Shift + <arrow>] Move room"";
+        _key_data += ""#[Ctrl + <arrow>] Move 1 tile"";
+        _key_data += ""#[I] Make invulnerable: "" + (invulnerable ? ""on"" : ""off"");
+        _key_data += ""#[Num +] Add 100 pts"";
+        _key_data += ""#[Num -] Remove 100 pts"";
+        _key_data += ""#[H] Drop everyone's PV to 1"";
+        _key_data += ""#[F5] Remove chasing enemies"";
+        _key_data += ""#[M] Stop every current sound"";
+        _key_data += ""#[Backspace] Remove TV filter"";
+        _key_data += ""#[Q] Add 1 Q to inventory (max 2)"";
+        _key_data += ""#[K] Add 1 key to inventory (max 4)"";
+        _key_data += ""#[W + K] Add 4 keys, stone and Lancer to inventory"";
+
+        if (room == room_board_1)
+        {
+            _key_data += ""#[Shift + W] Dry desert"";
+            _key_data += ""#[Shift + up] Allow Susie to grab"";
+            _key_data += ""#[W + V] Go to quiz cactus room"";
+        }
+        else if (room == room_board_2)
+        {
+            _key_data += ""#[W + B] Create a boat"";
+            _key_data += ""#[K] Add Lancer to inventory (max 1)"";
+            _key_data += ""#[N] Add friendo to inventory"";
+            _key_data += ""#[Shift + N] Change friendo: "" + (global.flag[1017] ? ""Lanino"" : ""Elnina"");
+            _key_data += ""#[W + P] Go to Shuttah room"";
+            _key_data += ""#[W + E] Go to Susie section"";
+            _key_data += ""#[W + V] Go to Susie shop section"";
+            _key_data += ""#[W + F] Go to Pippins fight Susie section"";
+            _key_data += ""#[W + T] Make Tenna leave/come back"";
+        }
+        else if (room == room_board_3)
+        {
+            _key_data += ""#[K] Add Lancer to inventory"";
+            _key_data += ""#[W + V] Go to the other side of water"";
+            _key_data += ""#[W + R] Go to board end"";
+        }
+
+        scr_debug_print_persistent(""Debug keys"", _key_data);
+    }
+}");
+
+
+importGroup.QueueAppend("gml_Object_obj_ch3_gameshow_Create_0",
+@"show_debug = 0;");
+
+
 UndertaleScript scr_debug_fullheal = Data.Scripts.ByName("scr_debug_fullheal");
 importGroup.QueueReplace("gml_GlobalScript_scr_debug_fullheal",
 @"function scr_debug_fullheal()
@@ -7359,6 +7432,27 @@ importGroup.QueueAppend("gml_Object_obj_rhythmgame_Step_0",
         scr_debug_print_persistent(""Debug keys"", _key_data);
     }
 }");
+
+
+UndertaleScript scr_blconskip = Data.Scripts.ByName("scr_blconskip");
+importGroup.QueueFindReplace("gml_GlobalScript_scr_blconskip",
+@"if (arg0 >= 0)",
+@"if (global.dpause_dialog)
+{
+    if (button1_p())
+    {
+        talktimer = talkmax;
+        
+        with (obj_writer)
+            instance_destroy();
+        
+        global.mnfight = 1.5;
+    }
+    
+    exit;
+}
+
+if (arg0 >= 0)");
 
 importGroup.Import();
 

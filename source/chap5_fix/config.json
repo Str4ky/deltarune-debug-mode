@@ -1,0 +1,26 @@
+{
+    ".fix_ch5": {
+        "gml_name": "gml_GlobalScript_scr_get_room_by_id",
+        "chapters": [5],
+        "actions": [
+            {
+                "find_replace": {
+                    "find": " new scr_room(rm_blank, 50094),",
+                    "replace": ""
+                }
+            }
+        ]
+    },
+    ".rm_blank_fix": {
+        "gml_name": "gml_GlobalScript_scr_save",
+        "chapters": [5],
+        "actions": [
+            {
+                "find_replace": {
+                    "find_file": "rm_blank_fix.gml",
+                    "replace": ""
+                }
+            }
+        ]
+    }
+}

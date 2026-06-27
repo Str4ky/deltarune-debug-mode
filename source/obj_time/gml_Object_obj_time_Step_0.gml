@@ -10,24 +10,6 @@ if (keyboard_check_pressed(vk_f10))
 
 if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
 {
-    if (keyboard_check_pressed(ord("P")))
-    {
-        if (!variable_global_exists("speed_fps"))
-            global.speed_fps = 30;
-        
-        if (global.speed_fps == 30)
-        {
-            global.speed_fps = 1;
-            game_set_speed(1, gamespeed_fps);
-            scr_debug_print(dstr("FPS to 1", "FPS à 1"));
-        }
-        else
-        {
-            global.speed_fps = 30;
-            game_set_speed(30, gamespeed_fps);
-            scr_debug_print(dstr("FPS to 30", "FPS à 30"));
-        }
-    }
     if (keyboard_check_pressed(ord("G")))
     {
 		global.dgodmode = !global.dgodmode;
