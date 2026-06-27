@@ -6,7 +6,7 @@ function scr_debug_print(arg0)
         obj_debug_gui.depth = -99999;
     }
     
-    obj_debug_gui.newtext = arg0;
+    obj_debug_gui.newtext = string(arg0);
     
     with (obj_debug_gui)
     {

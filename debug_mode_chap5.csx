@@ -56,7 +56,7 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_print",
         obj_debug_gui.depth = -99999;
     }
     
-    obj_debug_gui.newtext = arg0;
+    obj_debug_gui.newtext = string(arg0);
     
     with (obj_debug_gui)
     {
@@ -7422,6 +7422,11 @@ importGroup.QueueFindReplace("gml_GlobalScript_scr_blconskip",
 if (arg0 >= 0)");
 
 
+UndertaleGameObject obj_dw_fcastle_yellow_miniboss = Data.GameObjects.ByName("obj_dw_fcastle_yellow_miniboss");
+importGroup.QueueReplace(obj_dw_fcastle_yellow_miniboss.EventHandlerFor(EventType.Draw, (uint)0, Data),
+@"");
+
+
 UndertaleScript scr_get_room_by_id = Data.Scripts.ByName("scr_get_room_by_id");
 importGroup.QueueFindReplace("gml_GlobalScript_scr_get_room_by_id",
 @" new scr_room(rm_blank, 50094),",
@@ -7439,6 +7444,11 @@ importGroup.QueueFindReplace("gml_GlobalScript_scr_save",
             exit;
         }
     }",
+@"");
+
+
+importGroup.QueueFindReplace("gml_GlobalScript_scr_get_room_by_id",
+@"if (scr_debug())",
 @"");
 
 importGroup.Import();
