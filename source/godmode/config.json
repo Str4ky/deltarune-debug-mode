@@ -33,5 +33,29 @@
 				}
 			}
 		]
+	},
+	".platformer_godmode": {
+		"chapters": [5],
+		"gml_name": "gml_GlobalScript_scr_damage_all_platmode",
+		"actions": [
+			{
+				"find_replace":{
+					"find": "    if (global.inv < 0)",
+					"replace": "    if (global.dgodmode)\n        exit;\n    if (global.inv < 0)"
+				}
+			}
+		]
+	},
+	".platformet_godmode_inf_jumps": {
+		"chapters": [5],
+		"gml_name": "gml_Object_obj_plat_player_Step_0",
+		"actions": [
+			{
+				"find_replace":{
+					"find": "infinite_jumps",
+					"replace": "global.dgodmode"
+				}
+			}
+		]
 	}
 }
