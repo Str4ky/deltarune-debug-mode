@@ -7174,6 +7174,20 @@ importGroup.QueueFindReplace("gml_GlobalScript_scr_damage",
     if (global.inv < 0)");
 
 
+UndertaleScript scr_damage_all_platmode = Data.Scripts.ByName("scr_damage_all_platmode");
+importGroup.QueueFindReplace("gml_GlobalScript_scr_damage_all_platmode",
+@"    if (global.inv < 0)",
+@"    if (global.dgodmode)
+        exit;
+    if (global.inv < 0)");
+
+
+UndertaleGameObject obj_plat_player = Data.GameObjects.ByName("obj_plat_player");
+importGroup.QueueFindReplace("gml_Object_obj_plat_player_Step_0",
+@"infinite_jumps",
+@"global.dgodmode");
+
+
 UndertaleScript scr_debug_fullheal = Data.Scripts.ByName("scr_debug_fullheal");
 importGroup.QueueReplace("gml_GlobalScript_scr_debug_fullheal",
 @"function scr_debug_fullheal()
