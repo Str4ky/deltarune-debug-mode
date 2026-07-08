@@ -3796,7 +3796,8 @@ function dmenu_interact_submenus(arg0)
     }
     
     return false;
-}");
+}
+");
 
 
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Step, (uint)0, Data),
@@ -6921,16 +6922,17 @@ UndertaleGameObject obj_time = Data.GameObjects.ByName("obj_time");
 importGroup.QueueReplace(obj_time.EventHandlerFor(EventType.Draw, (uint)0, Data),
 @"if (scr_debug())
 {
-    draw_set_font(fnt_main);
-    var text_scale = (global.darkzone == 1) ? 1 : 0.5;
+	cur_font = draw_get_font();
+    draw_set_font((global.darkzone == 1) ? : fnt_mainbig : fnt_main);
     draw_set_color(c_red);
     draw_text(__view_get(0, 0), __view_get(1, 0), fps);
-    draw_set_font(fnt_main);
     draw_set_color(c_green);
     draw_text_transformed((__view_get(0, 0) + __view_get(2, 0)) - (string_width(room_get_name(room)) * text_scale), __view_get(1, 0), room_get_name(room), text_scale, text_scale, 0);
     draw_text_transformed((__view_get(0, 0) + __view_get(2, 0)) - (string_width(""plot "" + string(global.plot)) * text_scale), __view_get(1, 0) + (15 * text_scale), ""plot "" + string(global.plot), text_scale, text_scale, 0);
     draw_set_color(c_white);
-}");
+    draw_set_font(cur_font);
+}
+");
 
 
 importGroup.QueueAppend(obj_time.EventHandlerFor(EventType.Step, (uint)0, Data),
@@ -6983,7 +6985,7 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
 }");
 
 
-importGroup.QueueReplace("gml_Object_obj_time_Draw_64",
+importGroup.QueueReplace("gml_Object_obj_time_Draw_77",
 @"");
 
 

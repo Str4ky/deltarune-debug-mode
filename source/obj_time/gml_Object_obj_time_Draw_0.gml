@@ -1,7 +1,12 @@
 if (scr_debug())
 {
+<<<<<<< Updated upstream
     draw_set_font(fnt_main);
     var text_scale = (global.darkzone == 1) ? 1 : 0.5;
+=======
+	cur_font = draw_get_font();
+    draw_set_font((global.darkzone == 1) ? fnt_mainbig : fnt_main);
+>>>>>>> Stashed changes
     draw_set_color(c_red);
     draw_text(__view_get(0, 0), __view_get(1, 0), fps);
     draw_set_font(fnt_main);
