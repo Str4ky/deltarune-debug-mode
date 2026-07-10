@@ -2120,7 +2120,7 @@ function scr_debug_save()
         global.debug_save_category = """";
     
     if (!variable_global_exists(""debug_save_description""))
-        global.debug_save_description = ""No description available."";
+        global.debug_save_description = dstr(""No description available."", ""Aucune description disponible."");
     
     var temp_id = 999;
     scr_saveprocess(temp_id);
@@ -3153,6 +3153,564 @@ importGroup.QueueAppend("gml_GlobalScript_scr_string_respect_type",
     }
     
     return is_good;
+}");
+
+
+UndertaleGameObject obj_dconsole_system = new UndertaleGameObject();
+obj_dconsole_system.Name = Data.Strings.MakeString("obj_dconsole_system");
+obj_dconsole_system.Visible = true;
+obj_dconsole_system.Persistent = true;
+obj_dconsole_system.Awake = true;
+Data.GameObjects.Add(obj_dconsole_system);
+
+importGroup.QueueReplace(obj_dconsole_system.EventHandlerFor(EventType.Create, (uint)0, Data),
+@"dconsole_active = false;
+dinput_text = """";
+dconsole_history = [];
+dconsole_log = [];
+blink_cursor = ""|"";
+dconsole_height = 200;
+dconsole_max_lines = floor((dconsole_height - 65) / 20) + 1;
+blink_timer = 0;
+dbackspace_timer = 0;
+dleft_timer = 0;
+dright_timer = 0;
+dup_timer = 0;
+ddown_timer = 0;
+sel_history_count = 0;
+dconsole_scroll = 0;
+dcursor_pos = 0;
+dselect_all = false;");
+
+
+importGroup.QueueReplace(obj_dconsole_system.EventHandlerFor(EventType.Step, (uint)1, Data),
+@"dconsole_prefix = ""["" + global.truename + ""]: "";
+
+if (keyboard_check_pressed(vk_f5) && global.dreading_custom_flag != 1)
+{
+    if (!dconsole_active)
+    {
+        dinteract_bk = global.interact;
+        global.interact = 1;
+        dconsole_active = true;
+        keyboard_string = """";
+        dinput_text = """";
+        sel_history_count = 0;
+    }
+}
+
+if (keyboard_check_pressed(vk_escape))
+{
+    if (dconsole_active)
+    {
+        global.interact = dinteract_bk;
+        dconsole_active = false;
+        sel_history_count = 0;
+        io_clear();
+    }
+}
+
+if (dconsole_active)
+{
+    if (mouse_wheel_up() || keyboard_check_pressed(vk_pageup))
+    {
+        var _max_scroll = max(0, array_length(dconsole_log) - 1);
+        dconsole_scroll = min(dconsole_scroll + 1, _max_scroll);
+    }
+    
+    if (mouse_wheel_down() || keyboard_check_pressed(vk_pagedown))
+        dconsole_scroll = max(dconsole_scroll - 1, 0);
+    
+    if (keyboard_check_direct(vk_control))
+    {
+        if (keyboard_check_pressed(ord(""A"")))
+        {
+            if (dinput_text != """")
+                dselect_all = true;
+        }
+        
+        keyboard_string = """";
+    }
+    
+    if (keyboard_check_direct(vk_left))
+    {
+        dleft_timer++;
+        
+        if (dleft_timer == 1 || (dleft_timer > 15 && (dleft_timer % 1) == 0))
+        {
+            dselect_all = false;
+            dcursor_pos = max(0, dcursor_pos - 1);
+            blink_cursor = ""|"";
+            blink_timer = 0;
+        }
+    }
+    else
+    {
+        dleft_timer = 0;
+    }
+    
+    if (keyboard_check_direct(vk_right))
+    {
+        dright_timer++;
+        
+        if (dright_timer == 1 || (dright_timer > 15 && (dright_timer % 1) == 0))
+        {
+            dselect_all = false;
+            dcursor_pos = min(string_length(dinput_text), dcursor_pos + 1);
+            blink_cursor = ""|"";
+            blink_timer = 0;
+        }
+    }
+    else
+    {
+        dright_timer = 0;
+    }
+    
+    if (keyboard_string != """")
+    {
+        if (dselect_all)
+        {
+            dinput_text = """";
+            dcursor_pos = 0;
+            dselect_all = false;
+        }
+        
+        dinput_text = string_insert(keyboard_string, dinput_text, dcursor_pos + 1);
+        dcursor_pos += string_length(keyboard_string);
+        keyboard_string = """";
+        blink_cursor = ""|"";
+        blink_timer = 0;
+    }
+    
+    if (keyboard_check_direct(vk_backspace))
+    {
+        dbackspace_timer++;
+        
+        if (dbackspace_timer == 1 || (dbackspace_timer > 15 && (dbackspace_timer % 1) == 0))
+        {
+            if (dselect_all)
+            {
+                dinput_text = """";
+                dcursor_pos = 0;
+                dselect_all = false;
+            }
+            else if (dcursor_pos > 0)
+            {
+                dinput_text = string_delete(dinput_text, dcursor_pos, 1);
+                dcursor_pos--;
+            }
+            
+            blink_cursor = ""|"";
+            blink_timer = 0;
+        }
+    }
+    else
+    {
+        dbackspace_timer = 0;
+    }
+    
+    if (keyboard_string != """")
+    {
+        if (dselect_all)
+        {
+            dinput_text = """";
+            dcursor_pos = 0;
+            dselect_all = false;
+        }
+        
+        dinput_text = string_insert(keyboard_string, dinput_text, dcursor_pos + 1);
+        dcursor_pos += string_length(keyboard_string);
+        keyboard_string = """";
+        blink_cursor = ""|"";
+        blink_timer = 0;
+    }
+    
+    if (keyboard_check_pressed(vk_enter))
+    {
+        if (dinput_text != """")
+        {
+            array_push(dconsole_log, dconsole_prefix + dinput_text);
+            array_push(dconsole_history, dinput_text);
+            
+            if (string_char_at(dinput_text, 1) == ""/"")
+                scr_dconsole_command(dinput_text);
+            
+            dinput_text = """";
+            keyboard_string = """";
+            sel_history_count = 0;
+            dcursor_pos = 0;
+            dselect_all = false;
+            dconsole_scroll = 0;
+            blink_cursor = ""|"";
+            blink_timer = 0;
+        }
+    }
+    
+    if (keyboard_check_direct(vk_up))
+    {
+        dup_timer++;
+        
+        if (dup_timer == 1 || (dup_timer > 20 && (dup_timer % 5) == 0))
+        {
+            var _len = array_length(dconsole_history);
+            
+            if (_len > 0 && sel_history_count < _len)
+            {
+                sel_history_count++;
+                var _entry = _len - sel_history_count;
+                dinput_text = dconsole_history[_entry];
+                dcursor_pos = string_length(dinput_text);
+                dselect_all = false;
+                blink_cursor = ""|"";
+                blink_timer = 0;
+            }
+        }
+    }
+    else
+    {
+        dup_timer = 0;
+    }
+    
+    if (keyboard_check_direct(vk_down))
+    {
+        ddown_timer++;
+        
+        if (ddown_timer == 1 || (ddown_timer > 20 && (ddown_timer % 5) == 0))
+        {
+            if (sel_history_count > 0)
+            {
+                sel_history_count--;
+                
+                if (sel_history_count == 0)
+                {
+                    dinput_text = """";
+                }
+                else
+                {
+                    var _len = array_length(dconsole_history);
+                    var _entry = _len - sel_history_count;
+                    dinput_text = dconsole_history[_entry];
+                }
+                
+                dcursor_pos = string_length(dinput_text);
+                dselect_all = false;
+                blink_cursor = ""|"";
+                blink_timer = 0;
+            }
+        }
+    }
+    else
+    {
+        ddown_timer = 0;
+    }
+    
+    blink_timer++;
+    
+    if (blink_timer > 30)
+    {
+        blink_cursor = (blink_cursor == ""|"") ? """" : ""|"";
+        blink_timer = 0;
+    }
+    
+    io_clear();
+}");
+
+
+importGroup.QueueReplace(obj_dconsole_system.EventHandlerFor(EventType.Draw, (uint)64, Data),
+@"if (!dconsole_active)
+    exit;
+
+draw_set_color(c_black);
+draw_set_alpha(0.8);
+draw_rectangle(0, 0, display_get_gui_width(), dconsole_height, false);
+draw_set_color(c_dkgray);
+draw_set_alpha(1);
+draw_line(0, dconsole_height, display_get_gui_width(), dconsole_height);
+draw_set_font(fnt_dotumche);
+var _text_y = dconsole_height - 30;
+
+if (dselect_all && dinput_text != """")
+{
+    var _prefix_width = string_width(""> "");
+    var _full_width = string_width(dinput_text);
+    draw_set_color(c_blue);
+    draw_set_alpha(0.6);
+    draw_rectangle(15 + _prefix_width, _text_y, 15 + _prefix_width + _full_width, _text_y + string_height(""A""), false);
+}
+
+draw_set_color(c_white);
+draw_set_alpha(1);
+draw_text(15, _text_y, ""> "" + dinput_text);
+
+if (!dselect_all && blink_cursor == ""|"")
+{
+    var _text_before_cursor = string_copy(dinput_text, 1, dcursor_pos);
+    var _cursor_x = 15 + string_width(""> "" + _text_before_cursor);
+    draw_line(_cursor_x, _text_y + 2, _cursor_x, (_text_y + string_height(""A"")) - 2);
+}
+
+var _max_width = display_get_gui_width() - 30;
+var _line_spacing = string_height(""A"") + 6;
+var _log_spacing = 10;
+var _history_count = array_length(dconsole_log);
+var _total_h = 0;
+var _visible_from_top = 0;
+var _available_height = dconsole_height - 40 - 10;
+
+for (var _k = 0; _k < _history_count; _k++)
+{
+    var _log_str = dconsole_log[_k];
+    var _pw = 0;
+    var _text = _log_str;
+    
+    if (string_copy(_log_str, 1, 5) == ""  -> "")
+    {
+        _pw = string_width(""  -> "");
+        _text = string_delete(_log_str, 1, 5);
+    }
+    else if (string_copy(_log_str, 1, string_length(dconsole_prefix)) == dconsole_prefix)
+    {
+        _pw = string_width(dconsole_prefix);
+        _text = string_delete(_log_str, 1, string_length(dconsole_prefix));
+    }
+    
+    var _entry_h = string_height_ext(_text, _line_spacing, _max_width - _pw);
+    _total_h += (_entry_h + _log_spacing);
+    _visible_from_top++;
+    
+    if (_total_h > _available_height)
+        break;
+}
+
+var _max_scroll = max(0, _history_count - _visible_from_top);
+
+if (_total_h <= _available_height)
+    _max_scroll = 0;
+
+dconsole_scroll = min(dconsole_scroll, _max_scroll);
+var _baseline_bottom = dconsole_height - 40;
+var _draw_y = _baseline_bottom;
+var _i = _history_count - 1 - floor(dconsole_scroll);
+
+while (_i >= 0)
+{
+    var _log_str = dconsole_log[_i];
+    var _prefix = """";
+    var _text = _log_str;
+    
+    if (string_copy(_log_str, 1, 5) == ""  -> "")
+    {
+        _prefix = ""  -> "";
+        _text = string_delete(_log_str, 1, 5);
+    }
+    else if (string_copy(_log_str, 1, string_length(dconsole_prefix)) == dconsole_prefix)
+    {
+        _prefix = dconsole_prefix;
+        _text = string_delete(_log_str, 1, string_length(dconsole_prefix));
+    }
+    
+    var _px = 15;
+    var _pw = string_width(_prefix);
+    var _rem_width = _max_width - _pw;
+    var _entry_height = string_height_ext(_text, _line_spacing, _rem_width);
+    _draw_y -= _entry_height;
+    
+    if (_draw_y < 10)
+        break;
+    
+    draw_text(_px, _draw_y, _prefix);
+    draw_text_ext(_px + _pw, _draw_y, _text, _line_spacing, _rem_width);
+    _draw_y -= _log_spacing;
+    _i--;
+}");
+
+
+UndertaleScript scr_dconsole_command = Data.Scripts.ByName("scr_dconsole_command");
+importGroup.QueueReplace("gml_GlobalScript_scr_dconsole_command",
+@"function scr_dconsole_command(arg0)
+{
+    static _commands = 
+    {
+        help: function(arg0, arg1, arg2)
+        {
+            var _names = variable_struct_get_names(arg2);
+            array_sort(_names, true);
+            var _list_string = """";
+            
+            for (var _i = 0; _i < array_length(_names); _i++)
+            {
+                _list_string += (""/"" + _names[_i]);
+                
+                if (_i < (array_length(_names) - 1))
+                    _list_string += "", "";
+            }
+            
+            arg1(dstr(""Available commands: "", ""Commandes disponibles : "") + _list_string);
+        },
+        
+        clear: function(arg0, arg1, arg2)
+        {
+            obj_dconsole_system.dconsole_log = [];
+        },
+        
+        debug: function(arg0, arg1, arg2)
+        {
+            if (array_length(arg0) > 1)
+            {
+                var _val = string_lower(string(arg0[1]));
+                
+                if (_val == ""on"" || _val == ""true"" || _val == ""1"" || _val == ""enable"")
+                {
+                    global.debug = 1;
+                    scr_debug_print(dstr(""Debug Mode activated!"", ""Mode Debug activé !""));
+                    arg1(dstr(""Debug Mode activated!"", ""Mode Debug activé !""));
+                }
+                else if (_val == ""off"" || _val == ""false"" || _val == ""0"" || _val == ""disable"")
+                {
+                    global.debug = 0;
+                    scr_debug_print(dstr(""Debug Mode deactivated!"", ""Mode Debug désactivé !""));
+                    arg1(dstr(""Debug Mode deactivated!"", ""Mode Debug désactivé !""));
+                }
+                else
+                {
+                    arg1(dstr(""Error: Invalid input. "", ""Erreur : Saisie invalide. "") + ""Usage -> /debug opt:[on/off]"");
+                }
+            }
+            else
+            {
+                global.debug = !global.debug;
+                
+                if (global.debug)
+                {
+                    scr_debug_print(dstr(""Debug Mode activated!"", ""Mode Debug activé !""));
+                    arg1(dstr(""Debug Mode activated!"", ""Mode Debug activé !""));
+                }
+                else
+                {
+                    scr_debug_print(dstr(""Debug Mode deactivated!"", ""Mode Debug désactivé !""));
+                    arg1(dstr(""Debug Mode deactivated!"", ""Mode Debug désactivé !""));
+                }
+            }
+        },
+        
+        godmode: function(arg0, arg1, arg2)
+        {
+            if (array_length(arg0) > 1)
+            {
+                var _val = string_lower(string(arg0[1]));
+                
+                if (_val == ""on"" || _val == ""true"" || _val == ""1"" || _val == ""enable"")
+                {
+                    global.dgodmode = 1;
+                    scr_debug_print(dstr(""Godmode enabled"", ""Godmode activé""));
+                    arg1(dstr(""Godmode enabled"", ""Godmode activé""));
+                }
+                else if (_val == ""off"" || _val == ""false"" || _val == ""0"" || _val == ""disable"")
+                {
+                    global.dgodmode = 0;
+                    scr_debug_print(dstr(""Godmode disabled"", ""Godmode désactivé""));
+                    arg1(dstr(""Godmode disabled"", ""Godmode désactivé""));
+                }
+                else
+                {
+                    arg1(dstr(""Error: Invalid input. "", ""Erreur : Saisie invalide. "") + ""Usage -> /godmode opt:[on/off]"");
+                }
+            }
+            else
+            {
+                global.dgodmode = !global.dgodmode;
+                
+                if (global.dgodmode)
+                {
+                    scr_debug_print(dstr(""Godmode enabled"", ""Godmode activé""));
+                    arg1(dstr(""Godmode enabled"", ""Godmode activé""));
+                }
+                else
+                {
+                    scr_debug_print(dstr(""Godmode disabled"", ""Godmode désactivé""));
+                    arg1(dstr(""Godmode disabled"", ""Godmode désactivé""));
+                }
+            }
+        },
+        
+        setfps: function(arg0, arg1, arg2)
+        {
+            if (array_length(arg0) > 1)
+            {
+                var _fps_val = real(arg0[1]);
+                global.speed_fps = _fps_val;
+                game_set_speed(_fps_val, gamespeed_fps);
+                scr_debug_print(dstr(""FPS to "", ""FPS à "") + string(_fps_val));
+                arg1(dstr(""FPS was set to "", ""Le nombre de FPS a été fixé à "") + string(_fps_val));
+            }
+            else
+            {
+                arg1(dstr(""Error: Missing argument. Usage -> /fps [value]"", ""Erreur : Argument manquant. Usage -> /fps [valeur]""));
+            }
+        },
+        
+        money: function(arg0, arg1, arg2)
+        {
+            if (array_length(arg0) > 1)
+            {
+                var _money_val = real(arg0[1]);
+                var gold_bk = global.gold;
+                global.gold = _money_val;
+                var _diff_val = _money_val - gold_bk;
+                
+                if (_diff_val >= 0)
+                    scr_debug_print(dstr(""+ D$ "", ""+ "") + string(_diff_val) + dstr("""", "" $""));
+                else
+                    scr_debug_print(dstr(""- D$ "", ""- "") + string(abs(_diff_val)) + dstr("""", "" $""));
+                
+                arg1(dstr(""Money set to D$ "", ""La somme d'argent a été fixée à "") + string(_money_val) + dstr("""", "" $""));
+            }
+            else
+            {
+                arg1(dstr(""Error: Missing argument. Usage -> /money [value]"", ""Erreur : Argument manquant. Usage -> /money [valeur]""));
+            }
+        },
+        
+        vol: function(arg0, arg1, arg2)
+        {
+            if (array_length(arg0) > 1)
+            {
+                var _volume_val = real(arg0[1]);
+                global.flag[17] = _volume_val / 100;
+                audio_set_master_gain(0, global.flag[17]);
+                scr_debug_print(dstr(""Master volume set to "", ""Volume principal réglé à "") + string(_volume_val) + dstr(""%"", "" %""));
+                arg1(dstr(""Master volume set to "", ""Volume principal réglé à "") + string(_volume_val) + dstr(""%"", "" %""));
+            }
+            else
+            {
+                arg1(dstr(""Error: Missing argument. Usage -> /vol [value]"", ""Erreur : Argument manquant. Usage -> /vol [valeur]""));
+            }
+        }
+    };
+    
+    var _clean_string = string_delete(arg0, 1, 1);
+    var _args = string_split(_clean_string, "" "");
+    
+    if (array_length(_args) == 0)
+        exit;
+    
+    var _cmd = string_lower(_args[0]);
+    
+    var _log = function(arg0)
+    {
+        if (dconsole_active)
+            array_push(obj_dconsole_system.dconsole_log, ""  -> "" + arg0);
+    };
+    
+    if (variable_struct_exists(_commands, _cmd))
+    {
+        var _func = variable_struct_get(_commands, _cmd);
+        _func(_args, _log, _commands);
+    }
+    else
+    {
+        _log(dstr(""Unknown command: /"", ""Commande inconnue : /"") + _cmd + dstr("". Type /help to get a list of available commands"", "". Tapez /help pour voir la liste des commandes disponibles""));
+    }
 }");
 
 
@@ -4633,7 +5191,7 @@ else if (dmenu_active)
         {
             if (dvertical_index == 0)
             {
-                dhinter_text = dstr(""[I] - Import individual\n[Alt+I] - Batch import"", ""[I] - Importer individuellement\n[Alt+I] - Importation par lot"");
+                dhinter_text = dstr(""[I] - Import individual\n[Alt+I] - Batch import"", ""[I] - Importation individuelle\n[Alt+I] - Importation par lot"");
             }
             else if (dvertical_index > 0 && dvertical_index < array_length(dbutton_options))
             {
@@ -5737,13 +6295,25 @@ function dmenu_state_interact()
             else if (check_name == ""- "" + dstr(""Rename"", ""Renommer"") || check_name == ""- "" + dstr(""Edit description"", ""Modifier description"") || check_name == ""- "" + dstr(""Change category"", ""Changer description""))
             {
                 if (check_name == ""- "" + dstr(""Rename"", ""Renommer""))
+                {
                     dmenu_state = ""dsave_edit_name"";
+                    keyboard_string = """";
+                    dkeyboard_input = """";
+                }
                 
                 if (check_name == ""- "" + dstr(""Edit description"", ""Modifier description""))
+                {
                     dmenu_state = ""dsave_edit_desc"";
+                    keyboard_string = """";
+                    dkeyboard_input = """";
+                }
                 
                 if (check_name == ""- "" + dstr(""Change category"", ""Changer description""))
+                {
                     dmenu_state = ""dsave_edit_cat"";
+                    keyboard_string = """";
+                    dkeyboard_input = """";
+                }
             }
             
             break;
@@ -6845,7 +7415,7 @@ if (dmenu_active)
 
 if (dkeys_helper == 1)
 {
-    dkeys_data = [string(dstr(""F10 - Toggle debug mode"", ""F10 - Activer/désactiver le debug mode"")), string(dstr(""S - Save game"", ""S - Sauvegarder la partie"")), string(dstr(""L - Load last save"", ""L - Charger la dernière sauvegarde"")), string(dstr(""R - Reload room | Backspace+R - Restart game"", ""R - Charger la salle | Retour arrière+R - Redémarrer le jeu"")), string(dstr(""P - Pause/resume game"", ""P - Mettre en pause/reprendre le jeu"")), string(dstr(""M+1 | M+2 - Add/remove 100 D$"", ""M+1 | M+2 - Ajouter/retirer 100 D$"")), string(dstr(""Delete - Go to previous room"", ""Suppr - Se rendre à la salle précédente"")), string(dstr(""Insert - Go to next room"", ""Insert - Se rendre à la salle suivante"")), string(dstr(""G - Toggle godmode"", ""Activer/désactiver le godmode"")), string(dstr(""W - Skip battle | Shift+W - Skip battle with recruit"", ""W - Sauter un combat | Shift+W - Sauter un combat avec recrue"")), string(dstr(""V - Skip enemy turn"", ""V - Passer le tour de l'ennemi"")), string(dstr(""H - Restore party HP"", ""H - Restaurer les HP du party"")), string(dstr(""T - Fill/empty TP bar"", ""T - Remplir/vider la barre de TP"")), string(dstr(""O - Toggle 30, 60, 120 FPS"", ""O - Basculer entre 30, 60 et 120 FPS"")), string(dstr(""Backspace - Skip intro sequence (Ch1)"", ""Retour arrière - Passer le segment d'intro (Ch1)"")), string(dstr(""Middle Click - Room Editor"", ""Clic milieu - Éditeur de salle""))];
+    dkeys_data = [string(dstr(""F10 - Toggle debug mode"", ""F10 - Activer/désactiver le debug mode"")), string(dstr(""S - Save game"", ""S - Sauvegarder la partie"")), string(dstr(""L - Load last save"", ""L - Charger la dernière sauvegarde"")), string(dstr(""R - Reload room | Backspace+R - Restart game"", ""R - Charger la salle | Retour arrière+R - Redémarrer le jeu"")), string(dstr(""M+1 | M+2 - Add/remove 100 D$"", ""M+1 | M+2 - Ajouter/retirer 100 D$"")), string(dstr(""Delete - Go to previous room"", ""Suppr - Se rendre à la salle précédente"")), string(dstr(""Insert - Go to next room"", ""Insert - Se rendre à la salle suivante"")), string(dstr(""G - Toggle godmode"", ""G - Activer/désactiver le godmode"")), string(dstr(""W - Skip battle | Shift+W - Skip battle with recruit"", ""W - Passer un combat | Shift+W - Passer un combat avec recrue"")), string(dstr(""V - Skip enemy turn"", ""V - Passer le tour de l'ennemi"")), string(dstr(""H - Restore party HP"", ""H - Restaurer les HP du party"")), string(dstr(""T - Fill/empty TP bar"", ""T - Remplir/vider la barre de TP"")), string(dstr(""P - Disable/restore bubble dialog autoskip"", ""P - Désactiver/rétablir l'autoskip des bulles de dialogue"")), string(dstr(""O - Toggle 30, 60, 120 FPS"", ""O - Basculer entre 30, 60 et 120 FPS"")), string(dstr(""Backspace - Skip intro sequence (Ch1)"", ""Retour arrière - Passer le segment d'intro (Ch1)"")), string(dstr(""Middle Click - Room Editor"", ""Clic milieu - Éditeur de salle""))];
     
     menu_width = 264;
     menu_length = 204;
@@ -6923,9 +7493,11 @@ importGroup.QueueReplace(obj_time.EventHandlerFor(EventType.Draw, (uint)0, Data)
 @"if (scr_debug())
 {
 	cur_font = draw_get_font();
-    draw_set_font((global.darkzone == 1) ? : fnt_mainbig : fnt_main);
+    draw_set_font(fnt_main);
+    var text_scale = (global.darkzone == 1) ? 1 : 0.5;
     draw_set_color(c_red);
     draw_text(__view_get(0, 0), __view_get(1, 0), fps);
+    draw_set_font(fnt_main);
     draw_set_color(c_green);
     draw_text_transformed((__view_get(0, 0) + __view_get(2, 0)) - (string_width(room_get_name(room)) * text_scale), __view_get(1, 0), room_get_name(room), text_scale, text_scale, 0);
     draw_text_transformed((__view_get(0, 0) + __view_get(2, 0)) - (string_width(""plot "" + string(global.plot)) * text_scale), __view_get(1, 0) + (15 * text_scale), ""plot "" + string(global.plot), text_scale, text_scale, 0);
@@ -7049,7 +7621,10 @@ importGroup.QueueAppend(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint
 }
 
 if (!instance_exists(obj_dmenu_system))
-    instance_create(0, 0, obj_dmenu_system);");
+    instance_create(0, 0, obj_dmenu_system);
+
+if (!instance_exists(obj_dconsole_system))
+    instance_create_depth(0, 0, -99999, obj_dconsole_system);");
 
 
 importGroup.QueueFindReplace("gml_Object_obj_darkcontroller_Step_0",
@@ -7095,7 +7670,10 @@ importGroup.QueueFindReplace("gml_Object_obj_overworldc_Step_0",
 
 importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, Data),
 @"if (!instance_exists(obj_dmenu_system))
-    instance_create(0, 0, obj_dmenu_system);");
+    instance_create(0, 0, obj_dmenu_system);
+
+if (!instance_exists(obj_dconsole_system))
+    instance_create_depth(0, 0, -99999, obj_dconsole_system);");
 
 
 UndertaleGameObject obj_battlecontroller = Data.GameObjects.ByName("obj_battlecontroller");
@@ -7188,6 +7766,107 @@ UndertaleGameObject obj_plat_player = Data.GameObjects.ByName("obj_plat_player")
 importGroup.QueueFindReplace("gml_Object_obj_plat_player_Step_0",
 @"infinite_jumps",
 @"global.dgodmode");
+
+
+UndertaleGameObject obj_mainchara = Data.GameObjects.ByName("obj_mainchara");
+importGroup.QueueAppend("gml_Object_obj_mainchara_Create_0",
+@"siner = 0;");
+
+
+importGroup.QueueAppend(obj_mainchara.EventHandlerFor(EventType.Step, (uint)0, Data),
+@"if (scr_debug())
+{
+    siner++;
+    
+    if (mouse_check_button(mb_right) && !i_ex(obj_debug_xy))
+    {
+        if (sprite_index != -1)
+        {
+            if (keyboard_check(vk_up))
+                y -= 3;
+            
+            if (keyboard_check(vk_left))
+                x -= 3;
+            
+            if (keyboard_check(vk_down))
+                y += 3;
+            
+            if (keyboard_check(vk_right))
+                x += 3;
+        }
+    }
+}");
+
+
+importGroup.QueueAppend("gml_Object_obj_mainchara_Draw_0",
+@"if (scr_debug())
+{
+    if (mouse_check_button(mb_right) && !i_ex(obj_debug_xy))
+    {
+        if (sprite_index != -1)
+            draw_sprite_ext_flash(sprite_index, image_index, x, y, image_xscale, image_yscale, image_angle, image_blend, (sin(siner / 8) * 0.5) + 0.5);
+    }
+}");
+
+
+importGroup.QueueAppend("gml_Object_obj_plat_player_Create_0",
+@"siner = 0;
+entity_gravity_bk = 0;");
+
+
+importGroup.QueueAppend(obj_plat_player.EventHandlerFor(EventType.Step, (uint)0, Data),
+@"if (scr_debug())
+{
+    siner++;
+    
+    if (mouse_check_button(mb_right) && !i_ex(obj_debug_xy))
+    {
+        if (entity_gravity_bk == 0)
+            entity_gravity_bk = entity_gravity;
+        
+        entity_gravity = 0;
+        gravity = 0;
+        wallcollision = 0;
+        vspeed = 0;
+        
+        if (sprite_index != -1)
+        {
+            if (keyboard_check(vk_up))
+                y -= 6;
+            
+            if (keyboard_check(vk_left))
+                x -= 6;
+            
+            if (keyboard_check(vk_down))
+                y += 6;
+            
+            if (keyboard_check(vk_right))
+                x += 6;
+        }
+    }
+    else
+    {
+        if (entity_gravity_bk != 0)
+        {
+            gravity = entity_gravity_bk;
+            entity_gravity = entity_gravity_bk;
+        }
+        
+        entity_gravity_bk = 0;
+        wallcollision = 1;
+    }
+}");
+
+
+importGroup.QueueAppend("gml_Object_obj_plat_player_Draw_0",
+@"if (scr_debug())
+{
+    if (mouse_check_button(mb_right) && !i_ex(obj_debug_xy))
+    {
+        if (sprite_index != -1)
+            draw_sprite_ext_flash(sprite_index, image_index, x, y, image_xscale, image_yscale, image_angle, image_blend, (sin(siner / 8) * 0.5) + 0.5);
+    }
+}");
 
 
 UndertaleScript scr_debug_fullheal = Data.Scripts.ByName("scr_debug_fullheal");
@@ -7443,12 +8122,6 @@ importGroup.QueueReplace(obj_dw_fcastle_yellow_miniboss.EventHandlerFor(EventTyp
 @"");
 
 
-UndertaleScript scr_get_room_by_id = Data.Scripts.ByName("scr_get_room_by_id");
-importGroup.QueueFindReplace("gml_GlobalScript_scr_get_room_by_id",
-@" new scr_room(rm_blank, 50094),",
-@"");
-
-
 UndertaleScript scr_save = Data.Scripts.ByName("scr_save");
 importGroup.QueueFindReplace("gml_GlobalScript_scr_save",
 @"    if (scr_debug())
@@ -7463,9 +8136,13 @@ importGroup.QueueFindReplace("gml_GlobalScript_scr_save",
 @"");
 
 
+UndertaleScript scr_get_room_by_id = Data.Scripts.ByName("scr_get_room_by_id");
 importGroup.QueueFindReplace("gml_GlobalScript_scr_get_room_by_id",
-@"if (scr_debug())",
-@"");
+@"return idsarr;",
+@"idsarr = [new scr_room(PLACE_CONTACT, 50012), new scr_room(room_krisroom, 50013), new scr_room(room_krishallway, 50014), new scr_room(room_torroom, 50015), new scr_room(room_torhouse, 50016), new scr_room(room_torbathroom, 50017), new scr_room(room_town_krisyard, 50018), new scr_room(room_town_northwest, 50019), new scr_room(room_town_north, 50020), new scr_room(room_beach, 50021), new scr_room(room_town_mid, 50022), new scr_room(room_town_apartments, 50023), new scr_room(room_town_south, 50024), new scr_room(room_town_school, 50025), new scr_room(room_town_church, 50026), new scr_room(room_graveyard, 50027), new scr_room(room_town_shelter, 50028), new scr_room(room_hospital_lobby, 50029), new scr_room(room_hospital_hallway, 50030), new scr_room(room_hospital_rudy, 50031), new scr_room(room_hospital_room2, 50032), new scr_room(room_diner, 50033), new scr_room(room_townhall, 50034), new scr_room(room_flowershop_1f, 50035), new scr_room(room_flowershop_2f, 50036), new scr_room(room_library, 50037), new scr_room(room_alphysalley, 50038), new scr_room(room_lw_computer_lab, 50039), new scr_room(room_lw_library_upstairs, 50040), new scr_room(room_lw_police, 50041), new scr_room(room_lw_conbini, 50042), new scr_room(room_lw_icee_pizza, 50043), new scr_room(room_torielclass, 50044), new scr_room(room_schoollobby, 50045), new scr_room(room_alphysclass, 50046), new scr_room(room_schooldoor, 50047), new scr_room(room_insidecloset, 50048), new scr_room(room_school_unusedroom, 50049), new scr_room(room_castle_tutorial, 50050), new scr_room(room_dw_castle_east_door, 50051), new scr_room(room_dw_castle_west_cliff, 50052), new scr_room(room_dw_castle_area_1, 50053), new scr_room(room_dw_castle_town, 50054), new scr_room(room_dw_ralsei_castle_front, 50055), new scr_room(room_dw_castle_restaurant, 50056), new scr_room(room_dw_castle_cafe, 50057), new scr_room(room_dw_castle_dojo, 50058), new scr_room(room_dw_ralsei_castle_1f, 50059), new scr_room(room_dw_ralsei_castle_2f, 50060), new scr_room(room_dw_ralsei_castle_3f, 50061), new scr_room(room_dw_castle_dungeon, 50062), new scr_room(room_dw_castle_rooms_kris, 50063), new scr_room(room_dw_castle_rooms_susie, 50064), new scr_room(room_dw_castle_rooms_ralsei, 50065), new scr_room(PLACE_DOG, 50066), new scr_room(room_legend, 50067), new scr_room(room_legend_neo, 50068), new scr_room(room_shop1, 50069), new scr_room(room_shop_music, 50070), new scr_room(room_gameover, 50071), new scr_room(PLACE_LOGO, 50072), new scr_room(PLACE_FAILURE, 50073), new scr_room(PLACE_NAMING_JIKKEN, 50074), new scr_room(PLACE_MENU, 50075), new scr_room(room_ed, 50076), new scr_room(room_empty, 50077), new scr_room(room_DARKempty, 50078), new scr_room(room_DARKbase_GMS2, 50079), new scr_room(room_cc_lancer, 50080), new scr_room(room_cc_clover, 50081), new scr_room(room_cc_fountain, 50082), new scr_room(PLACE_DOGCHECK2, 50083), new scr_room(room_debug_smallface_dark, 50084), new scr_room(room_debug_smallface, 50085), new scr_room(room_debug_choicer_dark, 50086), new scr_room(room_debug_choicer_light, 50087), new scr_room(room_debug_battleBalloon, 50088), new scr_room(room_overworldBulletEnemyTest, 50089), new scr_room(room_lerptest, 50090), new scr_room(room_bullettest, 50091), new scr_room(room_bullettest_new, 50092), new scr_room(room_animexampletest, 50093), new scr_room(room_climbtest, 50095), new scr_room(room_chapter_continue, 50096), new scr_room(room_towery_tester, 50098), new scr_room(room_animtest, 50099), new scr_room(PLACE_DOGCHECK_CH5, 50100), new scr_room(room_darkbulbTest, 50101), new scr_room(room_dw_fcastle_shadowplatformTest, 50102), new scr_room(room_plat_lab, 50103), new scr_room(room_lw_church_choir, 50104), new scr_room(room_lw_church_entrance, 50105), new scr_room(room_lw_church_main, 50106), new scr_room(room_lw_church_office, 50107), new scr_room(room_lw_noellehouse_dess, 50108), new scr_room(room_town_noellehouse, 50109), new scr_room(room_dw_rhythm, 50110), new scr_room(room_dw_rhythm_countdown, 50111), new scr_room(room_dw_rhythm_empty, 50112), new scr_room(room_rhythmgame_editor, 50113), new scr_room(room_dw_castle_tv, 50114), new scr_room(room_dw_castle_tv_rhythm, 50115), new scr_room(room_dw_castle_church_entrance, 50116), new scr_room(room_dw_castle_church_climb, 50117), new scr_room(room_dw_ralsei_castle_basketball, 50118), new scr_room(room_shop_ch5, 50119), new scr_room(room_dw_garden_meetflowery, 50120), new scr_room(room_dw_garden_video, 50121), new scr_room(room_dw_garden_intro, 50122), new scr_room(room_dw_garden_ralseicupboard, 50123), new scr_room(room_dw_garden_floradinnencounter, 50124), new scr_room(room_dw_garden_hospital, 50125), new scr_room(room_dw_garden_fishingspot, 50126), new scr_room(room_dw_garden_shearydodge, 50127), new scr_room(room_dw_garden_hopschef, 50128), new scr_room(room_dw_garden_platshortcut, 50129), new scr_room(room_dw_garden_riverchest, 50130), new scr_room(room_dw_garden_enemyrush, 50131), new scr_room(room_dw_garden_pedestal, 50132), new scr_room(room_dw_garden_mushrooms, 50133), new scr_room(room_dw_garden_flowerygardening, 50134), new scr_room(room_dw_garden_diner, 50135), new scr_room(room_dw_garden_starwalkerdash, 50136), new scr_room(room_dw_garden_hardpressureplates, 50137), new scr_room(room_dw_garden_aqua, 50138), new scr_room(room_dw_garden_finalplatforming, 50139), new scr_room(room_dw_garden_finalplatforming_right, 50140), new scr_room(room_dw_garden_wateringcan_aqua, 50141), new scr_room(room_dw_garden_aquadarkness, 50142), new scr_room(room_dw_garden_aquahole, 50143), new scr_room(room_dw_garden_aquashrine, 50144), new scr_room(room_dw_garden_aquaplatforming, 50145), new scr_room(room_dw_garden_cliffexit, 50146), new scr_room(room_dw_garden_susiechase, 50147), new scr_room(room_dw_garden_newdash, 50148), new scr_room(room_dw_garden_shearyguide, 50149), new scr_room(room_dw_pink_encounter, 50150), new scr_room(room_dw_garden_aquatransition, 50151), new scr_room(room_dw_garden_aquadash, 50152), new scr_room(room_dw_garden_aquahole_left, 50153), new scr_room(room_dw_garden_firstdash, 50154), new scr_room(room_dw_garden_aquadash_plat, 50155), new scr_room(room_dw_cliff_gardentransition_new, 50156), new scr_room(room_dw_cliff_climbrefresher, 50157), new scr_room(room_dw_cliff_cutdown_tutorial, 50158), new scr_room(room_dw_cliff_bunnyfarm, 50159), new scr_room(room_dw_cliff_silver_hammer, 50160), new scr_room(room_dw_cliff_dash_runner, 50161), new scr_room(room_dw_cliff_seth_miniboss, 50162), new scr_room(room_dw_cliff_shop, 50163), new scr_room(room_dw_cliff_netskieclimb, 50164), new scr_room(room_dw_cliff_finaldash, 50165), new scr_room(room_dw_cliff_yellowcave, 50166), new scr_room(room_dw_cliff_shicave, 50167), new scr_room(room_dw_cliff_verticalwind, 50168), new scr_room(room_dw_cliff_sethaqua_battle, 50169), new scr_room(room_dw_cliff_verticalwind_post, 50170), new scr_room(room_dw_cliff_netskieclimb_behind, 50171), new scr_room(room_dw_cliff_eastcliff, 50172), new scr_room(room_dw_cliff_bonuscombat, 50173), new scr_room(room_dw_cliff_twirlflowerplatforming, 50174), new scr_room(room_dw_cliff_kawkawdash, 50175), new scr_room(room_dw_cliff_precipice, 50176), new scr_room(room_dw_cliff_twirlflowerwind, 50177), new scr_room(room_dogplatforming, 50179), new scr_room(room_dw_fcastle_entrance, 50180), new scr_room(room_dw_fcastle_cafe, 50181), new scr_room(room_dw_fcastle_foyer, 50182), new scr_room(room_dw_fcastle_post_party_jail, 50183), new scr_room(room_dw_fcastle_shinobeetle_encounter, 50184), new scr_room(room_dw_fcastle_left_wing_floweryscene, 50185), new scr_room(room_dw_fcastle_bounce_1, 50186), new scr_room(room_dw_fcastle_left_twodoors, 50187), new scr_room(room_dw_fcastle_yellow_miniboss, 50188), new scr_room(room_dw_fcastle_sandtrap, 50189), new scr_room(room_dw_fcastle_dangerous_platforming, 50190), new scr_room(room_dw_fcastle_blueroom, 50191), new scr_room(room_dw_fcastle_yellowjail, 50192), new scr_room(room_dw_fcastle_onsen, 50193), new scr_room(room_dw_fcastle_left_penultimate, 50194), new scr_room(room_dw_flowery_tree, 50195), new scr_room(room_dw_fcastle_bounce_3, 50196), new scr_room(room_dw_fcastle_shinobeetle_3d, 50197), new scr_room(room_dw_fcastle_heldmushrooms, 50198), new scr_room(room_dw_fcastle_flowerydash, 50199), new scr_room(room_dw_fcastle_partyjail, 50200), new scr_room(room_dw_fcastle_terracotta_encounter, 50201), new scr_room(room_dw_fcastle_terracotta_bonus, 50202), new scr_room(room_dw_fcastle_fusumadodge, 50203), new scr_room(room_dw_fcastle_right_wing_floweryscene, 50204), new scr_room(room_dw_fcastle_orange_puppet_introduction, 50205), new scr_room(room_dw_fcastle_gloves_tower, 50206), new scr_room(room_dw_fcastle_second_diner, 50207), new scr_room(room_dw_fcastle_obscured_bullets, 50208), new scr_room(room_dw_fcastle_foxhunt, 50209), new scr_room(room_dw_fcastle_right_penultimate, 50210), new scr_room(room_dw_fcastle_green_orange_battle, 50211), new scr_room(room_dw_fcastle_right_endingscene, 50212), new scr_room(room_dw_fcastle_right_puzzle, 50213), new scr_room(room_dw_castle_music, 50214), new scr_room(room_man, 50215), new scr_room(room_dw_dogballoon, 50216), new scr_room(room_dw_fcastle_orange_gauntlet, 50217), new scr_room(room_dw_fcastle_sidepuzzle, 50218), new scr_room(room_dw_castle_tv_mike, 50219), new scr_room(room_dw_fcastle_zenlooker, 50220), new scr_room(room_dw_fcastle_trainroom, 50221), new scr_room(room_dw_post_flowery_battle, 50222), new scr_room(room_dw_fcastle_flowerclimb, 50223), new scr_room(room_dw_fcastle_top_intro, 50224), new scr_room(room_dw_fcastle_top_staircase_1, 50225), new scr_room(room_dw_fcastle_ultradash, 50226), new scr_room(room_dw_fcastle_yellowblue, 50227), new scr_room(room_dw_fcastle_top_entrance, 50228), new scr_room(room_dw_fcastle_top_staircase_2, 50229), new scr_room(room_dw_fcastle_green_checkpoint, 50230), new scr_room(room_dw_fcastle_final_save, 50231), new scr_room(room_dw_fcastle_flowery, 50232), new scr_room(room_dw_fcastle_seth_encounter, 50233), new scr_room(room_dw_fcastle_top_descent, 50234), new scr_room(room_dw_fcastle_top_pinkdoor, 50235), new scr_room(room_dw_fcastle_pinkroom, 50236), new scr_room(room_dw_fcastle_top_fountain, 50237), new scr_room(room_dw_post_fountain_close, 50238), new scr_room(room_dw_fcastle_pinkshop, 50239), new scr_room(room_dw_fcastle_foxhunt_terakota, 50240), new scr_room(room_dw_fcastle_foxhunt_socks, 50241), new scr_room(room_dw_fcastle_foxhunt_chaos, 50242), new scr_room(room_dw_fcastle_foxhunt_secret, 50243), new scr_room(room_dw_castle_tv_kikky, 50244), new scr_room(room_dw_fcastle_terracotta_puzzle, 50246), new scr_room(room_dw_fcastle_bromides, 50247), new scr_room(room_dw_fcastle_top_ascent, 50248), new scr_room(room_dw_fcastle_top_challenge, 50249)];
+array_push(idsarr, new scr_room(room_animexampletest, 100002), new scr_room(room_darkbulbTest, 100004), new scr_room(room_dw_fcastle_shadowplatformTest, 100005));
+
+return idsarr;");
 
 importGroup.Import();
 

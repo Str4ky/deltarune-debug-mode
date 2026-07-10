@@ -1,0 +1,9 @@
+{
+	"mode": "replace",
+	"gml_Object_obj_dconsole_system_Create_0.gml": {
+		"create_new": true
+	},
+	"gml_Object_obj_dconsole_system_Step_1.gml": {},
+	"gml_Object_obj_dconsole_system_Draw_64.gml": {},
+	"gml_GlobalScript_scr_dconsole_command.gml": {}
+}

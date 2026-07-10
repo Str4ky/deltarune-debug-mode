@@ -968,13 +968,25 @@ function dmenu_state_interact()
             else if (check_name == "- " + dstr("Rename", "Renommer") || check_name == "- " + dstr("Edit description", "Modifier description") || check_name == "- " + dstr("Change category", "Changer description"))
             {
                 if (check_name == "- " + dstr("Rename", "Renommer"))
+                {
                     dmenu_state = "dsave_edit_name";
+                    keyboard_string = "";
+                    dkeyboard_input = "";
+                }
                 
                 if (check_name == "- " + dstr("Edit description", "Modifier description"))
+                {
                     dmenu_state = "dsave_edit_desc";
+                    keyboard_string = "";
+                    dkeyboard_input = "";
+                }
                 
                 if (check_name == "- " + dstr("Change category", "Changer description"))
+                {
                     dmenu_state = "dsave_edit_cat";
+                    keyboard_string = "";
+                    dkeyboard_input = "";
+                }
             }
             
             break;

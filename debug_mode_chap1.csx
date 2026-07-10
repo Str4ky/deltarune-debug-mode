@@ -985,7 +985,7 @@ function scr_debug_save()
         global.debug_save_category = """";
     
     if (!variable_global_exists(""debug_save_description""))
-        global.debug_save_description = ""No description available."";
+        global.debug_save_description = dstr(""No description available."", ""Aucune description disponible."");
     
     var temp_id = 999;
     scr_saveprocess(temp_id);
@@ -2018,6 +2018,564 @@ importGroup.QueueAppend("gml_GlobalScript_scr_string_respect_type",
     }
     
     return is_good;
+}");
+
+
+UndertaleGameObject obj_dconsole_system = new UndertaleGameObject();
+obj_dconsole_system.Name = Data.Strings.MakeString("obj_dconsole_system");
+obj_dconsole_system.Visible = true;
+obj_dconsole_system.Persistent = true;
+obj_dconsole_system.Awake = true;
+Data.GameObjects.Add(obj_dconsole_system);
+
+importGroup.QueueReplace(obj_dconsole_system.EventHandlerFor(EventType.Create, (uint)0, Data),
+@"dconsole_active = false;
+dinput_text = """";
+dconsole_history = [];
+dconsole_log = [];
+blink_cursor = ""|"";
+dconsole_height = 200;
+dconsole_max_lines = floor((dconsole_height - 65) / 20) + 1;
+blink_timer = 0;
+dbackspace_timer = 0;
+dleft_timer = 0;
+dright_timer = 0;
+dup_timer = 0;
+ddown_timer = 0;
+sel_history_count = 0;
+dconsole_scroll = 0;
+dcursor_pos = 0;
+dselect_all = false;");
+
+
+importGroup.QueueReplace(obj_dconsole_system.EventHandlerFor(EventType.Step, (uint)1, Data),
+@"dconsole_prefix = ""["" + global.truename + ""]: "";
+
+if (keyboard_check_pressed(vk_f5) && global.dreading_custom_flag != 1)
+{
+    if (!dconsole_active)
+    {
+        dinteract_bk = global.interact;
+        global.interact = 1;
+        dconsole_active = true;
+        keyboard_string = """";
+        dinput_text = """";
+        sel_history_count = 0;
+    }
+}
+
+if (keyboard_check_pressed(vk_escape))
+{
+    if (dconsole_active)
+    {
+        global.interact = dinteract_bk;
+        dconsole_active = false;
+        sel_history_count = 0;
+        io_clear();
+    }
+}
+
+if (dconsole_active)
+{
+    if (mouse_wheel_up() || keyboard_check_pressed(vk_pageup))
+    {
+        var _max_scroll = max(0, array_length(dconsole_log) - 1);
+        dconsole_scroll = min(dconsole_scroll + 1, _max_scroll);
+    }
+    
+    if (mouse_wheel_down() || keyboard_check_pressed(vk_pagedown))
+        dconsole_scroll = max(dconsole_scroll - 1, 0);
+    
+    if (keyboard_check_direct(vk_control))
+    {
+        if (keyboard_check_pressed(ord(""A"")))
+        {
+            if (dinput_text != """")
+                dselect_all = true;
+        }
+        
+        keyboard_string = """";
+    }
+    
+    if (keyboard_check_direct(vk_left))
+    {
+        dleft_timer++;
+        
+        if (dleft_timer == 1 || (dleft_timer > 15 && (dleft_timer % 1) == 0))
+        {
+            dselect_all = false;
+            dcursor_pos = max(0, dcursor_pos - 1);
+            blink_cursor = ""|"";
+            blink_timer = 0;
+        }
+    }
+    else
+    {
+        dleft_timer = 0;
+    }
+    
+    if (keyboard_check_direct(vk_right))
+    {
+        dright_timer++;
+        
+        if (dright_timer == 1 || (dright_timer > 15 && (dright_timer % 1) == 0))
+        {
+            dselect_all = false;
+            dcursor_pos = min(string_length(dinput_text), dcursor_pos + 1);
+            blink_cursor = ""|"";
+            blink_timer = 0;
+        }
+    }
+    else
+    {
+        dright_timer = 0;
+    }
+    
+    if (keyboard_string != """")
+    {
+        if (dselect_all)
+        {
+            dinput_text = """";
+            dcursor_pos = 0;
+            dselect_all = false;
+        }
+        
+        dinput_text = string_insert(keyboard_string, dinput_text, dcursor_pos + 1);
+        dcursor_pos += string_length(keyboard_string);
+        keyboard_string = """";
+        blink_cursor = ""|"";
+        blink_timer = 0;
+    }
+    
+    if (keyboard_check_direct(vk_backspace))
+    {
+        dbackspace_timer++;
+        
+        if (dbackspace_timer == 1 || (dbackspace_timer > 15 && (dbackspace_timer % 1) == 0))
+        {
+            if (dselect_all)
+            {
+                dinput_text = """";
+                dcursor_pos = 0;
+                dselect_all = false;
+            }
+            else if (dcursor_pos > 0)
+            {
+                dinput_text = string_delete(dinput_text, dcursor_pos, 1);
+                dcursor_pos--;
+            }
+            
+            blink_cursor = ""|"";
+            blink_timer = 0;
+        }
+    }
+    else
+    {
+        dbackspace_timer = 0;
+    }
+    
+    if (keyboard_string != """")
+    {
+        if (dselect_all)
+        {
+            dinput_text = """";
+            dcursor_pos = 0;
+            dselect_all = false;
+        }
+        
+        dinput_text = string_insert(keyboard_string, dinput_text, dcursor_pos + 1);
+        dcursor_pos += string_length(keyboard_string);
+        keyboard_string = """";
+        blink_cursor = ""|"";
+        blink_timer = 0;
+    }
+    
+    if (keyboard_check_pressed(vk_enter))
+    {
+        if (dinput_text != """")
+        {
+            array_push(dconsole_log, dconsole_prefix + dinput_text);
+            array_push(dconsole_history, dinput_text);
+            
+            if (string_char_at(dinput_text, 1) == ""/"")
+                scr_dconsole_command(dinput_text);
+            
+            dinput_text = """";
+            keyboard_string = """";
+            sel_history_count = 0;
+            dcursor_pos = 0;
+            dselect_all = false;
+            dconsole_scroll = 0;
+            blink_cursor = ""|"";
+            blink_timer = 0;
+        }
+    }
+    
+    if (keyboard_check_direct(vk_up))
+    {
+        dup_timer++;
+        
+        if (dup_timer == 1 || (dup_timer > 20 && (dup_timer % 5) == 0))
+        {
+            var _len = array_length(dconsole_history);
+            
+            if (_len > 0 && sel_history_count < _len)
+            {
+                sel_history_count++;
+                var _entry = _len - sel_history_count;
+                dinput_text = dconsole_history[_entry];
+                dcursor_pos = string_length(dinput_text);
+                dselect_all = false;
+                blink_cursor = ""|"";
+                blink_timer = 0;
+            }
+        }
+    }
+    else
+    {
+        dup_timer = 0;
+    }
+    
+    if (keyboard_check_direct(vk_down))
+    {
+        ddown_timer++;
+        
+        if (ddown_timer == 1 || (ddown_timer > 20 && (ddown_timer % 5) == 0))
+        {
+            if (sel_history_count > 0)
+            {
+                sel_history_count--;
+                
+                if (sel_history_count == 0)
+                {
+                    dinput_text = """";
+                }
+                else
+                {
+                    var _len = array_length(dconsole_history);
+                    var _entry = _len - sel_history_count;
+                    dinput_text = dconsole_history[_entry];
+                }
+                
+                dcursor_pos = string_length(dinput_text);
+                dselect_all = false;
+                blink_cursor = ""|"";
+                blink_timer = 0;
+            }
+        }
+    }
+    else
+    {
+        ddown_timer = 0;
+    }
+    
+    blink_timer++;
+    
+    if (blink_timer > 30)
+    {
+        blink_cursor = (blink_cursor == ""|"") ? """" : ""|"";
+        blink_timer = 0;
+    }
+    
+    io_clear();
+}");
+
+
+importGroup.QueueReplace(obj_dconsole_system.EventHandlerFor(EventType.Draw, (uint)64, Data),
+@"if (!dconsole_active)
+    exit;
+
+draw_set_color(c_black);
+draw_set_alpha(0.8);
+draw_rectangle(0, 0, display_get_gui_width(), dconsole_height, false);
+draw_set_color(c_dkgray);
+draw_set_alpha(1);
+draw_line(0, dconsole_height, display_get_gui_width(), dconsole_height);
+draw_set_font(fnt_dotumche);
+var _text_y = dconsole_height - 30;
+
+if (dselect_all && dinput_text != """")
+{
+    var _prefix_width = string_width(""> "");
+    var _full_width = string_width(dinput_text);
+    draw_set_color(c_blue);
+    draw_set_alpha(0.6);
+    draw_rectangle(15 + _prefix_width, _text_y, 15 + _prefix_width + _full_width, _text_y + string_height(""A""), false);
+}
+
+draw_set_color(c_white);
+draw_set_alpha(1);
+draw_text(15, _text_y, ""> "" + dinput_text);
+
+if (!dselect_all && blink_cursor == ""|"")
+{
+    var _text_before_cursor = string_copy(dinput_text, 1, dcursor_pos);
+    var _cursor_x = 15 + string_width(""> "" + _text_before_cursor);
+    draw_line(_cursor_x, _text_y + 2, _cursor_x, (_text_y + string_height(""A"")) - 2);
+}
+
+var _max_width = display_get_gui_width() - 30;
+var _line_spacing = string_height(""A"") + 6;
+var _log_spacing = 10;
+var _history_count = array_length(dconsole_log);
+var _total_h = 0;
+var _visible_from_top = 0;
+var _available_height = dconsole_height - 40 - 10;
+
+for (var _k = 0; _k < _history_count; _k++)
+{
+    var _log_str = dconsole_log[_k];
+    var _pw = 0;
+    var _text = _log_str;
+    
+    if (string_copy(_log_str, 1, 5) == ""  -> "")
+    {
+        _pw = string_width(""  -> "");
+        _text = string_delete(_log_str, 1, 5);
+    }
+    else if (string_copy(_log_str, 1, string_length(dconsole_prefix)) == dconsole_prefix)
+    {
+        _pw = string_width(dconsole_prefix);
+        _text = string_delete(_log_str, 1, string_length(dconsole_prefix));
+    }
+    
+    var _entry_h = string_height_ext(_text, _line_spacing, _max_width - _pw);
+    _total_h += (_entry_h + _log_spacing);
+    _visible_from_top++;
+    
+    if (_total_h > _available_height)
+        break;
+}
+
+var _max_scroll = max(0, _history_count - _visible_from_top);
+
+if (_total_h <= _available_height)
+    _max_scroll = 0;
+
+dconsole_scroll = min(dconsole_scroll, _max_scroll);
+var _baseline_bottom = dconsole_height - 40;
+var _draw_y = _baseline_bottom;
+var _i = _history_count - 1 - floor(dconsole_scroll);
+
+while (_i >= 0)
+{
+    var _log_str = dconsole_log[_i];
+    var _prefix = """";
+    var _text = _log_str;
+    
+    if (string_copy(_log_str, 1, 5) == ""  -> "")
+    {
+        _prefix = ""  -> "";
+        _text = string_delete(_log_str, 1, 5);
+    }
+    else if (string_copy(_log_str, 1, string_length(dconsole_prefix)) == dconsole_prefix)
+    {
+        _prefix = dconsole_prefix;
+        _text = string_delete(_log_str, 1, string_length(dconsole_prefix));
+    }
+    
+    var _px = 15;
+    var _pw = string_width(_prefix);
+    var _rem_width = _max_width - _pw;
+    var _entry_height = string_height_ext(_text, _line_spacing, _rem_width);
+    _draw_y -= _entry_height;
+    
+    if (_draw_y < 10)
+        break;
+    
+    draw_text(_px, _draw_y, _prefix);
+    draw_text_ext(_px + _pw, _draw_y, _text, _line_spacing, _rem_width);
+    _draw_y -= _log_spacing;
+    _i--;
+}");
+
+
+UndertaleScript scr_dconsole_command = Data.Scripts.ByName("scr_dconsole_command");
+importGroup.QueueReplace("gml_GlobalScript_scr_dconsole_command",
+@"function scr_dconsole_command(arg0)
+{
+    static _commands = 
+    {
+        help: function(arg0, arg1, arg2)
+        {
+            var _names = variable_struct_get_names(arg2);
+            array_sort(_names, true);
+            var _list_string = """";
+            
+            for (var _i = 0; _i < array_length(_names); _i++)
+            {
+                _list_string += (""/"" + _names[_i]);
+                
+                if (_i < (array_length(_names) - 1))
+                    _list_string += "", "";
+            }
+            
+            arg1(dstr(""Available commands: "", ""Commandes disponibles : "") + _list_string);
+        },
+        
+        clear: function(arg0, arg1, arg2)
+        {
+            obj_dconsole_system.dconsole_log = [];
+        },
+        
+        debug: function(arg0, arg1, arg2)
+        {
+            if (array_length(arg0) > 1)
+            {
+                var _val = string_lower(string(arg0[1]));
+                
+                if (_val == ""on"" || _val == ""true"" || _val == ""1"" || _val == ""enable"")
+                {
+                    global.debug = 1;
+                    scr_debug_print(dstr(""Debug Mode activated!"", ""Mode Debug activé !""));
+                    arg1(dstr(""Debug Mode activated!"", ""Mode Debug activé !""));
+                }
+                else if (_val == ""off"" || _val == ""false"" || _val == ""0"" || _val == ""disable"")
+                {
+                    global.debug = 0;
+                    scr_debug_print(dstr(""Debug Mode deactivated!"", ""Mode Debug désactivé !""));
+                    arg1(dstr(""Debug Mode deactivated!"", ""Mode Debug désactivé !""));
+                }
+                else
+                {
+                    arg1(dstr(""Error: Invalid input. "", ""Erreur : Saisie invalide. "") + ""Usage -> /debug opt:[on/off]"");
+                }
+            }
+            else
+            {
+                global.debug = !global.debug;
+                
+                if (global.debug)
+                {
+                    scr_debug_print(dstr(""Debug Mode activated!"", ""Mode Debug activé !""));
+                    arg1(dstr(""Debug Mode activated!"", ""Mode Debug activé !""));
+                }
+                else
+                {
+                    scr_debug_print(dstr(""Debug Mode deactivated!"", ""Mode Debug désactivé !""));
+                    arg1(dstr(""Debug Mode deactivated!"", ""Mode Debug désactivé !""));
+                }
+            }
+        },
+        
+        godmode: function(arg0, arg1, arg2)
+        {
+            if (array_length(arg0) > 1)
+            {
+                var _val = string_lower(string(arg0[1]));
+                
+                if (_val == ""on"" || _val == ""true"" || _val == ""1"" || _val == ""enable"")
+                {
+                    global.dgodmode = 1;
+                    scr_debug_print(dstr(""Godmode enabled"", ""Godmode activé""));
+                    arg1(dstr(""Godmode enabled"", ""Godmode activé""));
+                }
+                else if (_val == ""off"" || _val == ""false"" || _val == ""0"" || _val == ""disable"")
+                {
+                    global.dgodmode = 0;
+                    scr_debug_print(dstr(""Godmode disabled"", ""Godmode désactivé""));
+                    arg1(dstr(""Godmode disabled"", ""Godmode désactivé""));
+                }
+                else
+                {
+                    arg1(dstr(""Error: Invalid input. "", ""Erreur : Saisie invalide. "") + ""Usage -> /godmode opt:[on/off]"");
+                }
+            }
+            else
+            {
+                global.dgodmode = !global.dgodmode;
+                
+                if (global.dgodmode)
+                {
+                    scr_debug_print(dstr(""Godmode enabled"", ""Godmode activé""));
+                    arg1(dstr(""Godmode enabled"", ""Godmode activé""));
+                }
+                else
+                {
+                    scr_debug_print(dstr(""Godmode disabled"", ""Godmode désactivé""));
+                    arg1(dstr(""Godmode disabled"", ""Godmode désactivé""));
+                }
+            }
+        },
+        
+        setfps: function(arg0, arg1, arg2)
+        {
+            if (array_length(arg0) > 1)
+            {
+                var _fps_val = real(arg0[1]);
+                global.speed_fps = _fps_val;
+                game_set_speed(_fps_val, gamespeed_fps);
+                scr_debug_print(dstr(""FPS to "", ""FPS à "") + string(_fps_val));
+                arg1(dstr(""FPS was set to "", ""Le nombre de FPS a été fixé à "") + string(_fps_val));
+            }
+            else
+            {
+                arg1(dstr(""Error: Missing argument. Usage -> /fps [value]"", ""Erreur : Argument manquant. Usage -> /fps [valeur]""));
+            }
+        },
+        
+        money: function(arg0, arg1, arg2)
+        {
+            if (array_length(arg0) > 1)
+            {
+                var _money_val = real(arg0[1]);
+                var gold_bk = global.gold;
+                global.gold = _money_val;
+                var _diff_val = _money_val - gold_bk;
+                
+                if (_diff_val >= 0)
+                    scr_debug_print(dstr(""+ D$ "", ""+ "") + string(_diff_val) + dstr("""", "" $""));
+                else
+                    scr_debug_print(dstr(""- D$ "", ""- "") + string(abs(_diff_val)) + dstr("""", "" $""));
+                
+                arg1(dstr(""Money set to D$ "", ""La somme d'argent a été fixée à "") + string(_money_val) + dstr("""", "" $""));
+            }
+            else
+            {
+                arg1(dstr(""Error: Missing argument. Usage -> /money [value]"", ""Erreur : Argument manquant. Usage -> /money [valeur]""));
+            }
+        },
+        
+        vol: function(arg0, arg1, arg2)
+        {
+            if (array_length(arg0) > 1)
+            {
+                var _volume_val = real(arg0[1]);
+                global.flag[17] = _volume_val / 100;
+                audio_set_master_gain(0, global.flag[17]);
+                scr_debug_print(dstr(""Master volume set to "", ""Volume principal réglé à "") + string(_volume_val) + dstr(""%"", "" %""));
+                arg1(dstr(""Master volume set to "", ""Volume principal réglé à "") + string(_volume_val) + dstr(""%"", "" %""));
+            }
+            else
+            {
+                arg1(dstr(""Error: Missing argument. Usage -> /vol [value]"", ""Erreur : Argument manquant. Usage -> /vol [valeur]""));
+            }
+        }
+    };
+    
+    var _clean_string = string_delete(arg0, 1, 1);
+    var _args = string_split(_clean_string, "" "");
+    
+    if (array_length(_args) == 0)
+        exit;
+    
+    var _cmd = string_lower(_args[0]);
+    
+    var _log = function(arg0)
+    {
+        if (dconsole_active)
+            array_push(obj_dconsole_system.dconsole_log, ""  -> "" + arg0);
+    };
+    
+    if (variable_struct_exists(_commands, _cmd))
+    {
+        var _func = variable_struct_get(_commands, _cmd);
+        _func(_args, _log, _commands);
+    }
+    else
+    {
+        _log(dstr(""Unknown command: /"", ""Commande inconnue : /"") + _cmd + dstr("". Type /help to get a list of available commands"", "". Tapez /help pour voir la liste des commandes disponibles""));
+    }
 }");
 
 
@@ -3498,7 +4056,7 @@ else if (dmenu_active)
         {
             if (dvertical_index == 0)
             {
-                dhinter_text = dstr(""[I] - Import individual\n[Alt+I] - Batch import"", ""[I] - Importer individuellement\n[Alt+I] - Importation par lot"");
+                dhinter_text = dstr(""[I] - Import individual\n[Alt+I] - Batch import"", ""[I] - Importation individuelle\n[Alt+I] - Importation par lot"");
             }
             else if (dvertical_index > 0 && dvertical_index < array_length(dbutton_options))
             {
@@ -4602,13 +5160,25 @@ function dmenu_state_interact()
             else if (check_name == ""- "" + dstr(""Rename"", ""Renommer"") || check_name == ""- "" + dstr(""Edit description"", ""Modifier description"") || check_name == ""- "" + dstr(""Change category"", ""Changer description""))
             {
                 if (check_name == ""- "" + dstr(""Rename"", ""Renommer""))
+                {
                     dmenu_state = ""dsave_edit_name"";
+                    keyboard_string = """";
+                    dkeyboard_input = """";
+                }
                 
                 if (check_name == ""- "" + dstr(""Edit description"", ""Modifier description""))
+                {
                     dmenu_state = ""dsave_edit_desc"";
+                    keyboard_string = """";
+                    dkeyboard_input = """";
+                }
                 
                 if (check_name == ""- "" + dstr(""Change category"", ""Changer description""))
+                {
                     dmenu_state = ""dsave_edit_cat"";
+                    keyboard_string = """";
+                    dkeyboard_input = """";
+                }
             }
             
             break;
@@ -5710,7 +6280,7 @@ if (dmenu_active)
 
 if (dkeys_helper == 1)
 {
-    dkeys_data = [string(dstr(""F10 - Toggle debug mode"", ""F10 - Activer/désactiver le debug mode"")), string(dstr(""S - Save game"", ""S - Sauvegarder la partie"")), string(dstr(""L - Load last save"", ""L - Charger la dernière sauvegarde"")), string(dstr(""R - Reload room | Backspace+R - Restart game"", ""R - Charger la salle | Retour arrière+R - Redémarrer le jeu"")), string(dstr(""P - Pause/resume game"", ""P - Mettre en pause/reprendre le jeu"")), string(dstr(""M+1 | M+2 - Add/remove 100 D$"", ""M+1 | M+2 - Ajouter/retirer 100 D$"")), string(dstr(""Delete - Go to previous room"", ""Suppr - Se rendre à la salle précédente"")), string(dstr(""Insert - Go to next room"", ""Insert - Se rendre à la salle suivante"")), string(dstr(""G - Toggle godmode"", ""Activer/désactiver le godmode"")), string(dstr(""W - Skip battle | Shift+W - Skip battle with recruit"", ""W - Sauter un combat | Shift+W - Sauter un combat avec recrue"")), string(dstr(""V - Skip enemy turn"", ""V - Passer le tour de l'ennemi"")), string(dstr(""H - Restore party HP"", ""H - Restaurer les HP du party"")), string(dstr(""T - Fill/empty TP bar"", ""T - Remplir/vider la barre de TP"")), string(dstr(""O - Toggle 30, 60, 120 FPS"", ""O - Basculer entre 30, 60 et 120 FPS"")), string(dstr(""Backspace - Skip intro sequence (Ch1)"", ""Retour arrière - Passer le segment d'intro (Ch1)"")), string(dstr(""Middle Click - Room Editor"", ""Clic milieu - Éditeur de salle""))];
+    dkeys_data = [string(dstr(""F10 - Toggle debug mode"", ""F10 - Activer/désactiver le debug mode"")), string(dstr(""S - Save game"", ""S - Sauvegarder la partie"")), string(dstr(""L - Load last save"", ""L - Charger la dernière sauvegarde"")), string(dstr(""R - Reload room | Backspace+R - Restart game"", ""R - Charger la salle | Retour arrière+R - Redémarrer le jeu"")), string(dstr(""M+1 | M+2 - Add/remove 100 D$"", ""M+1 | M+2 - Ajouter/retirer 100 D$"")), string(dstr(""Delete - Go to previous room"", ""Suppr - Se rendre à la salle précédente"")), string(dstr(""Insert - Go to next room"", ""Insert - Se rendre à la salle suivante"")), string(dstr(""G - Toggle godmode"", ""G - Activer/désactiver le godmode"")), string(dstr(""W - Skip battle | Shift+W - Skip battle with recruit"", ""W - Passer un combat | Shift+W - Passer un combat avec recrue"")), string(dstr(""V - Skip enemy turn"", ""V - Passer le tour de l'ennemi"")), string(dstr(""H - Restore party HP"", ""H - Restaurer les HP du party"")), string(dstr(""T - Fill/empty TP bar"", ""T - Remplir/vider la barre de TP"")), string(dstr(""P - Disable/restore bubble dialog autoskip"", ""P - Désactiver/rétablir l'autoskip des bulles de dialogue"")), string(dstr(""O - Toggle 30, 60, 120 FPS"", ""O - Basculer entre 30, 60 et 120 FPS"")), string(dstr(""Backspace - Skip intro sequence (Ch1)"", ""Retour arrière - Passer le segment d'intro (Ch1)"")), string(dstr(""Middle Click - Room Editor"", ""Clic milieu - Éditeur de salle""))];
     
     menu_width = 264;
     menu_length = 204;
@@ -5788,9 +6358,11 @@ importGroup.QueueReplace(obj_time.EventHandlerFor(EventType.Draw, (uint)0, Data)
 @"if (scr_debug())
 {
 	cur_font = draw_get_font();
-    draw_set_font((global.darkzone == 1) ? : fnt_mainbig : fnt_main);
+    draw_set_font(fnt_main);
+    var text_scale = (global.darkzone == 1) ? 1 : 0.5;
     draw_set_color(c_red);
     draw_text(__view_get(0, 0), __view_get(1, 0), fps);
+    draw_set_font(fnt_main);
     draw_set_color(c_green);
     draw_text_transformed((__view_get(0, 0) + __view_get(2, 0)) - (string_width(room_get_name(room)) * text_scale), __view_get(1, 0), room_get_name(room), text_scale, text_scale, 0);
     draw_text_transformed((__view_get(0, 0) + __view_get(2, 0)) - (string_width(""plot "" + string(global.plot)) * text_scale), __view_get(1, 0) + (15 * text_scale), ""plot "" + string(global.plot), text_scale, text_scale, 0);
@@ -5909,7 +6481,9 @@ importGroup.QueueAppend(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint
 }
 if (!instance_exists(obj_dmenu_system))
     instance_create(0, 0, obj_dmenu_system);
-");
+
+if (!instance_exists(obj_dconsole_system))
+    instance_create_depth(0, 0, -99999, obj_dconsole_system);");
 
 
 UndertaleGameObject obj_overworldc = Data.GameObjects.ByName("obj_overworldc");
@@ -5990,7 +6564,10 @@ importGroup.QueueFindReplace("gml_Object_obj_overworldc_Step_0",
 
 importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, Data),
 @"if (!instance_exists(obj_dmenu_system))
-    instance_create(0, 0, obj_dmenu_system);");
+    instance_create(0, 0, obj_dmenu_system);
+
+if (!instance_exists(obj_dconsole_system))
+    instance_create_depth(0, 0, -99999, obj_dconsole_system);");
 
 
 UndertaleGameObject obj_battlecontroller = Data.GameObjects.ByName("obj_battlecontroller");
@@ -6054,7 +6631,57 @@ importGroup.QueueFindReplace("gml_GlobalScript_scr_damage",
     if (global.inv < 0 && debug_inv == 0)");
 
 
+UndertaleScript draw_sprite_ext_flash = Data.Scripts.ByName("draw_sprite_ext_flash");
+importGroup.QueueReplace("gml_GlobalScript_draw_sprite_ext_flash",
+@"function draw_sprite_ext_flash(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+{
+    d3d_set_fog(true, arg7, 0, 1);
+    draw_sprite_ext(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+    d3d_set_fog(false, c_black, 0, 0);
+}");
+
+
 UndertaleGameObject obj_mainchara = Data.GameObjects.ByName("obj_mainchara");
+importGroup.QueueAppend("gml_Object_obj_mainchara_Create_0",
+@"siner = 0;");
+
+
+importGroup.QueueAppend(obj_mainchara.EventHandlerFor(EventType.Step, (uint)0, Data),
+@"if (scr_debug())
+{
+    siner++;
+    
+    if (mouse_check_button(mb_right) && !i_ex(obj_debug_xy))
+    {
+        if (sprite_index != -1)
+        {
+            if (keyboard_check(vk_up))
+                y -= 3;
+            
+            if (keyboard_check(vk_left))
+                x -= 3;
+            
+            if (keyboard_check(vk_down))
+                y += 3;
+            
+            if (keyboard_check(vk_right))
+                x += 3;
+        }
+    }
+}");
+
+
+importGroup.QueueAppend("gml_Object_obj_mainchara_Draw_0",
+@"if (scr_debug())
+{
+    if (mouse_check_button(mb_right) && !i_ex(obj_debug_xy))
+    {
+        if (sprite_index != -1)
+            draw_sprite_ext_flash(sprite_index, image_index, x, y, image_xscale, image_yscale, image_angle, image_blend, (sin(siner / 8) * 0.5) + 0.5);
+    }
+}");
+
+
 importGroup.QueueAppend(obj_mainchara.EventHandlerFor(EventType.Step, (uint)0, Data),
 @"if (global.debug == 1)
 {

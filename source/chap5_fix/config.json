@@ -3,17 +3,6 @@
     "gml_Object_obj_dw_fcastle_yellow_miniboss_Draw_0.gml": {
         "mode": "replace"
     },
-    ".fix_ch5": {
-        "gml_name": "gml_GlobalScript_scr_get_room_by_id",
-        "actions": [
-            {
-                "find_replace": {
-                    "find": " new scr_room(rm_blank, 50094),",
-                    "replace": ""
-                }
-            }
-        ]
-    },
     ".rm_blank_fix": {
         "gml_name": "gml_GlobalScript_scr_save",
         "actions": [
@@ -30,8 +19,8 @@
         "actions": [
             {
                 "find_replace": {
-                    "find": "if (scr_debug())",
-                    "replace": ""
+                    "find": "return idsarr;",
+                    "replace_file": "room_list.gml"
                 }
             }
         ]

@@ -28,7 +28,7 @@ function scr_debug_save()
         global.debug_save_category = "";
     
     if (!variable_global_exists("debug_save_description"))
-        global.debug_save_description = "No description available.";
+        global.debug_save_description = dstr("No description available.", "Aucune description disponible.");
     
     var temp_id = 999;
     scr_saveprocess(temp_id);

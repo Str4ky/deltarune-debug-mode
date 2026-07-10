@@ -1,0 +1,56 @@
+{
+    
+    "gml_GlobalScript_draw_sprite_ext_flash.gml": {
+        "mode": "replace",
+        "chapters": [1]
+    },
+    ".mainchara_set_siner_var": {
+		"gml_name": "gml_Object_obj_mainchara_Create_0",
+		"actions": [
+			{
+				"append": {
+					"content": "siner = 0;"
+				}
+			}
+		]
+	},
+    "gml_Object_obj_mainchara_Step_0.gml": {
+        "mode": "append"
+    },
+    ".mainchara_draw_flash": {
+		"gml_name": "gml_Object_obj_mainchara_Draw_0",
+		"actions": [
+			{
+				"append": {
+					"content_file": "draw_flash.gml"
+				}
+			}
+		]
+	},
+    ".plat_player_set_siner_var": {
+		"gml_name": "gml_Object_obj_plat_player_Create_0",
+        "chapters": [5],
+		"actions": [
+			{
+				"append": {
+					"content": "siner = 0;\nentity_gravity_bk = 0;"
+				}
+			}
+		]
+	},
+    "gml_Object_obj_plat_player_Step_0.gml": {
+        "chapters": [5],
+        "mode": "append"
+    },
+    ".plat_player_draw_flash": {
+		"gml_name": "gml_Object_obj_plat_player_Draw_0",
+        "chapters": [5],
+		"actions": [
+			{
+				"append": {
+					"content_file": "draw_flash.gml"
+				}
+			}
+		]
+	}
+}
