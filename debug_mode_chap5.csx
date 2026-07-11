@@ -3019,6 +3019,140 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
 }");
 
 
+UndertaleScript scr_debug_fullheal = Data.Scripts.ByName("scr_debug_fullheal");
+importGroup.QueueReplace("gml_GlobalScript_scr_debug_fullheal",
+@"function scr_debug_fullheal()
+{
+    var _in_battle = false;
+    
+    if (variable_global_exists(""charinstance"") && is_array(global.charinstance))
+    {
+        if (array_length(global.charinstance) > 0 && instance_exists(global.charinstance[0]))
+        {
+            if (variable_instance_exists(global.charinstance[0], ""myself""))
+                _in_battle = true;
+        }
+    }
+    
+    if (_in_battle)
+    {
+        with (obj_dmgwriter)
+        {
+            if (delaytimer >= 1)
+                killactive = 1;
+        }
+        
+        scr_healallitemspell(999);
+        
+        for (var i = 0; i < 3; i++)
+        {
+            if (instance_exists(global.charinstance[i]))
+            {
+                with (global.charinstance[i])
+                {
+                    if (variable_instance_exists(id, ""tu""))
+                        tu--;
+                }
+            }
+        }
+    }
+    else
+    {
+        with (obj_dmgwriter)
+        {
+            if (delaytimer >= 1)
+                killactive = 1;
+        }
+        
+        scr_healall(999);
+        var _targets = [];
+        var _plat_player_idx = asset_get_index(""obj_plat_player"");
+        var _mainchara_idx = asset_get_index(""obj_mainchara"");
+        
+        if (_plat_player_idx != -1 && instance_exists(_plat_player_idx))
+        {
+            with (_plat_player_idx)
+                array_push(_targets, id);
+            
+            var _plat_follower_idx = asset_get_index(""obj_plat_follower"");
+            
+            if (_plat_follower_idx != -1)
+            {
+                with (_plat_follower_idx)
+                    array_push(_targets, id);
+            }
+        }
+        else if (_mainchara_idx != -1 && instance_exists(_mainchara_idx))
+        {
+            with (_mainchara_idx)
+                array_push(_targets, id);
+            
+            var _caterpillar_idx = asset_get_index(""obj_caterpillarchara"");
+            
+            if (_caterpillar_idx != -1)
+            {
+                with (_caterpillar_idx)
+                    array_push(_targets, id);
+            }
+        }
+        
+        for (var i = 0; i < array_length(_targets); i++)
+        {
+            var _t = _targets[i];
+            
+            if (instance_exists(_t))
+            {
+                var healanim = instance_create(_t.x, _t.y, obj_healanim);
+                healanim.target = _t;
+                var dmgwr = instance_create(_t.x, _t.y - 30, obj_dmgwriter);
+                
+                with (dmgwr)
+                {
+                    delay = 4;
+                    specialmessage = 3;
+                    image_speed = 0;
+                }
+            }
+        }
+    }
+}");
+
+
+UndertaleScript scr_turn_skip = Data.Scripts.ByName("scr_turn_skip");
+importGroup.QueueReplace("gml_GlobalScript_scr_turn_skip",
+@"function scr_turn_skip()
+{
+    if (global.turntimer > 0 && instance_exists(obj_growtangle) && scr_isphase(""bullets""))
+    {
+        global.turntimer = 0;
+        scr_debug_print(dstr(""Enemy's turn skipped"", ""Tour de l'ennemi passé""));
+    }
+}");
+
+
+UndertaleScript scr_dstr = Data.Scripts.ByName("scr_dstr");
+importGroup.QueueReplace("gml_GlobalScript_scr_dstr",
+@"function scr_dstr()
+{
+    if (argument_count == 1 || global.dlang != ""fr"")
+    {
+        return argument[0];
+    }
+    
+    return argument[1];
+}
+
+function dstr()
+{
+    if (argument_count == 1)
+    {
+        return scr_dstr(argument[0]);
+    }
+    
+    return scr_dstr(argument[0], argument[1]);
+}");
+
+
 UndertaleScript scr_read_keyboard = Data.Scripts.ByName("scr_read_keyboard");
 importGroup.QueueReplace("gml_GlobalScript_scr_read_keyboard",
 @"function scr_read_keyboard()
@@ -3044,29 +3178,6 @@ importGroup.QueueReplace("gml_GlobalScript_scr_read_keyboard",
     
     global.dkeyboard_text = cur_text;
     return text_changed;
-}");
-
-
-UndertaleScript scr_dstr = Data.Scripts.ByName("scr_dstr");
-importGroup.QueueReplace("gml_GlobalScript_scr_dstr",
-@"function scr_dstr()
-{
-    if (argument_count == 1 || global.dlang != ""fr"")
-    {
-        return argument[0];
-    }
-    
-    return argument[1];
-}
-
-function dstr()
-{
-    if (argument_count == 1)
-    {
-        return scr_dstr(argument[0]);
-    }
-    
-    return scr_dstr(argument[0], argument[1]);
 }");
 
 
@@ -3154,6 +3265,699 @@ importGroup.QueueAppend("gml_GlobalScript_scr_string_respect_type",
     
     return is_good;
 }");
+
+
+UndertaleScript scr_debug = Data.Scripts.ByName("scr_debug");
+importGroup.QueueReplace("gml_GlobalScript_scr_debug",
+@"function scr_debug()
+{
+    return global.debug;
+}");
+
+
+UndertaleGameObject obj_time = Data.GameObjects.ByName("obj_time");
+importGroup.QueueReplace(obj_time.EventHandlerFor(EventType.Draw, (uint)0, Data),
+@"if (scr_debug())
+{
+	cur_font = draw_get_font();
+    draw_set_font(fnt_main);
+    var text_scale = (global.darkzone == 1) ? 1 : 0.5;
+    draw_set_color(c_red);
+    draw_text(__view_get(0, 0), __view_get(1, 0), fps);
+    draw_set_font(fnt_main);
+    draw_set_color(c_green);
+    draw_text_transformed((__view_get(0, 0) + __view_get(2, 0)) - (string_width(room_get_name(room)) * text_scale), __view_get(1, 0), room_get_name(room), text_scale, text_scale, 0);
+    draw_text_transformed((__view_get(0, 0) + __view_get(2, 0)) - (string_width(""plot "" + string(global.plot)) * text_scale), __view_get(1, 0) + (15 * text_scale), ""plot "" + string(global.plot), text_scale, text_scale, 0);
+    draw_set_color(c_white);
+    draw_set_font(cur_font);
+}
+");
+
+
+importGroup.QueueAppend(obj_time.EventHandlerFor(EventType.Step, (uint)0, Data),
+@"if (keyboard_check_pressed(vk_f10))
+{
+    global.debug = !global.debug;
+    
+    if (global.debug)
+        scr_debug_print(dstr(""Debug Mode activated!"", ""Mode Debug activé !""));
+    else
+        scr_debug_print(dstr(""Debug Mode deactivated!"", ""Mode Debug désactivé !""));
+}
+
+if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
+{
+    if (keyboard_check_pressed(ord(""G"")))
+    {
+		global.dgodmode = !global.dgodmode;
+
+        if (global.dgodmode)
+			scr_debug_print(dstr(""Godmode enabled"", ""Godmode activé""));
+		else
+			scr_debug_print(dstr(""Godmode disabled"", ""Godmode désactivé""));
+    }
+    
+    if (keyboard_check_pressed(ord(""O"")))
+    {
+        if (!variable_global_exists(""speed_fps""))
+            global.speed_fps = 30;
+        
+        if (global.speed_fps == 30)
+        {
+            global.speed_fps = 60;
+            game_set_speed(60, gamespeed_fps);
+            scr_debug_print(dstr(""FPS to 60"", ""FPS à 60""));
+        }
+        else if (global.speed_fps == 60)
+        {
+            global.speed_fps = 120;
+            game_set_speed(120, gamespeed_fps);
+            scr_debug_print(dstr(""FPS to 120"", ""FPS à 120""));
+        }
+        else
+        {
+            global.speed_fps = 30;
+            game_set_speed(30, gamespeed_fps);
+            scr_debug_print(dstr(""FPS to 30"", ""FPS à 30""));
+        }
+    }
+}");
+
+
+importGroup.QueueReplace("gml_Object_obj_time_Draw_77",
+@"");
+
+
+UndertaleGameObject obj_darkcontroller = Data.GameObjects.ByName("obj_darkcontroller");
+importGroup.QueueAppend(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint)0, Data),
+@"if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
+{
+    if (keyboard_check_pressed(ord(""H"")))
+    {
+        scr_debug_fullheal();
+        scr_debug_print(dstr(""Party HP fully restored"", ""PV de l'équipe restaurés""));
+    }
+    
+    if (keyboard_check_pressed(ord(""2"")) && keyboard_check(ord(""M"")))
+    {
+        if (global.gold >= 100)
+        {
+            global.gold -= 100;
+            scr_debug_print(""- 100 D$"");
+        }
+        else
+        {
+            scr_debug_print(""- "" + string(global.gold) + "" D$"");
+            global.gold = 0;
+        }
+    }
+    
+    if (keyboard_check_pressed(ord(""1"")) && keyboard_check(ord(""M"")))
+    {
+        global.gold += 100;
+        scr_debug_print(""+ 100 D$"");
+    }
+    
+    if (sunkus_kb_check_pressed(ord(""S"")))
+        instance_create(0, 0, obj_savemenu);
+    
+    if (keyboard_check_pressed(ord(""L"")) && keyboard_check(vk_alt))
+    {
+        with (obj_dmenu_system)
+            script_execute(scr_get_debug_save_list);
+
+        obj_dmenu_system.dmenu_popup_launch = 1;
+        obj_dmenu_system.dmenu_state = ""debug_save"";
+        obj_dmenu_system.dmenu_start_index = 0;
+        obj_dmenu_system.dmenu_vertical_index = 0;
+        obj_dmenu_system.dmenu_horizontal_index = 0;
+        obj_dmenu_system.dmenu_state_history = [];
+        obj_dmenu_system.dmenu_horizontal_index_history = [];
+        obj_dmenu_system.dmenu_vertical_index_history = [];
+        obj_dmenu_system.dmenu_page_index_history = [];
+        obj_dmenu_system.dmenu_active = true;
+        snd_play(snd_egg);
+    }
+    
+    if (sunkus_kb_check_pressed(ord(""L"")) && !keyboard_check(vk_alt))
+        scr_load();
+    
+    if (sunkus_kb_check_pressed(ord(""R"")) && sunkus_kb_check(vk_backspace))
+        game_restart_true();
+    
+    if (sunkus_kb_check_pressed(ord(""R"")) && !sunkus_kb_check(vk_backspace))
+    {
+        snd_free_all();
+        room_restart();
+        global.interact = 0;
+    }
+}
+
+if (!instance_exists(obj_dmenu_system))
+    instance_create(0, 0, obj_dmenu_system);
+
+if (!instance_exists(obj_dconsole_system))
+    instance_create_depth(0, 0, -99999, obj_dconsole_system);");
+
+
+importGroup.QueueFindReplace("gml_Object_obj_darkcontroller_Step_0",
+@"if (scr_debug())",
+@"if (0)");
+
+
+UndertaleGameObject obj_overworldc = Data.GameObjects.ByName("obj_overworldc");
+importGroup.QueueFindReplace("gml_Object_obj_overworldc_Step_0",
+@"if (sunkus_kb_check_pressed(ord(""L"")))",
+@"if (0)");
+importGroup.QueueAppend("gml_Object_obj_overworldc_Step_0",
+@"if (scr_debug())
+{
+    if (sunkus_kb_check_pressed(ord(""L"")) && keyboard_check(vk_alt))
+    {
+        with (obj_dmenu_system)
+            script_execute(scr_get_debug_save_list);
+
+        obj_dmenu_system.dmenu_popup_launch = 1;
+        obj_dmenu_system.dmenu_state = ""debug_save"";
+        obj_dmenu_system.dmenu_start_index = 0;
+        obj_dmenu_system.dmenu_vertical_index = 0;
+        obj_dmenu_system.dmenu_horizontal_index = 0;
+        obj_dmenu_system.dmenu_state_history = [];
+        obj_dmenu_system.dmenu_horizontal_index_history = [];
+        obj_dmenu_system.dmenu_vertical_index_history = [];
+        obj_dmenu_system.dmenu_page_index_history = [];
+        obj_dmenu_system.dmenu_active = true;
+        snd_play(snd_egg);
+    }
+    
+    if (sunkus_kb_check_pressed(ord(""L"")) && !keyboard_check(vk_alt))
+        scr_load();
+}");
+importGroup.QueueFindReplace("gml_Object_obj_overworldc_Step_0",
+@"if (scr_debug())",
+@"if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))");
+importGroup.QueueFindReplace("gml_Object_obj_overworldc_Step_0",
+@"if (sunkus_kb_check_pressed(ord(""R"")))",
+@"if (sunkus_kb_check_pressed(ord(""R"")) && !sunkus_kb_check(vk_backspace))");
+
+
+importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, Data),
+@"if (!instance_exists(obj_dmenu_system))
+    instance_create(0, 0, obj_dmenu_system);
+
+if (!instance_exists(obj_dconsole_system))
+    instance_create_depth(0, 0, -99999, obj_dconsole_system);");
+
+
+UndertaleGameObject obj_battlecontroller = Data.GameObjects.ByName("obj_battlecontroller");
+importGroup.QueueAppend(obj_battlecontroller.EventHandlerFor(EventType.Step, (uint)0, Data),
+@"if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
+{
+    if (keyboard_check_pressed(ord(""P"")))
+    {
+        global.dpause_dialog = !global.dpause_dialog;
+
+        if (global.dpause_dialog)
+            scr_debug_print(dstr(""Dialog autoskip disabled"", ""Autoskip des dialogues désactivé""));
+        else
+            scr_debug_print(dstr(""Dialog autoskip enabled (default)"", ""Autoskip des dialogues activé (par défault)""));
+    }
+    
+    if (keyboard_check_pressed(ord(""T"")))
+    {
+        if (global.tension < 250)
+        {
+            global.tension = 250;
+            scr_debug_print(dstr(""TP to 250%"", ""PT à 250 %""));
+        }
+        else
+        {
+            global.tension = 0;
+            scr_debug_print(dstr(""TP to 0%"", ""PT à 0 %""));
+        }
+    }
+    
+    if (keyboard_check_pressed(ord(""V"")))
+        scr_turn_skip();
+        
+    if (keyboard_check_pressed(ord(""W"")))
+    {
+        scr_wincombat();
+        scr_debug_print(dstr(""Fight skipped"", ""Combat passé""));
+    }
+}");
+
+
+importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_Step_0",
+@"if (scr_debug())",
+@"if (0)");
+
+
+UndertaleScript scr_wincombat = Data.Scripts.ByName("scr_wincombat");
+importGroup.QueueFindReplace("gml_GlobalScript_scr_wincombat",
+@"scr_monsterdefeat();",
+@"if (keyboard_check(vk_shift))
+{
+    scr_spareanim();
+    scr_recruit();
+}
+
+scr_monsterdefeat();");
+
+
+UndertaleGameObject obj_plat_player = Data.GameObjects.ByName("obj_plat_player");
+importGroup.QueueAppend(obj_plat_player.EventHandlerFor(EventType.Step, (uint)0, Data),
+@"if (scr_debug())
+{
+    if (keyboard_check_pressed(ord(""W"")))
+    {
+        scr_debug_print(dstr(""Fight skipped"", ""Combat passé""));
+        var _y_miniboss = asset_get_index(""obj_plat_enm_yellow_miniboss"");
+        var _pun_gun = asset_get_index(""obj_plat_enm_yellow_punishmentgun"");
+        var _y_combat   = asset_get_index(""obj_dw_fcastle_yellow_combat"");
+        var _orange_gauntlet = asset_get_index(""obj_dw_fcastle_orange_gauntlet"");
+        
+        with (all)
+        {
+            if (id != obj_plat_player.id && variable_instance_exists(id, ""get_hurt""))
+            {
+                hp = 0;
+                
+                if (object_index != _y_miniboss && object_index != _pun_gun && object_index != _orange_gauntlet)
+                {
+                    hit = 1;
+                    instance_destroy();
+                }
+            }
+        }
+        
+        with (obj_plat_bullet)
+            instance_destroy();
+        
+        with (obj_plat_combatstarter)
+        {
+            enemy_wave_extflags = [];
+            
+            if (con == 1 || con == 2)
+            {
+                con = 2;
+                endcombat();
+            }
+        }
+        
+        with (obj_enemy_wave)
+        {
+            if (con == 1)
+                end_wave();
+        }
+        
+        if (_y_combat != -1)
+        {
+            with (_y_combat)
+                con = 11;
+        }
+    }
+}");
+
+
+UndertaleScript scr_damage_all_overworld = Data.Scripts.ByName("scr_damage_all_overworld");
+importGroup.QueueFindReplace("gml_GlobalScript_scr_damage_all_overworld",
+@"    if (global.inv < 0)",
+@"    if (global.dgodmode)
+        exit;
+    if (global.inv < 0)");
+
+
+UndertaleScript scr_damage = Data.Scripts.ByName("scr_damage");
+importGroup.QueueFindReplace("gml_GlobalScript_scr_damage",
+@"    if (global.inv < 0)",
+@"    if (global.dgodmode)
+        exit;
+    if (global.inv < 0)");
+
+
+UndertaleScript scr_damage_all_platmode = Data.Scripts.ByName("scr_damage_all_platmode");
+importGroup.QueueFindReplace("gml_GlobalScript_scr_damage_all_platmode",
+@"    if (global.inv < 0)",
+@"    if (global.dgodmode)
+        exit;
+    if (global.inv < 0)");
+
+
+importGroup.QueueFindReplace("gml_Object_obj_plat_player_Step_0",
+@"infinite_jumps",
+@"global.dgodmode");
+
+
+UndertaleGameObject obj_mainchara = Data.GameObjects.ByName("obj_mainchara");
+importGroup.QueueAppend("gml_Object_obj_mainchara_Create_0",
+@"siner = 0;");
+
+
+importGroup.QueueAppend(obj_mainchara.EventHandlerFor(EventType.Step, (uint)0, Data),
+@"if (scr_debug())
+{
+    siner++;
+    
+    if (mouse_check_button(mb_right) && !i_ex(obj_debug_xy))
+    {
+        if (sprite_index != -1)
+        {
+            if (keyboard_check(vk_up))
+                y -= 3;
+            
+            if (keyboard_check(vk_left))
+                x -= 3;
+            
+            if (keyboard_check(vk_down))
+                y += 3;
+            
+            if (keyboard_check(vk_right))
+                x += 3;
+        }
+    }
+}");
+
+
+importGroup.QueueAppend("gml_Object_obj_mainchara_Draw_0",
+@"if (scr_debug())
+{
+    if (mouse_check_button(mb_right) && !i_ex(obj_debug_xy))
+    {
+        if (sprite_index != -1)
+            draw_sprite_ext_flash(sprite_index, image_index, x, y, image_xscale, image_yscale, image_angle, image_blend, (sin(siner / 8) * 0.5) + 0.5);
+    }
+}");
+
+
+importGroup.QueueAppend("gml_Object_obj_plat_player_Create_0",
+@"siner = 0;
+entity_gravity_bk = 0;");
+
+
+importGroup.QueueAppend(obj_plat_player.EventHandlerFor(EventType.Step, (uint)0, Data),
+@"if (scr_debug())
+{
+    siner++;
+    
+    if (mouse_check_button(mb_right) && !i_ex(obj_debug_xy))
+    {
+        if (entity_gravity_bk == 0)
+            entity_gravity_bk = entity_gravity;
+        
+        entity_gravity = 0;
+        gravity = 0;
+        wallcollision = 0;
+        vspeed = 0;
+        
+        if (sprite_index != -1)
+        {
+            if (keyboard_check(vk_up))
+                y -= 6;
+            
+            if (keyboard_check(vk_left))
+                x -= 6;
+            
+            if (keyboard_check(vk_down))
+                y += 6;
+            
+            if (keyboard_check(vk_right))
+                x += 6;
+        }
+    }
+    else
+    {
+        if (entity_gravity_bk != 0)
+        {
+            gravity = entity_gravity_bk;
+            entity_gravity = entity_gravity_bk;
+        }
+        
+        entity_gravity_bk = 0;
+        wallcollision = 1;
+    }
+}");
+
+
+importGroup.QueueAppend("gml_Object_obj_plat_player_Draw_0",
+@"if (scr_debug())
+{
+    if (mouse_check_button(mb_right) && !i_ex(obj_debug_xy))
+    {
+        if (sprite_index != -1)
+            draw_sprite_ext_flash(sprite_index, image_index, x, y, image_xscale, image_yscale, image_angle, image_blend, (sin(siner / 8) * 0.5) + 0.5);
+    }
+}");
+
+
+UndertaleGameObject obj_rhythmgame = Data.GameObjects.ByName("obj_rhythmgame");
+importGroup.QueueAppend("gml_Object_obj_rhythmgame_Step_0",
+@"if (scr_debug())
+{
+    if (keyboard_check_pressed(ord(""U"")))
+        event_user(4);
+    
+    if (keyboard_check_pressed(ord(""I"")) || (show_debug && (gamepad_button_check_pressed(0, gp_face3) || gamepad_button_check_pressed(1, gp_face3))))
+    {
+        if (tutorial > 0)
+        {
+            debug_print(""Can not alter autoplay during tutorial"");
+        }
+        else if (auto_play == 0)
+        {
+            auto_play = 1;
+            debug_print(""Autoplay enabled."");
+        }
+        else if (auto_play == 1)
+        {
+            auto_play = 0;
+            debug_print(""Autoplay disabled."");
+        }
+    }
+    
+    if (keyboard_check_pressed(ord(""N"")) || (show_debug && (gamepad_button_check_pressed(0, gp_select) || gamepad_button_check_pressed(1, gp_select))))
+    {
+        show_debug = !show_debug;
+        
+        if (show_debug)
+        {
+            debug_print(""debug mode enabled"");
+        }
+        else
+        {
+            scr_debug_delete_persistent(""Debug keys"");
+            debug_print(""debug mode disabled"");
+        }
+    }
+    
+    if (song_id == 0 && solo_con == 0)
+    {
+        if (keyboard_check_pressed(ord(""1"")))
+        {
+            solo_difficulty = 0;
+            scr_debug_print(""Solo difficulty set to easy."");
+        }
+        else if (keyboard_check_pressed(ord(""2"")))
+        {
+            solo_difficulty = 1;
+            scr_debug_print(""Solo difficulty set to medium."");
+        }
+        else if (keyboard_check_pressed(ord(""3"")))
+        {
+            solo_difficulty = 2;
+            scr_debug_print(""Solo difficulty set to hard."");
+        }
+        else if (keyboard_check_pressed(ord(""4"")))
+        {
+            solo_difficulty = -1;
+            scr_debug_print(""Solo difficulty set to auto."");
+        }
+    }
+    
+    var _vol = main_vol;
+    
+    if (sunkus_kb_check_pressed_with_repeat(189))
+        _vol -= (keyboard_check(vk_lshift) ? 0.5 : 0.1);
+    
+    if (sunkus_kb_check_pressed_with_repeat(187))
+        _vol += (keyboard_check(vk_lshift) ? 0.5 : 0.1);
+    
+    if (_vol != main_vol)
+    {
+        main_vol = clamp01(_vol);
+        mus_volume(track1_instance, main_vol, 0);
+        
+        if (oneAtATime)
+            mus_volume(track2_instance, 0, 0);
+        else
+            mus_volume(track2_instance, main_vol, 0);
+        
+        debug_print(""Song volume set to "" + string(main_vol * 100) + ""%"");
+    }
+}
+
+if (song_id == 4)
+{
+    if (scr_debug() && intro_con == 1 && keyboard_check_pressed(ord(""4"")))
+        intro_con = 2;
+}");
+importGroup.QueueFindReplace("gml_Object_obj_rhythmgame_Step_0",
+@"var _truetrackpos = 0;",
+@"if (scr_debug() && song_initialized == 1)
+{
+    if (keyboard_check_pressed(ord(""P"")) || (show_debug && (gamepad_button_check_pressed(0, gp_start) || gamepad_button_check_pressed(1, gp_start))))
+    {
+        paused = !paused;
+        
+        if (paused)
+        {
+            audio_pause_sound(track1_main);
+            audio_pause_sound(track2_main);
+            
+            if (song_id == 0)
+            {
+                audio_pause_sound(track1_solo);
+                audio_pause_sound(track2_solo);
+            }
+        }
+        else
+        {
+            audio_resume_sound(track1_main);
+            audio_resume_sound(track2_main);
+            
+            if (song_id == 0)
+            {
+                audio_resume_sound(track1_solo);
+                audio_resume_sound(track2_solo);
+            }
+        }
+    }
+}
+
+var _truetrackpos = 0;");
+importGroup.QueueFindReplace("gml_Object_obj_rhythmgame_Step_0",
+@"fame = clamp(fame, 0, max_fame);",
+@"fame = clamp(fame, 0, max_fame);
+    
+if (scr_debug())
+{
+    if (song_initialized && !song_done && loadsong == 3)
+    {
+        var _skip = false;
+        
+        if (keyboard_check_pressed(vk_f5))
+        {
+            _skip = true;
+            fame = 999999;
+        }
+        
+        if (keyboard_check_pressed(vk_f6))
+        {
+            fame = 0;
+            
+            if (lose_con == 0)
+                lose_con = 1;
+        }
+        
+        if (_skip)
+        {
+            total_fame = fame;
+            trackpos = track_length;
+            audio_stop_all();
+            scr_rhythmgame_notechart_clear();
+            performer.sprite_index = spr_kris_rock_2;
+            
+            with (drums)
+            {
+                performer.sprite_index = spr_susie_drum;
+                scr_rhythmgame_notechart_clear();
+                con = -1;
+                fade = 1;
+            }
+            
+            with (vocals)
+            {
+                performer.sprite_index = spr_ralsei_rock_1;
+                scr_rhythmgame_notechart_clear();
+                scr_rhythmgame_clear_all_lyrics();
+            }
+        }
+    }
+}");
+importGroup.QueueAppend("gml_Object_obj_rhythmgame_Step_0",
+@"if (scr_debug())
+{
+    if (show_debug)
+    {
+        var _key_data = ""[Shift + -/+] Change volume: "" + string(main_vol * 100) + ""%"";
+        _key_data += ""#[P] Pause song"";
+        _key_data += ""#[R] Restart song"";
+        _key_data += ""#[F5] End song"";
+        _key_data += ""#[F6] Go to end screen"";
+        _key_data += (""#[I] Autoplay: "" + (auto_play ? ""on"" : ""off""));
+        _key_data += (""#[U] Swap modes: "" + string(tutorial));
+        _key_data += ""#[N] Toggle rhythm game debug"";
+        scr_debug_print_persistent(""Debug keys"", _key_data);
+    }
+}");
+
+
+UndertaleScript scr_blconskip = Data.Scripts.ByName("scr_blconskip");
+importGroup.QueueFindReplace("gml_GlobalScript_scr_blconskip",
+@"if (arg0 >= 0)",
+@"if (global.dpause_dialog)
+{
+    if (button1_p())
+    {
+        talktimer = talkmax;
+        
+        with (obj_writer)
+            instance_destroy();
+        
+        if (i_ex(obj_balloon_queue))
+            msgset_fromqueue();
+        else
+            global.mnfight = 1.5;
+    }
+    
+    exit;
+}
+
+if (arg0 >= 0)");
+
+
+UndertaleGameObject obj_dw_fcastle_yellow_miniboss = Data.GameObjects.ByName("obj_dw_fcastle_yellow_miniboss");
+importGroup.QueueReplace(obj_dw_fcastle_yellow_miniboss.EventHandlerFor(EventType.Draw, (uint)0, Data),
+@"");
+
+
+UndertaleScript scr_save = Data.Scripts.ByName("scr_save");
+importGroup.QueueFindReplace("gml_GlobalScript_scr_save",
+@"    if (scr_debug())
+    {
+        if (room == rm_blank)
+        {
+            scr_debug_print(""CURRENTLY IN A LIVE ROOM, DON'T SAVE HERE -- MOVING TO ACTUAL ROOM FOR SAVING"");
+            room_goto(live_live_room);
+            exit;
+        }
+    }",
+@"");
+
+
+UndertaleScript scr_get_room_by_id = Data.Scripts.ByName("scr_get_room_by_id");
+importGroup.QueueFindReplace("gml_GlobalScript_scr_get_room_by_id",
+@"return idsarr;",
+@"idsarr = [new scr_room(PLACE_CONTACT, 50012), new scr_room(room_krisroom, 50013), new scr_room(room_krishallway, 50014), new scr_room(room_torroom, 50015), new scr_room(room_torhouse, 50016), new scr_room(room_torbathroom, 50017), new scr_room(room_town_krisyard, 50018), new scr_room(room_town_northwest, 50019), new scr_room(room_town_north, 50020), new scr_room(room_beach, 50021), new scr_room(room_town_mid, 50022), new scr_room(room_town_apartments, 50023), new scr_room(room_town_south, 50024), new scr_room(room_town_school, 50025), new scr_room(room_town_church, 50026), new scr_room(room_graveyard, 50027), new scr_room(room_town_shelter, 50028), new scr_room(room_hospital_lobby, 50029), new scr_room(room_hospital_hallway, 50030), new scr_room(room_hospital_rudy, 50031), new scr_room(room_hospital_room2, 50032), new scr_room(room_diner, 50033), new scr_room(room_townhall, 50034), new scr_room(room_flowershop_1f, 50035), new scr_room(room_flowershop_2f, 50036), new scr_room(room_library, 50037), new scr_room(room_alphysalley, 50038), new scr_room(room_lw_computer_lab, 50039), new scr_room(room_lw_library_upstairs, 50040), new scr_room(room_lw_police, 50041), new scr_room(room_lw_conbini, 50042), new scr_room(room_lw_icee_pizza, 50043), new scr_room(room_torielclass, 50044), new scr_room(room_schoollobby, 50045), new scr_room(room_alphysclass, 50046), new scr_room(room_schooldoor, 50047), new scr_room(room_insidecloset, 50048), new scr_room(room_school_unusedroom, 50049), new scr_room(room_castle_tutorial, 50050), new scr_room(room_dw_castle_east_door, 50051), new scr_room(room_dw_castle_west_cliff, 50052), new scr_room(room_dw_castle_area_1, 50053), new scr_room(room_dw_castle_town, 50054), new scr_room(room_dw_ralsei_castle_front, 50055), new scr_room(room_dw_castle_restaurant, 50056), new scr_room(room_dw_castle_cafe, 50057), new scr_room(room_dw_castle_dojo, 50058), new scr_room(room_dw_ralsei_castle_1f, 50059), new scr_room(room_dw_ralsei_castle_2f, 50060), new scr_room(room_dw_ralsei_castle_3f, 50061), new scr_room(room_dw_castle_dungeon, 50062), new scr_room(room_dw_castle_rooms_kris, 50063), new scr_room(room_dw_castle_rooms_susie, 50064), new scr_room(room_dw_castle_rooms_ralsei, 50065), new scr_room(PLACE_DOG, 50066), new scr_room(room_legend, 50067), new scr_room(room_legend_neo, 50068), new scr_room(room_shop1, 50069), new scr_room(room_shop_music, 50070), new scr_room(room_gameover, 50071), new scr_room(PLACE_LOGO, 50072), new scr_room(PLACE_FAILURE, 50073), new scr_room(PLACE_NAMING_JIKKEN, 50074), new scr_room(PLACE_MENU, 50075), new scr_room(room_ed, 50076), new scr_room(room_empty, 50077), new scr_room(room_DARKempty, 50078), new scr_room(room_DARKbase_GMS2, 50079), new scr_room(room_cc_lancer, 50080), new scr_room(room_cc_clover, 50081), new scr_room(room_cc_fountain, 50082), new scr_room(PLACE_DOGCHECK2, 50083), new scr_room(room_debug_smallface_dark, 50084), new scr_room(room_debug_smallface, 50085), new scr_room(room_debug_choicer_dark, 50086), new scr_room(room_debug_choicer_light, 50087), new scr_room(room_debug_battleBalloon, 50088), new scr_room(room_overworldBulletEnemyTest, 50089), new scr_room(room_lerptest, 50090), new scr_room(room_bullettest, 50091), new scr_room(room_bullettest_new, 50092), new scr_room(room_animexampletest, 50093), new scr_room(room_climbtest, 50095), new scr_room(room_chapter_continue, 50096), new scr_room(room_towery_tester, 50098), new scr_room(room_animtest, 50099), new scr_room(PLACE_DOGCHECK_CH5, 50100), new scr_room(room_darkbulbTest, 50101), new scr_room(room_dw_fcastle_shadowplatformTest, 50102), new scr_room(room_plat_lab, 50103), new scr_room(room_lw_church_choir, 50104), new scr_room(room_lw_church_entrance, 50105), new scr_room(room_lw_church_main, 50106), new scr_room(room_lw_church_office, 50107), new scr_room(room_lw_noellehouse_dess, 50108), new scr_room(room_town_noellehouse, 50109), new scr_room(room_dw_rhythm, 50110), new scr_room(room_dw_rhythm_countdown, 50111), new scr_room(room_dw_rhythm_empty, 50112), new scr_room(room_rhythmgame_editor, 50113), new scr_room(room_dw_castle_tv, 50114), new scr_room(room_dw_castle_tv_rhythm, 50115), new scr_room(room_dw_castle_church_entrance, 50116), new scr_room(room_dw_castle_church_climb, 50117), new scr_room(room_dw_ralsei_castle_basketball, 50118), new scr_room(room_shop_ch5, 50119), new scr_room(room_dw_garden_meetflowery, 50120), new scr_room(room_dw_garden_video, 50121), new scr_room(room_dw_garden_intro, 50122), new scr_room(room_dw_garden_ralseicupboard, 50123), new scr_room(room_dw_garden_floradinnencounter, 50124), new scr_room(room_dw_garden_hospital, 50125), new scr_room(room_dw_garden_fishingspot, 50126), new scr_room(room_dw_garden_shearydodge, 50127), new scr_room(room_dw_garden_hopschef, 50128), new scr_room(room_dw_garden_platshortcut, 50129), new scr_room(room_dw_garden_riverchest, 50130), new scr_room(room_dw_garden_enemyrush, 50131), new scr_room(room_dw_garden_pedestal, 50132), new scr_room(room_dw_garden_mushrooms, 50133), new scr_room(room_dw_garden_flowerygardening, 50134), new scr_room(room_dw_garden_diner, 50135), new scr_room(room_dw_garden_starwalkerdash, 50136), new scr_room(room_dw_garden_hardpressureplates, 50137), new scr_room(room_dw_garden_aqua, 50138), new scr_room(room_dw_garden_finalplatforming, 50139), new scr_room(room_dw_garden_finalplatforming_right, 50140), new scr_room(room_dw_garden_wateringcan_aqua, 50141), new scr_room(room_dw_garden_aquadarkness, 50142), new scr_room(room_dw_garden_aquahole, 50143), new scr_room(room_dw_garden_aquashrine, 50144), new scr_room(room_dw_garden_aquaplatforming, 50145), new scr_room(room_dw_garden_cliffexit, 50146), new scr_room(room_dw_garden_susiechase, 50147), new scr_room(room_dw_garden_newdash, 50148), new scr_room(room_dw_garden_shearyguide, 50149), new scr_room(room_dw_pink_encounter, 50150), new scr_room(room_dw_garden_aquatransition, 50151), new scr_room(room_dw_garden_aquadash, 50152), new scr_room(room_dw_garden_aquahole_left, 50153), new scr_room(room_dw_garden_firstdash, 50154), new scr_room(room_dw_garden_aquadash_plat, 50155), new scr_room(room_dw_cliff_gardentransition_new, 50156), new scr_room(room_dw_cliff_climbrefresher, 50157), new scr_room(room_dw_cliff_cutdown_tutorial, 50158), new scr_room(room_dw_cliff_bunnyfarm, 50159), new scr_room(room_dw_cliff_silver_hammer, 50160), new scr_room(room_dw_cliff_dash_runner, 50161), new scr_room(room_dw_cliff_seth_miniboss, 50162), new scr_room(room_dw_cliff_shop, 50163), new scr_room(room_dw_cliff_netskieclimb, 50164), new scr_room(room_dw_cliff_finaldash, 50165), new scr_room(room_dw_cliff_yellowcave, 50166), new scr_room(room_dw_cliff_shicave, 50167), new scr_room(room_dw_cliff_verticalwind, 50168), new scr_room(room_dw_cliff_sethaqua_battle, 50169), new scr_room(room_dw_cliff_verticalwind_post, 50170), new scr_room(room_dw_cliff_netskieclimb_behind, 50171), new scr_room(room_dw_cliff_eastcliff, 50172), new scr_room(room_dw_cliff_bonuscombat, 50173), new scr_room(room_dw_cliff_twirlflowerplatforming, 50174), new scr_room(room_dw_cliff_kawkawdash, 50175), new scr_room(room_dw_cliff_precipice, 50176), new scr_room(room_dw_cliff_twirlflowerwind, 50177), new scr_room(room_dogplatforming, 50179), new scr_room(room_dw_fcastle_entrance, 50180), new scr_room(room_dw_fcastle_cafe, 50181), new scr_room(room_dw_fcastle_foyer, 50182), new scr_room(room_dw_fcastle_post_party_jail, 50183), new scr_room(room_dw_fcastle_shinobeetle_encounter, 50184), new scr_room(room_dw_fcastle_left_wing_floweryscene, 50185), new scr_room(room_dw_fcastle_bounce_1, 50186), new scr_room(room_dw_fcastle_left_twodoors, 50187), new scr_room(room_dw_fcastle_yellow_miniboss, 50188), new scr_room(room_dw_fcastle_sandtrap, 50189), new scr_room(room_dw_fcastle_dangerous_platforming, 50190), new scr_room(room_dw_fcastle_blueroom, 50191), new scr_room(room_dw_fcastle_yellowjail, 50192), new scr_room(room_dw_fcastle_onsen, 50193), new scr_room(room_dw_fcastle_left_penultimate, 50194), new scr_room(room_dw_flowery_tree, 50195), new scr_room(room_dw_fcastle_bounce_3, 50196), new scr_room(room_dw_fcastle_shinobeetle_3d, 50197), new scr_room(room_dw_fcastle_heldmushrooms, 50198), new scr_room(room_dw_fcastle_flowerydash, 50199), new scr_room(room_dw_fcastle_partyjail, 50200), new scr_room(room_dw_fcastle_terracotta_encounter, 50201), new scr_room(room_dw_fcastle_terracotta_bonus, 50202), new scr_room(room_dw_fcastle_fusumadodge, 50203), new scr_room(room_dw_fcastle_right_wing_floweryscene, 50204), new scr_room(room_dw_fcastle_orange_puppet_introduction, 50205), new scr_room(room_dw_fcastle_gloves_tower, 50206), new scr_room(room_dw_fcastle_second_diner, 50207), new scr_room(room_dw_fcastle_obscured_bullets, 50208), new scr_room(room_dw_fcastle_foxhunt, 50209), new scr_room(room_dw_fcastle_right_penultimate, 50210), new scr_room(room_dw_fcastle_green_orange_battle, 50211), new scr_room(room_dw_fcastle_right_endingscene, 50212), new scr_room(room_dw_fcastle_right_puzzle, 50213), new scr_room(room_dw_castle_music, 50214), new scr_room(room_man, 50215), new scr_room(room_dw_dogballoon, 50216), new scr_room(room_dw_fcastle_orange_gauntlet, 50217), new scr_room(room_dw_fcastle_sidepuzzle, 50218), new scr_room(room_dw_castle_tv_mike, 50219), new scr_room(room_dw_fcastle_zenlooker, 50220), new scr_room(room_dw_fcastle_trainroom, 50221), new scr_room(room_dw_post_flowery_battle, 50222), new scr_room(room_dw_fcastle_flowerclimb, 50223), new scr_room(room_dw_fcastle_top_intro, 50224), new scr_room(room_dw_fcastle_top_staircase_1, 50225), new scr_room(room_dw_fcastle_ultradash, 50226), new scr_room(room_dw_fcastle_yellowblue, 50227), new scr_room(room_dw_fcastle_top_entrance, 50228), new scr_room(room_dw_fcastle_top_staircase_2, 50229), new scr_room(room_dw_fcastle_green_checkpoint, 50230), new scr_room(room_dw_fcastle_final_save, 50231), new scr_room(room_dw_fcastle_flowery, 50232), new scr_room(room_dw_fcastle_seth_encounter, 50233), new scr_room(room_dw_fcastle_top_descent, 50234), new scr_room(room_dw_fcastle_top_pinkdoor, 50235), new scr_room(room_dw_fcastle_pinkroom, 50236), new scr_room(room_dw_fcastle_top_fountain, 50237), new scr_room(room_dw_post_fountain_close, 50238), new scr_room(room_dw_fcastle_pinkshop, 50239), new scr_room(room_dw_fcastle_foxhunt_terakota, 50240), new scr_room(room_dw_fcastle_foxhunt_socks, 50241), new scr_room(room_dw_fcastle_foxhunt_chaos, 50242), new scr_room(room_dw_fcastle_foxhunt_secret, 50243), new scr_room(room_dw_castle_tv_kikky, 50244), new scr_room(room_dw_fcastle_terracotta_puzzle, 50246), new scr_room(room_dw_fcastle_bromides, 50247), new scr_room(room_dw_fcastle_top_ascent, 50248), new scr_room(room_dw_fcastle_top_challenge, 50249)];
+array_push(idsarr, new scr_room(room_animexampletest, 100002), new scr_room(room_darkbulbTest, 100004), new scr_room(room_dw_fcastle_shadowplatformTest, 100005));
+
+return idsarr;");
+
+
+UndertaleGameObject obj_date_controller = Data.GameObjects.ByName("obj_date_controller");
+importGroup.QueueFindReplace("gml_Object_obj_date_controller_Other_10",
+@"if (global.hp[global.char[ti]] > 0 && global.char[ti] != 0)",
+@"if (global.hp[global.char[ti]] > 0 && global.char[ti] != 0 && global.dgodmode == 0)");
 
 
 UndertaleGameObject obj_dconsole_system = new UndertaleGameObject();
@@ -7478,671 +8282,6 @@ enum e__VW
     Camera,
     SurfaceID
 }");
-
-
-UndertaleScript scr_debug = Data.Scripts.ByName("scr_debug");
-importGroup.QueueReplace("gml_GlobalScript_scr_debug",
-@"function scr_debug()
-{
-    return global.debug;
-}");
-
-
-UndertaleGameObject obj_time = Data.GameObjects.ByName("obj_time");
-importGroup.QueueReplace(obj_time.EventHandlerFor(EventType.Draw, (uint)0, Data),
-@"if (scr_debug())
-{
-	cur_font = draw_get_font();
-    draw_set_font(fnt_main);
-    var text_scale = (global.darkzone == 1) ? 1 : 0.5;
-    draw_set_color(c_red);
-    draw_text(__view_get(0, 0), __view_get(1, 0), fps);
-    draw_set_font(fnt_main);
-    draw_set_color(c_green);
-    draw_text_transformed((__view_get(0, 0) + __view_get(2, 0)) - (string_width(room_get_name(room)) * text_scale), __view_get(1, 0), room_get_name(room), text_scale, text_scale, 0);
-    draw_text_transformed((__view_get(0, 0) + __view_get(2, 0)) - (string_width(""plot "" + string(global.plot)) * text_scale), __view_get(1, 0) + (15 * text_scale), ""plot "" + string(global.plot), text_scale, text_scale, 0);
-    draw_set_color(c_white);
-    draw_set_font(cur_font);
-}
-");
-
-
-importGroup.QueueAppend(obj_time.EventHandlerFor(EventType.Step, (uint)0, Data),
-@"if (keyboard_check_pressed(vk_f10))
-{
-    global.debug = !global.debug;
-    
-    if (global.debug)
-        scr_debug_print(dstr(""Debug Mode activated!"", ""Mode Debug activé !""));
-    else
-        scr_debug_print(dstr(""Debug Mode deactivated!"", ""Mode Debug désactivé !""));
-}
-
-if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
-{
-    if (keyboard_check_pressed(ord(""G"")))
-    {
-		global.dgodmode = !global.dgodmode;
-
-        if (global.dgodmode)
-			scr_debug_print(dstr(""Godmode enabled"", ""Godmode activé""));
-		else
-			scr_debug_print(dstr(""Godmode disabled"", ""Godmode désactivé""));
-    }
-    
-    if (keyboard_check_pressed(ord(""O"")))
-    {
-        if (!variable_global_exists(""speed_fps""))
-            global.speed_fps = 30;
-        
-        if (global.speed_fps == 30)
-        {
-            global.speed_fps = 60;
-            game_set_speed(60, gamespeed_fps);
-            scr_debug_print(dstr(""FPS to 60"", ""FPS à 60""));
-        }
-        else if (global.speed_fps == 60)
-        {
-            global.speed_fps = 120;
-            game_set_speed(120, gamespeed_fps);
-            scr_debug_print(dstr(""FPS to 120"", ""FPS à 120""));
-        }
-        else
-        {
-            global.speed_fps = 30;
-            game_set_speed(30, gamespeed_fps);
-            scr_debug_print(dstr(""FPS to 30"", ""FPS à 30""));
-        }
-    }
-}");
-
-
-importGroup.QueueReplace("gml_Object_obj_time_Draw_77",
-@"");
-
-
-UndertaleGameObject obj_darkcontroller = Data.GameObjects.ByName("obj_darkcontroller");
-importGroup.QueueAppend(obj_darkcontroller.EventHandlerFor(EventType.Step, (uint)0, Data),
-@"if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
-{
-    if (keyboard_check_pressed(ord(""2"")) && keyboard_check(ord(""M"")))
-    {
-        if (global.gold >= 100)
-        {
-            global.gold -= 100;
-            scr_debug_print(""- 100 D$"");
-        }
-        else
-        {
-            scr_debug_print(""- "" + string(global.gold) + "" D$"");
-            global.gold = 0;
-        }
-    }
-    
-    if (keyboard_check_pressed(ord(""1"")) && keyboard_check(ord(""M"")))
-    {
-        global.gold += 100;
-        scr_debug_print(""+ 100 D$"");
-    }
-    
-    if (sunkus_kb_check_pressed(ord(""S"")))
-        instance_create(0, 0, obj_savemenu);
-    
-    if (keyboard_check_pressed(ord(""L"")) && keyboard_check(vk_alt))
-    {
-        with (obj_dmenu_system)
-            script_execute(scr_get_debug_save_list);
-
-        obj_dmenu_system.dmenu_popup_launch = 1;
-        obj_dmenu_system.dmenu_state = ""debug_save"";
-        obj_dmenu_system.dmenu_start_index = 0;
-        obj_dmenu_system.dmenu_vertical_index = 0;
-        obj_dmenu_system.dmenu_horizontal_index = 0;
-        obj_dmenu_system.dmenu_state_history = [];
-        obj_dmenu_system.dmenu_horizontal_index_history = [];
-        obj_dmenu_system.dmenu_vertical_index_history = [];
-        obj_dmenu_system.dmenu_page_index_history = [];
-        obj_dmenu_system.dmenu_active = true;
-        snd_play(snd_egg);
-    }
-    
-    if (sunkus_kb_check_pressed(ord(""L"")) && !keyboard_check(vk_alt))
-        scr_load();
-    
-    if (sunkus_kb_check_pressed(ord(""R"")) && sunkus_kb_check(vk_backspace))
-        game_restart_true();
-    
-    if (sunkus_kb_check_pressed(ord(""R"")) && !sunkus_kb_check(vk_backspace))
-    {
-        snd_free_all();
-        room_restart();
-        global.interact = 0;
-    }
-}
-
-if (!instance_exists(obj_dmenu_system))
-    instance_create(0, 0, obj_dmenu_system);
-
-if (!instance_exists(obj_dconsole_system))
-    instance_create_depth(0, 0, -99999, obj_dconsole_system);");
-
-
-importGroup.QueueFindReplace("gml_Object_obj_darkcontroller_Step_0",
-@"if (scr_debug())",
-@"if (0)");
-
-
-UndertaleGameObject obj_overworldc = Data.GameObjects.ByName("obj_overworldc");
-importGroup.QueueFindReplace("gml_Object_obj_overworldc_Step_0",
-@"if (sunkus_kb_check_pressed(ord(""L"")))",
-@"if (0)");
-importGroup.QueueAppend("gml_Object_obj_overworldc_Step_0",
-@"if (scr_debug())
-{
-    if (sunkus_kb_check_pressed(ord(""L"")) && keyboard_check(vk_alt))
-    {
-        with (obj_dmenu_system)
-            script_execute(scr_get_debug_save_list);
-
-        obj_dmenu_system.dmenu_popup_launch = 1;
-        obj_dmenu_system.dmenu_state = ""debug_save"";
-        obj_dmenu_system.dmenu_start_index = 0;
-        obj_dmenu_system.dmenu_vertical_index = 0;
-        obj_dmenu_system.dmenu_horizontal_index = 0;
-        obj_dmenu_system.dmenu_state_history = [];
-        obj_dmenu_system.dmenu_horizontal_index_history = [];
-        obj_dmenu_system.dmenu_vertical_index_history = [];
-        obj_dmenu_system.dmenu_page_index_history = [];
-        obj_dmenu_system.dmenu_active = true;
-        snd_play(snd_egg);
-    }
-    
-    if (sunkus_kb_check_pressed(ord(""L"")) && !keyboard_check(vk_alt))
-        scr_load();
-}");
-importGroup.QueueFindReplace("gml_Object_obj_overworldc_Step_0",
-@"if (scr_debug())",
-@"if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))");
-importGroup.QueueFindReplace("gml_Object_obj_overworldc_Step_0",
-@"if (sunkus_kb_check_pressed(ord(""R"")))",
-@"if (sunkus_kb_check_pressed(ord(""R"")) && !sunkus_kb_check(vk_backspace))");
-
-
-importGroup.QueueAppend(obj_overworldc.EventHandlerFor(EventType.Step, (uint)0, Data),
-@"if (!instance_exists(obj_dmenu_system))
-    instance_create(0, 0, obj_dmenu_system);
-
-if (!instance_exists(obj_dconsole_system))
-    instance_create_depth(0, 0, -99999, obj_dconsole_system);");
-
-
-UndertaleGameObject obj_battlecontroller = Data.GameObjects.ByName("obj_battlecontroller");
-importGroup.QueueAppend(obj_battlecontroller.EventHandlerFor(EventType.Step, (uint)0, Data),
-@"if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
-{
-    if (keyboard_check_pressed(ord(""P"")))
-    {
-        global.dpause_dialog = !global.dpause_dialog;
-
-        if (global.dpause_dialog)
-            scr_debug_print(dstr(""Dialog autoskip disabled"", ""Autoskip des dialogues désactivé""));
-        else
-            scr_debug_print(dstr(""Dialog autoskip enabled (default)"", ""Autoskip des dialogues activé (par défault)""));
-    }
-    
-    if (keyboard_check_pressed(ord(""T"")))
-    {
-        if (global.tension < 250)
-        {
-            global.tension = 250;
-            scr_debug_print(dstr(""TP to 250%"", ""PT à 250 %""));
-        }
-        else
-        {
-            global.tension = 0;
-            scr_debug_print(dstr(""TP to 0%"", ""PT à 0 %""));
-        }
-    }
-    
-    if (keyboard_check_pressed(ord(""V"")))
-        scr_turn_skip();
-    
-    if (keyboard_check_pressed(ord(""H"")))
-    {
-        scr_debug_fullheal();
-        scr_debug_print(dstr(""Party HP fully restored"", ""PV de l'équipe restaurés""));
-    }
-    
-    if (keyboard_check_pressed(ord(""W"")))
-    {
-        scr_wincombat();
-        scr_debug_print(dstr(""Fight skipped"", ""Combat passé""));
-    }
-}");
-
-
-importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_Step_0",
-@"if (scr_debug())",
-@"if (0)");
-
-
-UndertaleScript scr_wincombat = Data.Scripts.ByName("scr_wincombat");
-importGroup.QueueFindReplace("gml_GlobalScript_scr_wincombat",
-@"scr_monsterdefeat();",
-@"if (keyboard_check(vk_shift))
-{
-    scr_spareanim();
-    scr_recruit();
-}
-
-scr_monsterdefeat();");
-
-
-UndertaleScript scr_damage_all_overworld = Data.Scripts.ByName("scr_damage_all_overworld");
-importGroup.QueueFindReplace("gml_GlobalScript_scr_damage_all_overworld",
-@"    if (global.inv < 0)",
-@"    if (global.dgodmode)
-        exit;
-    if (global.inv < 0)");
-
-
-UndertaleScript scr_damage = Data.Scripts.ByName("scr_damage");
-importGroup.QueueFindReplace("gml_GlobalScript_scr_damage",
-@"    if (global.inv < 0)",
-@"    if (global.dgodmode)
-        exit;
-    if (global.inv < 0)");
-
-
-UndertaleScript scr_damage_all_platmode = Data.Scripts.ByName("scr_damage_all_platmode");
-importGroup.QueueFindReplace("gml_GlobalScript_scr_damage_all_platmode",
-@"    if (global.inv < 0)",
-@"    if (global.dgodmode)
-        exit;
-    if (global.inv < 0)");
-
-
-UndertaleGameObject obj_plat_player = Data.GameObjects.ByName("obj_plat_player");
-importGroup.QueueFindReplace("gml_Object_obj_plat_player_Step_0",
-@"infinite_jumps",
-@"global.dgodmode");
-
-
-UndertaleGameObject obj_mainchara = Data.GameObjects.ByName("obj_mainchara");
-importGroup.QueueAppend("gml_Object_obj_mainchara_Create_0",
-@"siner = 0;");
-
-
-importGroup.QueueAppend(obj_mainchara.EventHandlerFor(EventType.Step, (uint)0, Data),
-@"if (scr_debug())
-{
-    siner++;
-    
-    if (mouse_check_button(mb_right) && !i_ex(obj_debug_xy))
-    {
-        if (sprite_index != -1)
-        {
-            if (keyboard_check(vk_up))
-                y -= 3;
-            
-            if (keyboard_check(vk_left))
-                x -= 3;
-            
-            if (keyboard_check(vk_down))
-                y += 3;
-            
-            if (keyboard_check(vk_right))
-                x += 3;
-        }
-    }
-}");
-
-
-importGroup.QueueAppend("gml_Object_obj_mainchara_Draw_0",
-@"if (scr_debug())
-{
-    if (mouse_check_button(mb_right) && !i_ex(obj_debug_xy))
-    {
-        if (sprite_index != -1)
-            draw_sprite_ext_flash(sprite_index, image_index, x, y, image_xscale, image_yscale, image_angle, image_blend, (sin(siner / 8) * 0.5) + 0.5);
-    }
-}");
-
-
-importGroup.QueueAppend("gml_Object_obj_plat_player_Create_0",
-@"siner = 0;
-entity_gravity_bk = 0;");
-
-
-importGroup.QueueAppend(obj_plat_player.EventHandlerFor(EventType.Step, (uint)0, Data),
-@"if (scr_debug())
-{
-    siner++;
-    
-    if (mouse_check_button(mb_right) && !i_ex(obj_debug_xy))
-    {
-        if (entity_gravity_bk == 0)
-            entity_gravity_bk = entity_gravity;
-        
-        entity_gravity = 0;
-        gravity = 0;
-        wallcollision = 0;
-        vspeed = 0;
-        
-        if (sprite_index != -1)
-        {
-            if (keyboard_check(vk_up))
-                y -= 6;
-            
-            if (keyboard_check(vk_left))
-                x -= 6;
-            
-            if (keyboard_check(vk_down))
-                y += 6;
-            
-            if (keyboard_check(vk_right))
-                x += 6;
-        }
-    }
-    else
-    {
-        if (entity_gravity_bk != 0)
-        {
-            gravity = entity_gravity_bk;
-            entity_gravity = entity_gravity_bk;
-        }
-        
-        entity_gravity_bk = 0;
-        wallcollision = 1;
-    }
-}");
-
-
-importGroup.QueueAppend("gml_Object_obj_plat_player_Draw_0",
-@"if (scr_debug())
-{
-    if (mouse_check_button(mb_right) && !i_ex(obj_debug_xy))
-    {
-        if (sprite_index != -1)
-            draw_sprite_ext_flash(sprite_index, image_index, x, y, image_xscale, image_yscale, image_angle, image_blend, (sin(siner / 8) * 0.5) + 0.5);
-    }
-}");
-
-
-UndertaleScript scr_debug_fullheal = Data.Scripts.ByName("scr_debug_fullheal");
-importGroup.QueueReplace("gml_GlobalScript_scr_debug_fullheal",
-@"function scr_debug_fullheal()
-{
-    with (obj_dmgwriter)
-    {
-        if (delaytimer >= 1)
-            killactive = 1;
-    }
-    
-    scr_healallitemspell(999);
-    
-    for (i = 0; i < 3; i++)
-    {
-        with (global.charinstance[i])
-            tu--;
-    }
-}");
-
-
-UndertaleScript scr_turn_skip = Data.Scripts.ByName("scr_turn_skip");
-importGroup.QueueReplace("gml_GlobalScript_scr_turn_skip",
-@"function scr_turn_skip()
-{
-    if (global.turntimer > 0 && instance_exists(obj_growtangle) && scr_isphase(""bullets""))
-    {
-        global.turntimer = 0;
-        scr_debug_print(dstr(""Enemy's turn skipped"", ""Tour de l'ennemi passé""));
-    }
-}");
-
-
-UndertaleGameObject obj_rhythmgame = Data.GameObjects.ByName("obj_rhythmgame");
-importGroup.QueueAppend("gml_Object_obj_rhythmgame_Step_0",
-@"if (scr_debug())
-{
-    if (keyboard_check_pressed(ord(""U"")))
-        event_user(4);
-    
-    if (keyboard_check_pressed(ord(""I"")) || (show_debug && (gamepad_button_check_pressed(0, gp_face3) || gamepad_button_check_pressed(1, gp_face3))))
-    {
-        if (tutorial > 0)
-        {
-            debug_print(""Can not alter autoplay during tutorial"");
-        }
-        else if (auto_play == 0)
-        {
-            auto_play = 1;
-            debug_print(""Autoplay enabled."");
-        }
-        else if (auto_play == 1)
-        {
-            auto_play = 0;
-            debug_print(""Autoplay disabled."");
-        }
-    }
-    
-    if (keyboard_check_pressed(ord(""N"")) || (show_debug && (gamepad_button_check_pressed(0, gp_select) || gamepad_button_check_pressed(1, gp_select))))
-    {
-        show_debug = !show_debug;
-        
-        if (show_debug)
-        {
-            debug_print(""debug mode enabled"");
-        }
-        else
-        {
-            scr_debug_delete_persistent(""Debug keys"");
-            debug_print(""debug mode disabled"");
-        }
-    }
-    
-    if (song_id == 0 && solo_con == 0)
-    {
-        if (keyboard_check_pressed(ord(""1"")))
-        {
-            solo_difficulty = 0;
-            scr_debug_print(""Solo difficulty set to easy."");
-        }
-        else if (keyboard_check_pressed(ord(""2"")))
-        {
-            solo_difficulty = 1;
-            scr_debug_print(""Solo difficulty set to medium."");
-        }
-        else if (keyboard_check_pressed(ord(""3"")))
-        {
-            solo_difficulty = 2;
-            scr_debug_print(""Solo difficulty set to hard."");
-        }
-        else if (keyboard_check_pressed(ord(""4"")))
-        {
-            solo_difficulty = -1;
-            scr_debug_print(""Solo difficulty set to auto."");
-        }
-    }
-    
-    var _vol = main_vol;
-    
-    if (sunkus_kb_check_pressed_with_repeat(189))
-        _vol -= (keyboard_check(vk_lshift) ? 0.5 : 0.1);
-    
-    if (sunkus_kb_check_pressed_with_repeat(187))
-        _vol += (keyboard_check(vk_lshift) ? 0.5 : 0.1);
-    
-    if (_vol != main_vol)
-    {
-        main_vol = clamp01(_vol);
-        mus_volume(track1_instance, main_vol, 0);
-        
-        if (oneAtATime)
-            mus_volume(track2_instance, 0, 0);
-        else
-            mus_volume(track2_instance, main_vol, 0);
-        
-        debug_print(""Song volume set to "" + string(main_vol * 100) + ""%"");
-    }
-}
-
-if (song_id == 4)
-{
-    if (scr_debug() && intro_con == 1 && keyboard_check_pressed(ord(""4"")))
-        intro_con = 2;
-}");
-importGroup.QueueFindReplace("gml_Object_obj_rhythmgame_Step_0",
-@"var _truetrackpos = 0;",
-@"if (scr_debug() && song_initialized == 1)
-{
-    if (keyboard_check_pressed(ord(""P"")) || (show_debug && (gamepad_button_check_pressed(0, gp_start) || gamepad_button_check_pressed(1, gp_start))))
-    {
-        paused = !paused;
-        
-        if (paused)
-        {
-            audio_pause_sound(track1_main);
-            audio_pause_sound(track2_main);
-            
-            if (song_id == 0)
-            {
-                audio_pause_sound(track1_solo);
-                audio_pause_sound(track2_solo);
-            }
-        }
-        else
-        {
-            audio_resume_sound(track1_main);
-            audio_resume_sound(track2_main);
-            
-            if (song_id == 0)
-            {
-                audio_resume_sound(track1_solo);
-                audio_resume_sound(track2_solo);
-            }
-        }
-    }
-}
-
-var _truetrackpos = 0;");
-importGroup.QueueFindReplace("gml_Object_obj_rhythmgame_Step_0",
-@"fame = clamp(fame, 0, max_fame);",
-@"fame = clamp(fame, 0, max_fame);
-    
-if (scr_debug())
-{
-    if (song_initialized && !song_done && loadsong == 3)
-    {
-        var _skip = false;
-        
-        if (keyboard_check_pressed(vk_f5))
-        {
-            _skip = true;
-            fame = 999999;
-        }
-        
-        if (keyboard_check_pressed(vk_f6))
-        {
-            fame = 0;
-            
-            if (lose_con == 0)
-                lose_con = 1;
-        }
-        
-        if (_skip)
-        {
-            total_fame = fame;
-            trackpos = track_length;
-            audio_stop_all();
-            scr_rhythmgame_notechart_clear();
-            performer.sprite_index = spr_kris_rock_2;
-            
-            with (drums)
-            {
-                performer.sprite_index = spr_susie_drum;
-                scr_rhythmgame_notechart_clear();
-                con = -1;
-                fade = 1;
-            }
-            
-            with (vocals)
-            {
-                performer.sprite_index = spr_ralsei_rock_1;
-                scr_rhythmgame_notechart_clear();
-                scr_rhythmgame_clear_all_lyrics();
-            }
-        }
-    }
-}");
-importGroup.QueueAppend("gml_Object_obj_rhythmgame_Step_0",
-@"if (scr_debug())
-{
-    if (show_debug)
-    {
-        var _key_data = ""[Shift + -/+] Change volume: "" + string(main_vol * 100) + ""%"";
-        _key_data += ""#[P] Pause song"";
-        _key_data += ""#[R] Restart song"";
-        _key_data += ""#[F5] End song"";
-        _key_data += ""#[F6] Go to end screen"";
-        _key_data += (""#[I] Autoplay: "" + (auto_play ? ""on"" : ""off""));
-        _key_data += (""#[U] Swap modes: "" + string(tutorial));
-        _key_data += ""#[N] Toggle rhythm game debug"";
-        scr_debug_print_persistent(""Debug keys"", _key_data);
-    }
-}");
-
-
-UndertaleScript scr_blconskip = Data.Scripts.ByName("scr_blconskip");
-importGroup.QueueFindReplace("gml_GlobalScript_scr_blconskip",
-@"if (arg0 >= 0)",
-@"if (global.dpause_dialog)
-{
-    if (button1_p())
-    {
-        talktimer = talkmax;
-        
-        with (obj_writer)
-            instance_destroy();
-        
-        if (i_ex(obj_balloon_queue))
-            msgset_fromqueue();
-        else
-            global.mnfight = 1.5;
-    }
-    
-    exit;
-}
-
-if (arg0 >= 0)");
-
-
-UndertaleGameObject obj_dw_fcastle_yellow_miniboss = Data.GameObjects.ByName("obj_dw_fcastle_yellow_miniboss");
-importGroup.QueueReplace(obj_dw_fcastle_yellow_miniboss.EventHandlerFor(EventType.Draw, (uint)0, Data),
-@"");
-
-
-UndertaleScript scr_save = Data.Scripts.ByName("scr_save");
-importGroup.QueueFindReplace("gml_GlobalScript_scr_save",
-@"    if (scr_debug())
-    {
-        if (room == rm_blank)
-        {
-            scr_debug_print(""CURRENTLY IN A LIVE ROOM, DON'T SAVE HERE -- MOVING TO ACTUAL ROOM FOR SAVING"");
-            room_goto(live_live_room);
-            exit;
-        }
-    }",
-@"");
-
-
-UndertaleScript scr_get_room_by_id = Data.Scripts.ByName("scr_get_room_by_id");
-importGroup.QueueFindReplace("gml_GlobalScript_scr_get_room_by_id",
-@"return idsarr;",
-@"idsarr = [new scr_room(PLACE_CONTACT, 50012), new scr_room(room_krisroom, 50013), new scr_room(room_krishallway, 50014), new scr_room(room_torroom, 50015), new scr_room(room_torhouse, 50016), new scr_room(room_torbathroom, 50017), new scr_room(room_town_krisyard, 50018), new scr_room(room_town_northwest, 50019), new scr_room(room_town_north, 50020), new scr_room(room_beach, 50021), new scr_room(room_town_mid, 50022), new scr_room(room_town_apartments, 50023), new scr_room(room_town_south, 50024), new scr_room(room_town_school, 50025), new scr_room(room_town_church, 50026), new scr_room(room_graveyard, 50027), new scr_room(room_town_shelter, 50028), new scr_room(room_hospital_lobby, 50029), new scr_room(room_hospital_hallway, 50030), new scr_room(room_hospital_rudy, 50031), new scr_room(room_hospital_room2, 50032), new scr_room(room_diner, 50033), new scr_room(room_townhall, 50034), new scr_room(room_flowershop_1f, 50035), new scr_room(room_flowershop_2f, 50036), new scr_room(room_library, 50037), new scr_room(room_alphysalley, 50038), new scr_room(room_lw_computer_lab, 50039), new scr_room(room_lw_library_upstairs, 50040), new scr_room(room_lw_police, 50041), new scr_room(room_lw_conbini, 50042), new scr_room(room_lw_icee_pizza, 50043), new scr_room(room_torielclass, 50044), new scr_room(room_schoollobby, 50045), new scr_room(room_alphysclass, 50046), new scr_room(room_schooldoor, 50047), new scr_room(room_insidecloset, 50048), new scr_room(room_school_unusedroom, 50049), new scr_room(room_castle_tutorial, 50050), new scr_room(room_dw_castle_east_door, 50051), new scr_room(room_dw_castle_west_cliff, 50052), new scr_room(room_dw_castle_area_1, 50053), new scr_room(room_dw_castle_town, 50054), new scr_room(room_dw_ralsei_castle_front, 50055), new scr_room(room_dw_castle_restaurant, 50056), new scr_room(room_dw_castle_cafe, 50057), new scr_room(room_dw_castle_dojo, 50058), new scr_room(room_dw_ralsei_castle_1f, 50059), new scr_room(room_dw_ralsei_castle_2f, 50060), new scr_room(room_dw_ralsei_castle_3f, 50061), new scr_room(room_dw_castle_dungeon, 50062), new scr_room(room_dw_castle_rooms_kris, 50063), new scr_room(room_dw_castle_rooms_susie, 50064), new scr_room(room_dw_castle_rooms_ralsei, 50065), new scr_room(PLACE_DOG, 50066), new scr_room(room_legend, 50067), new scr_room(room_legend_neo, 50068), new scr_room(room_shop1, 50069), new scr_room(room_shop_music, 50070), new scr_room(room_gameover, 50071), new scr_room(PLACE_LOGO, 50072), new scr_room(PLACE_FAILURE, 50073), new scr_room(PLACE_NAMING_JIKKEN, 50074), new scr_room(PLACE_MENU, 50075), new scr_room(room_ed, 50076), new scr_room(room_empty, 50077), new scr_room(room_DARKempty, 50078), new scr_room(room_DARKbase_GMS2, 50079), new scr_room(room_cc_lancer, 50080), new scr_room(room_cc_clover, 50081), new scr_room(room_cc_fountain, 50082), new scr_room(PLACE_DOGCHECK2, 50083), new scr_room(room_debug_smallface_dark, 50084), new scr_room(room_debug_smallface, 50085), new scr_room(room_debug_choicer_dark, 50086), new scr_room(room_debug_choicer_light, 50087), new scr_room(room_debug_battleBalloon, 50088), new scr_room(room_overworldBulletEnemyTest, 50089), new scr_room(room_lerptest, 50090), new scr_room(room_bullettest, 50091), new scr_room(room_bullettest_new, 50092), new scr_room(room_animexampletest, 50093), new scr_room(room_climbtest, 50095), new scr_room(room_chapter_continue, 50096), new scr_room(room_towery_tester, 50098), new scr_room(room_animtest, 50099), new scr_room(PLACE_DOGCHECK_CH5, 50100), new scr_room(room_darkbulbTest, 50101), new scr_room(room_dw_fcastle_shadowplatformTest, 50102), new scr_room(room_plat_lab, 50103), new scr_room(room_lw_church_choir, 50104), new scr_room(room_lw_church_entrance, 50105), new scr_room(room_lw_church_main, 50106), new scr_room(room_lw_church_office, 50107), new scr_room(room_lw_noellehouse_dess, 50108), new scr_room(room_town_noellehouse, 50109), new scr_room(room_dw_rhythm, 50110), new scr_room(room_dw_rhythm_countdown, 50111), new scr_room(room_dw_rhythm_empty, 50112), new scr_room(room_rhythmgame_editor, 50113), new scr_room(room_dw_castle_tv, 50114), new scr_room(room_dw_castle_tv_rhythm, 50115), new scr_room(room_dw_castle_church_entrance, 50116), new scr_room(room_dw_castle_church_climb, 50117), new scr_room(room_dw_ralsei_castle_basketball, 50118), new scr_room(room_shop_ch5, 50119), new scr_room(room_dw_garden_meetflowery, 50120), new scr_room(room_dw_garden_video, 50121), new scr_room(room_dw_garden_intro, 50122), new scr_room(room_dw_garden_ralseicupboard, 50123), new scr_room(room_dw_garden_floradinnencounter, 50124), new scr_room(room_dw_garden_hospital, 50125), new scr_room(room_dw_garden_fishingspot, 50126), new scr_room(room_dw_garden_shearydodge, 50127), new scr_room(room_dw_garden_hopschef, 50128), new scr_room(room_dw_garden_platshortcut, 50129), new scr_room(room_dw_garden_riverchest, 50130), new scr_room(room_dw_garden_enemyrush, 50131), new scr_room(room_dw_garden_pedestal, 50132), new scr_room(room_dw_garden_mushrooms, 50133), new scr_room(room_dw_garden_flowerygardening, 50134), new scr_room(room_dw_garden_diner, 50135), new scr_room(room_dw_garden_starwalkerdash, 50136), new scr_room(room_dw_garden_hardpressureplates, 50137), new scr_room(room_dw_garden_aqua, 50138), new scr_room(room_dw_garden_finalplatforming, 50139), new scr_room(room_dw_garden_finalplatforming_right, 50140), new scr_room(room_dw_garden_wateringcan_aqua, 50141), new scr_room(room_dw_garden_aquadarkness, 50142), new scr_room(room_dw_garden_aquahole, 50143), new scr_room(room_dw_garden_aquashrine, 50144), new scr_room(room_dw_garden_aquaplatforming, 50145), new scr_room(room_dw_garden_cliffexit, 50146), new scr_room(room_dw_garden_susiechase, 50147), new scr_room(room_dw_garden_newdash, 50148), new scr_room(room_dw_garden_shearyguide, 50149), new scr_room(room_dw_pink_encounter, 50150), new scr_room(room_dw_garden_aquatransition, 50151), new scr_room(room_dw_garden_aquadash, 50152), new scr_room(room_dw_garden_aquahole_left, 50153), new scr_room(room_dw_garden_firstdash, 50154), new scr_room(room_dw_garden_aquadash_plat, 50155), new scr_room(room_dw_cliff_gardentransition_new, 50156), new scr_room(room_dw_cliff_climbrefresher, 50157), new scr_room(room_dw_cliff_cutdown_tutorial, 50158), new scr_room(room_dw_cliff_bunnyfarm, 50159), new scr_room(room_dw_cliff_silver_hammer, 50160), new scr_room(room_dw_cliff_dash_runner, 50161), new scr_room(room_dw_cliff_seth_miniboss, 50162), new scr_room(room_dw_cliff_shop, 50163), new scr_room(room_dw_cliff_netskieclimb, 50164), new scr_room(room_dw_cliff_finaldash, 50165), new scr_room(room_dw_cliff_yellowcave, 50166), new scr_room(room_dw_cliff_shicave, 50167), new scr_room(room_dw_cliff_verticalwind, 50168), new scr_room(room_dw_cliff_sethaqua_battle, 50169), new scr_room(room_dw_cliff_verticalwind_post, 50170), new scr_room(room_dw_cliff_netskieclimb_behind, 50171), new scr_room(room_dw_cliff_eastcliff, 50172), new scr_room(room_dw_cliff_bonuscombat, 50173), new scr_room(room_dw_cliff_twirlflowerplatforming, 50174), new scr_room(room_dw_cliff_kawkawdash, 50175), new scr_room(room_dw_cliff_precipice, 50176), new scr_room(room_dw_cliff_twirlflowerwind, 50177), new scr_room(room_dogplatforming, 50179), new scr_room(room_dw_fcastle_entrance, 50180), new scr_room(room_dw_fcastle_cafe, 50181), new scr_room(room_dw_fcastle_foyer, 50182), new scr_room(room_dw_fcastle_post_party_jail, 50183), new scr_room(room_dw_fcastle_shinobeetle_encounter, 50184), new scr_room(room_dw_fcastle_left_wing_floweryscene, 50185), new scr_room(room_dw_fcastle_bounce_1, 50186), new scr_room(room_dw_fcastle_left_twodoors, 50187), new scr_room(room_dw_fcastle_yellow_miniboss, 50188), new scr_room(room_dw_fcastle_sandtrap, 50189), new scr_room(room_dw_fcastle_dangerous_platforming, 50190), new scr_room(room_dw_fcastle_blueroom, 50191), new scr_room(room_dw_fcastle_yellowjail, 50192), new scr_room(room_dw_fcastle_onsen, 50193), new scr_room(room_dw_fcastle_left_penultimate, 50194), new scr_room(room_dw_flowery_tree, 50195), new scr_room(room_dw_fcastle_bounce_3, 50196), new scr_room(room_dw_fcastle_shinobeetle_3d, 50197), new scr_room(room_dw_fcastle_heldmushrooms, 50198), new scr_room(room_dw_fcastle_flowerydash, 50199), new scr_room(room_dw_fcastle_partyjail, 50200), new scr_room(room_dw_fcastle_terracotta_encounter, 50201), new scr_room(room_dw_fcastle_terracotta_bonus, 50202), new scr_room(room_dw_fcastle_fusumadodge, 50203), new scr_room(room_dw_fcastle_right_wing_floweryscene, 50204), new scr_room(room_dw_fcastle_orange_puppet_introduction, 50205), new scr_room(room_dw_fcastle_gloves_tower, 50206), new scr_room(room_dw_fcastle_second_diner, 50207), new scr_room(room_dw_fcastle_obscured_bullets, 50208), new scr_room(room_dw_fcastle_foxhunt, 50209), new scr_room(room_dw_fcastle_right_penultimate, 50210), new scr_room(room_dw_fcastle_green_orange_battle, 50211), new scr_room(room_dw_fcastle_right_endingscene, 50212), new scr_room(room_dw_fcastle_right_puzzle, 50213), new scr_room(room_dw_castle_music, 50214), new scr_room(room_man, 50215), new scr_room(room_dw_dogballoon, 50216), new scr_room(room_dw_fcastle_orange_gauntlet, 50217), new scr_room(room_dw_fcastle_sidepuzzle, 50218), new scr_room(room_dw_castle_tv_mike, 50219), new scr_room(room_dw_fcastle_zenlooker, 50220), new scr_room(room_dw_fcastle_trainroom, 50221), new scr_room(room_dw_post_flowery_battle, 50222), new scr_room(room_dw_fcastle_flowerclimb, 50223), new scr_room(room_dw_fcastle_top_intro, 50224), new scr_room(room_dw_fcastle_top_staircase_1, 50225), new scr_room(room_dw_fcastle_ultradash, 50226), new scr_room(room_dw_fcastle_yellowblue, 50227), new scr_room(room_dw_fcastle_top_entrance, 50228), new scr_room(room_dw_fcastle_top_staircase_2, 50229), new scr_room(room_dw_fcastle_green_checkpoint, 50230), new scr_room(room_dw_fcastle_final_save, 50231), new scr_room(room_dw_fcastle_flowery, 50232), new scr_room(room_dw_fcastle_seth_encounter, 50233), new scr_room(room_dw_fcastle_top_descent, 50234), new scr_room(room_dw_fcastle_top_pinkdoor, 50235), new scr_room(room_dw_fcastle_pinkroom, 50236), new scr_room(room_dw_fcastle_top_fountain, 50237), new scr_room(room_dw_post_fountain_close, 50238), new scr_room(room_dw_fcastle_pinkshop, 50239), new scr_room(room_dw_fcastle_foxhunt_terakota, 50240), new scr_room(room_dw_fcastle_foxhunt_socks, 50241), new scr_room(room_dw_fcastle_foxhunt_chaos, 50242), new scr_room(room_dw_fcastle_foxhunt_secret, 50243), new scr_room(room_dw_castle_tv_kikky, 50244), new scr_room(room_dw_fcastle_terracotta_puzzle, 50246), new scr_room(room_dw_fcastle_bromides, 50247), new scr_room(room_dw_fcastle_top_ascent, 50248), new scr_room(room_dw_fcastle_top_challenge, 50249)];
-array_push(idsarr, new scr_room(room_animexampletest, 100002), new scr_room(room_darkbulbTest, 100004), new scr_room(room_dw_fcastle_shadowplatformTest, 100005));
-
-return idsarr;");
 
 importGroup.Import();
 

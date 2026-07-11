@@ -24,5 +24,16 @@
                 }
             }
         ]
+    },
+    ".pink_godmode_fix": {
+        "gml_name": "gml_Object_obj_date_controller_Other_10",
+        "actions": [
+            {
+                "find_replace": {
+                    "find": "if (global.hp[global.char[ti]] > 0 && global.char[ti] != 0)",
+                    "replace": "if (global.hp[global.char[ti]] > 0 && global.char[ti] != 0 && global.dgodmode == 0)"
+                }
+            }
+        ]
     }
 }

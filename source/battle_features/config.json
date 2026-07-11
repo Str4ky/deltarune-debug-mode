@@ -1,0 +1,46 @@
+{
+	"battle_debug.gml": {
+		"mode": "append",
+		"gml_name": "gml_Object_obj_battlecontroller_Step_0"
+	},
+	".chap3_fix": {
+		"chapters": [3],
+		"gml_name": "gml_Object_obj_battlecontroller_Create_0",
+		"actions": [
+			{
+				"append": {
+					"content": "caster = 0;"
+				}
+			}
+		]
+	},
+	".replace_scr_debug": {
+		"chapters": [-1],
+		"gml_name": "gml_Object_obj_battlecontroller_Step_0",
+		"actions": [
+			{
+				"find_replace": {
+					"find": "if (scr_debug())",
+					"replace": "if (0)"
+				}
+			}
+		]
+	},
+	".wincombat_recruit_feat": {
+		"chapters": [-1],
+		"gml_name": "gml_GlobalScript_scr_wincombat",
+		"actions": [
+			{
+				"find_replace": {
+					"find": "scr_monsterdefeat();",
+					"replace_file": "wincombat_recruit_feat.gml"
+				}
+			}
+		]
+	},
+	"wincombat_plat.gml": {
+		"chapters": [5],
+		"mode": "append",
+		"gml_name": "gml_Object_obj_plat_player_Step_0"
+	}
+}
