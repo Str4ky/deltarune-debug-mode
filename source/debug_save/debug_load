@@ -6,6 +6,14 @@ function scr_debug_load(arg0)
     if (variable_global_exists("dload_cur_inv") && global.dload_cur_inv == 1)
         keep_inv = true;
     
+	var option_flags = [8, 11, 15, 16, 17, 25, 1391];
+	var cache_option_flags = [];
+	for (var i = 0; i < array_length(option_flags); i++)
+    {
+		_cur_flag = option_flags[i];
+		cache_option_flags[_cur_flag] = global.flag[_cur_flag];
+    }
+	
     var cache_inv = 0;
     var cache_invc = 0;
     var cache_charweapon = [];
@@ -71,9 +79,6 @@ function scr_debug_load(arg0)
         }
     }
     
-    var bk_simplify_vfx = global.flag[8];
-    var bk_autorun = global.flag[11];
-    var bk_audio_vol = global.flag[17];
     var file = string(arg0);
     
     if (file == "" || string_length(file) < 3)
@@ -518,6 +523,12 @@ function scr_debug_load(arg0)
             ossafe_file_text_readln(myfileid);
         }
     }
+
+	for (var i = 0; i < array_length(option_flags); i++)
+    {
+		_cur_flag = option_flags[i];
+        global.flag[_cur_flag] = cache_option_flags[_cur_flag];
+    }
     
     global.plot = ossafe_file_text_read_real(myfileid);
     ossafe_file_text_readln(myfileid);
@@ -734,9 +745,6 @@ function scr_debug_load(arg0)
     {
         room_goto(__loadedroom);
     }
-    
-    global.flag[8] = bk_simplify_vfx;
-    global.flag[11] = bk_autorun;
-    global.flag[17] = bk_audio_vol;
+
     global.dload_cur_inv = 0;
 }

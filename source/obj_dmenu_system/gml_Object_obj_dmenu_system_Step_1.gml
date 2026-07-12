@@ -813,7 +813,7 @@ function dmenu_state_interact()
                 scr_debug_print(dstr("Overwrote save: ", "Sauvegarde écrasée : ") + target_name);
                 snd_play(snd_save);
             }
-            else if (string_copy(check_name, 1, 4) == dstr("Load", "Charger"))
+            else if (string_copy(check_name, 1, (global.dlang == "en") ? 4 : 7) == dstr("Load", "Charger"))
             {
                 var target_path = global.debug_selected_save_section;
                 
