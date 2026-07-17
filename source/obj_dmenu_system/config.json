@@ -1,9 +1,20 @@
 {
 	"mode": "replace",
-	"gml_Object_obj_dmenu_system_Create_0.gml": {
-		"create_new": true
+	"create_new": true,
+	"interact_logics/dmenu_dsave_export.gml": {
+		"gml_name": "gml_GlobalScript_scr_dmenu_interact_dsave_export"
 	},
-	"gml_Object_obj_dmenu_system_Step_0.gml": {},
-	"gml_Object_obj_dmenu_system_Step_1.gml": {},
-	"gml_Object_obj_dmenu_system_Draw_0.gml": {}
+	"interact_logics/dmenu_dsave_options.gml": {
+		"gml_name": "gml_GlobalScript_scr_dmenu_interact_dsave_options"
+	},
+	"gml_Object_obj_dmenu_system_Create_0.gml": {},
+	"gml_Object_obj_dmenu_system_Step_0.gml": {
+		"create_new": false
+	},
+	"gml_Object_obj_dmenu_system_Step_1.gml": {
+		"create_new": false
+	},
+	"gml_Object_obj_dmenu_system_Draw_0.gml": {
+		"create_new": false
+	}
 }

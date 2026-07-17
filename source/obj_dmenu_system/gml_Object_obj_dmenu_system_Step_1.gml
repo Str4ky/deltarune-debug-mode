@@ -748,11 +748,11 @@ function dmenu_state_interact()
         case "debug_save_options":
             var check_name = selected_name;
             
+            if (dmenu_interact_submenus(check_name))
+                break;
+
             if (string_ends_with(check_name, " v") || string_ends_with(check_name, " ^"))
                 check_name = string_copy(check_name, 1, string_length(check_name) - 2);
-            
-            if (dmenu_interact_submenus(selected_name))
-                break;
             
             var target_sec = global.debug_selected_save_section;
             var target_name = global.debug_selected_save_name;
@@ -814,231 +814,27 @@ function dmenu_state_interact()
                 snd_play(snd_save);
             }
             else if (string_copy(check_name, 1, (global.dlang == "en") ? 4 : 7) == dstr("Load", "Charger"))
-            {
-                var target_path = global.debug_selected_save_section;
-                
-                if (file_exists(target_path))
-                {
-                    dmenu_popup_launch = 0;
-                    dmenu_state = "debug";
-                    dbutton_options = dbutton_options_original;
-                    dmenu_state_history = [];
-                    dmenu_vertical_index_history = [];
-                    dvertical_index = 0;
-                    dbutton_layout = 0;
-                    dmenu_active = false;
-                    dkeyboard_input = "";
-                    global.interact = 0;
-                    scr_debug_load(target_path);
-                }
-                else
-                {
-                    snd_play(snd_error);
-                    scr_debug_print(dstr("Error: Save file '", "Erreur : Le fichier de sauvegarde '") + target_name + dstr("' could not be found on disk", "' n'a pu être trouvé"));
-                }
-            }
+				scr_dmenu_interact_dsave_load();
+
             else if (check_name == dstr("Delete", "Supprimer"))
-            {
-                dremove_false_history();
-                var target_path = global.debug_selected_save_section;
-                
-                if (file_exists(target_path))
-                {
-                    file_delete(target_path);
-                    scr_debug_cleanup_folder(target_path);
-                    scr_debug_print(dstr("Save file permanently deleted", "Fichier de sauvegarde supprimé"));
-                    snd_play(snd_badexplosion);
-                    scr_get_debug_save_list();
-                }
-                else
-                {
-                    scr_debug_print(dstr("Error: File already missing", "Erreur : Fichier déjà manquant"));
-                }
-                
-                dpop_history();
-                dvertical_index = 0;
-                dbutton_layout = 0;
-                dmenu_start_index = 0;
-            }
+				scr_dmenu_interact_dsave_delete();
+
             else if (check_name == "- " + dstr("Debug mode save", "Sauvegarde mode debug"))
-            {
-                dremove_false_history();
-                dmenu_skip_reindexing = true;
-                var source_file = global.debug_selected_save_section;
-                target_name = global.debug_selected_save_name;
-                var export_path = get_save_filename("Debug save (*.save)|*.save", string(target_name) + ".save");
-                
-                if (export_path != "")
-                {
-                    if (file_exists(source_file))
-                    {
-                        if (file_exists(export_path))
-                            file_delete(export_path);
-                        
-                        file_copy(source_file, export_path);
-                        scr_debug_print(dstr("Exported custom .save successfully!", "Fichier .save exporté avec succès !"));
-                        snd_play(snd_shineselect);
-                    }
-                    else
-                    {
-                        scr_debug_print(dstr("Error: Base save file not found", "Erreur : Fichier de sauvegarde de base introuvable"));
-                        snd_play(snd_error);
-                    }
-                }
-            }
+				scr_dmenu_interact_dsave_export_dsave();
+
             else if (check_name == "- " + dstr("Default Deltarune save", "Sauvegarde Deltarune par défaut"))
-            {
-                dremove_false_history();
-                dmenu_skip_reindexing = true;
-                var source_file = global.debug_selected_save_section;
-                target_name = global.debug_selected_save_name;
-                
-                if (file_exists(source_file) || ossafe_file_exists(source_file))
-                {
-                    var _route_suffix = "";
-                    if (variable_global_exists("filechoice_route")) 
-                    {
-                        _route_suffix = string(global.filechoice_route);
-                    }
-                    
-                    var suggested_name = "filech" + string(global.chapter) + "_0" + _route_suffix;
-                    var export_path = get_save_filename("Deltarune Save|*", suggested_name);
-                    
-                    if (export_path != "")
-                    {
-                        if (file_exists(export_path))
-                            file_delete(export_path);
-                        
-                        if (string_copy(source_file, string_length(source_file) - 4, 5) == ".save")
-                        {
-                            var file_id = file_text_open_read(source_file);
-                            var json_string = "";
-                            
-                            while (!file_text_eof(file_id))
-                            {
-                                json_string += file_text_read_string(file_id);
-                                file_text_readln(file_id);
-                                
-                                if (!file_text_eof(file_id))
-                                    json_string += "\n";
-                            }
-                            
-                            file_text_close(file_id);
-                            var parsed_data = -1;
-                            
-                            try
-                            {
-                                parsed_data = json_parse(json_string);
-                            }
-                            catch (e)
-                            {
-                            }
-                            
-                            if (is_struct(parsed_data) && variable_struct_exists(parsed_data, "save_file"))
-                            {
-                                var raw_content = parsed_data.save_file;
-                                var out_file = file_text_open_write(export_path);
-                                file_text_write_string(out_file, raw_content);
-                                file_text_close(out_file);
-                            }
-                            else
-                            {
-                                file_copy(source_file, export_path);
-                            }
-                        }
-                        else
-                        {
-                            file_copy(source_file, export_path);
-                        }
-                        
-                        scr_debug_print("'" + string(target_name) + "' exporté avec succès !");
-                        snd_play(snd_shineselect);
-                    }
-                    else
-                    {
-                        scr_debug_print(dstr("Export cancelled", "Exportation annulée"));
-                    }
-                }
-                else
-                {
-                    scr_debug_print(dstr("Error: Could not find the source save file", "Erreur : Impossible de trouver le fichier de sauvegarde source"));
-                    snd_play(snd_error);
-                }
-            }
+				scr_dmenu_interact_dsave_export_normal();
+
             else if (check_name == "- " + dstr("Rename", "Renommer") || check_name == "- " + dstr("Edit description", "Modifier description") || check_name == "- " + dstr("Change category", "Changer description"))
-            {
-                if (check_name == "- " + dstr("Rename", "Renommer"))
-                {
-                    dmenu_state = "dsave_edit_name";
-                    keyboard_string = "";
-                    dkeyboard_input = "";
-                }
-                
-                if (check_name == "- " + dstr("Edit description", "Modifier description"))
-                {
-                    dmenu_state = "dsave_edit_desc";
-                    keyboard_string = "";
-                    dkeyboard_input = "";
-                }
-                
-                if (check_name == "- " + dstr("Change category", "Changer description"))
-                {
-                    dmenu_state = "dsave_edit_cat";
-                    keyboard_string = "";
-                    dkeyboard_input = "";
-                }
-            }
+				scr_dmenu_interact_dsave_update_metadata();
             
             break;
         
         case "dsave_edit_name":
         case "dsave_edit_desc":
         case "dsave_edit_cat":
-            if (dvertical_index == 0)
-            {
-                dremove_false_history();
-                dmenu_skip_reindexing = true;
-                global.dreading_custom_flag = 1;
-                keyboard_string = "";
-                dkeyboard_input = "";
-                dmenu_state_update();
-            }
-            else if (dvertical_index == 1 && dhorizontal_index == 0)
-            {
-                dremove_false_history();
-                var target_sec = global.debug_selected_save_section;
-                var final_text = dkeyboard_input;
-                var ini_key = "";
-                
-                if (dmenu_state == "dsave_edit_name")
-                    ini_key = "SaveName";
-                else if (dmenu_state == "dsave_edit_desc")
-                    ini_key = "Description";
-                else if (dmenu_state == "dsave_edit_cat")
-                    ini_key = "Category";
-                
-                var new_path = scr_debug_save_modify_info(target_sec, ini_key, final_text);
-                
-                if (ini_key == "SaveName" && final_text != "")
-                    global.debug_selected_save_name = final_text;
-                
-                if (new_path != "")
-                    global.debug_selected_save_section = new_path;
-                
-                global.dreading_custom_flag = 0;
-                dkeyboard_input = "";
-                scr_get_debug_save_list();
-                dpop_history();
-            }
-            else
-            {
-                dremove_false_history();
-                global.dreading_custom_flag = 0;
-                dkeyboard_input = "";
-                dpop_history();
-            }
-            
-            break;
+			scr_dmenu_interact_dsave_update_metadata_confirm();
+			break;
         
         case "new_debug_save":
             if (dvertical_index == 0)
@@ -1274,108 +1070,12 @@ function dmenu_state_interact()
         
         case "givertab":
             dremove_false_history();
-            
-            if (dgiver_amount == 0)
-            {
-                scr_debug_print(dstr("Cancelled", "Annulé"));
-                break;
-            }
-            
-            if (dgiver_menu_state == "objects")
-            {
-                var real_index = dbutton_indices[dgiver_button_selected];
-                
-                for (var i = 0; i < abs(dgiver_amount); i++)
-                {
-                    if (dgiver_amount < 0)
-                    {
-                        if (dhorizontal_page == 0)
-                            scr_itemremove(real_index);
-                        else
-                            scr_litemremove(real_index);
-                    }
-                    else if (dhorizontal_page == 0)
-                    {
-                        scr_itemget(real_index);
-                    }
-                    else
-                    {
-                        scr_litemget(real_index);
-                    }
-                }
-                
-                if (dgiver_amount < 0)
-                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + dstr(" removed from inventory", " retiré de l'inventaire"));
-                else
-                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + dstr(" added to inventory", " ajouté à l'inventaire"));
-            }
-            
-            if (dgiver_menu_state == "armors")
-            {
-                if (dgiver_amount > 0)
-                {
-                    var real_index = dbutton_indices[dgiver_button_selected];
-                    
-                    for (var i = 0; i < dgiver_amount; i++)
-                        scr_armorget(real_index);
-                    
-                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + dstr(" added to inventory", " ajouté à l'inventaire"));
-                }
-                else if (dgiver_amount < 0)
-                {
-                    var real_index = dbutton_indices[dgiver_button_selected];
-                    
-                    for (var i = 0; i < abs(dgiver_amount); i++)
-                        scr_armorremove(real_index);
-                    
-                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + dstr(" removed from inventory", " retiré de l'inventaire"));
-                }
-            }
-            
-            if (dgiver_menu_state == "weapons")
-            {
-                if (dgiver_amount > 0)
-                {
-                    var real_index = dbutton_indices[dgiver_button_selected];
-                    
-                    for (var i = 0; i < dgiver_amount; i++)
-                        scr_weaponget(real_index);
-                    
-                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + dstr(" added to inventory", " ajouté à l'inventaire"));
-                }
-                else if (dgiver_amount < 0)
-                {
-                    var real_index = dbutton_indices[dgiver_button_selected];
-                    
-                    for (var i = 0; i < abs(dgiver_amount); i++)
-                        scr_weaponremove(real_index);
-                    
-                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + dstr(" removed from inventory", " retiré de l'inventaire"));
-                }
-            }
-            
-            if (dgiver_menu_state == "keyitems")
-            {
-                if (dgiver_amount > 0)
-                {
-                    var real_index = dbutton_indices[dgiver_button_selected];
-                    
-                    for (var i = 0; i < dgiver_amount; i++)
-                        scr_keyitemget(real_index);
-                    
-                    scr_debug_print(string(dgiver_amount) + " " + dgiver_bname + dstr(" added to inventory", " ajouté à l'inventaire"));
-                }
-                else if (dgiver_amount < 0)
-                {
-                    var real_index = dbutton_indices[dgiver_button_selected];
-                    
-                    for (var i = 0; i < abs(dgiver_amount); i++)
-                        scr_keyitemremove(real_index);
-                    
-                    scr_debug_print(string(abs(dgiver_amount)) + " " + dgiver_bname + dstr(" removed from inventory", " retiré de l'inventaire"));
-                }
-            }
-            
+
+			var real_index = dbutton_indices[dgiver_button_selected];
+			if (dhorizontal_page == 0)
+				scr_dmenu_interact_givertab(dgiver_menu_state, real_index, dgiver_amount);
+			else
+				scr_dmenu_interact_givertab_lw(dgiver_menu_state, real_index, dgiver_amount);
             dpop_history();
             dmenu_active = false;
             global.interact = 0;
