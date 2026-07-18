@@ -758,61 +758,8 @@ function dmenu_state_interact()
             var target_name = global.debug_selected_save_name;
             
             if (check_name == dstr("Save", "Sauver"))
-            {
-                var target_path = global.debug_selected_save_section;
-                global.debug_save_category = "";
-                global.debug_save_name = target_name;
-                global.debug_save_description = dstr("No description available.", "Aucune description disponible.");
-                
-                if (file_exists(target_path))
-                {
-                    var file_id = file_text_open_read(target_path);
-                    var file_content = "";
-                    
-                    while (!file_text_eof(file_id))
-                    {
-                        file_content += file_text_read_string(file_id);
-                        file_text_readln(file_id);
-                    }
-                    
-                    file_text_close(file_id);
-                    
-                    try
-                    {
-                        var parsed_struct = json_parse(file_content);
-                        
-                        if (is_struct(parsed_struct) && variable_struct_exists(parsed_struct, "metadata"))
-                        {
-                            var meta = parsed_struct.metadata;
-                            
-                            if (variable_struct_exists(meta, "Category"))
-                                global.debug_save_category = meta.Category;
-                            
-                            if (variable_struct_exists(meta, "Description"))
-                                global.debug_save_description = meta.Description;
-                        }
-                    }
-                    catch (e)
-                    {
-                    }
-                }
-                
-                global.debug_overwrite_section = target_path;
-                global.debug_saving = 1;
-                dmenu_popup_launch = 0;
-                dmenu_state = "debug";
-                dbutton_options = dbutton_options_original;
-                dmenu_state_history = [];
-                dmenu_vertical_index_history = [];
-                dvertical_index = 0;
-                dbutton_layout = 0;
-                dmenu_active = false;
-                dkeyboard_input = "";
-                global.interact = 0;
-                scr_debug_save();
-                scr_debug_print(dstr("Overwrote save: ", "Sauvegarde écrasée : ") + target_name);
-                snd_play(snd_save);
-            }
+				scr_dmenu_interact_dsave_save();
+
             else if (string_copy(check_name, 1, (global.dlang == "en") ? 4 : 7) == dstr("Load", "Charger"))
 				scr_dmenu_interact_dsave_load();
 

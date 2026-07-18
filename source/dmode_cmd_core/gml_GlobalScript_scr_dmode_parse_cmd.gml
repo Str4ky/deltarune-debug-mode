@@ -17,6 +17,11 @@ function scr_dmode_parse_cmd(arg0)
 			command = scr_dmode_cmd_delete_debug_save;
 			break;
 
+		case "save_dsave":
+		case "dsave_save":
+			command = scr_dmode_cmd_save_debug_save;
+			break;
+
 		case "load_save":
 		case "dsave_load":
 			command = scr_dmode_cmd_load_debug_save;

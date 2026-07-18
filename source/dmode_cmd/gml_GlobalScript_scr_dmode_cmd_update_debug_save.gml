@@ -7,7 +7,7 @@ function scr_dmode_cmd_update_debug_save(argc, argv)
 	if (argc != 2)
 		return (1);
 
-	var target_sec = argv[0];
+	var target_sec = argv[1];
 	var update_key_lst = [
 		["savename", "SaveName"],
 		["description", "Description"],

@@ -7,7 +7,7 @@ function scr_dmode_cmd_export_debug_save(argc, argv)
 	if (argc != 2)
 		return (1);
 
-	var source_file = argv[0];
+	var source_file = argv[1];
 	if (!file_exists(source_file))
 	{
 		scr_debug_print(dstr("Error: Base save file not found", "Erreur : Fichier de sauvegarde de base introuvable"));
@@ -20,10 +20,10 @@ function scr_dmode_cmd_export_debug_save(argc, argv)
 		export_mode = scr_dmode_flags_get_value("mode");
 
 
-	if (mode == "normal")
+	if (export_mode == "normal")
 		_dmode_cmd_export_normal(source_file);
 
-	else if (mode == "debug")
+	else if (export_mode == "debug")
 		_dmode_cmd_export_debug(source_file);
 
 	else
@@ -55,7 +55,7 @@ function _dmode_cmd_export_normal(arg0)
 	if (file_exists(export_path))
 		file_delete(export_path);
 
-	if (!string_copy(source_file, string_length(source_file) - 4, 5) == ".save")
+	if (!(string_copy(source_file, string_length(source_file) - 4, 5) == ".save"))
 	{
 		file_copy(source_file, export_path);
 	}
@@ -92,7 +92,7 @@ function _dmode_cmd_export_normal(arg0)
 			file_text_close(out_file);
 		}
 	}
-	scr_debug_print("'" + string(target_name) + "' exporté avec succès !");
+	scr_debug_print("'" + string("TODO") + "' exporté avec succès !");
 	snd_play(snd_shineselect);
 }
 

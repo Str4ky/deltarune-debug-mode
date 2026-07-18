@@ -80,7 +80,7 @@ function scr_dmode_flags_get_value(arg0, arg1)
 
 		if (j == string_length(flag))
 			return ("");
-		return (string_copy(flag, j + 1, string_length(flag) - j);
+		return (string_copy(flag, j + 1, string_length(flag) - j));
 	}
 	return ("");
 }
