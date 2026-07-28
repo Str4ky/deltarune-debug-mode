@@ -22,7 +22,7 @@
 		"chap1_room_changer",
 		"DEVICE_CONTACT",
 		"scr_flag_set_ch4_fix",
-        "obj_spritecomparer",
+        "conflict_fix",
         "rhythmgame_debug_keys",
         "battle_dialog_pause",
         "chap5_fix",

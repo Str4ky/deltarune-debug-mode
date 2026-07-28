@@ -3562,8 +3562,9 @@ importGroup.QueueAppend(obj_mainchara.EventHandlerFor(EventType.Step, (uint)0, D
 @"if (scr_debug())
 {
     siner++;
+    var _debug_xy = asset_get_index(""obj_debug_xy"");
     
-    if (mouse_check_button(mb_right) && !i_ex(obj_debug_xy))
+    if (mouse_check_button(mb_right) && (_debug_xy == -1 || !instance_exists(_debug_xy)))
     {
         if (sprite_index != -1)
         {
@@ -3586,7 +3587,9 @@ importGroup.QueueAppend(obj_mainchara.EventHandlerFor(EventType.Step, (uint)0, D
 importGroup.QueueAppend("gml_Object_obj_mainchara_Draw_0",
 @"if (scr_debug())
 {
-    if (mouse_check_button(mb_right) && !i_ex(obj_debug_xy))
+    var _debug_xy = asset_get_index(""obj_debug_xy"");
+    
+    if (mouse_check_button(mb_right) && (_debug_xy == -1 || !instance_exists(_debug_xy)))
     {
         if (sprite_index != -1)
             draw_sprite_ext_flash(sprite_index, image_index, x, y, image_xscale, image_yscale, image_angle, image_blend, (sin(siner / 8) * 0.5) + 0.5);
@@ -3786,11 +3789,15 @@ importGroup.QueueAppend("gml_Object_obj_ch3_gameshow_Create_0",
 
 
 UndertaleGameObject obj_spritecomparer = Data.GameObjects.ByName("obj_spritecomparer");
-importGroup.QueueAppend(obj_spritecomparer.EventHandlerFor(EventType.Draw, (uint)0, Data),
-@"");
 importGroup.QueueFindReplace("gml_Object_obj_spritecomparer_Draw_0",
 @"if (keyboard_check_pressed(ord(""D"")))",
 @"if (keyboard_check_pressed(vk_f2))");
+
+
+UndertaleGameObject obj_dialoguer = Data.GameObjects.ByName("obj_dialoguer");
+importGroup.QueueFindReplace("gml_Object_obj_dialoguer_Draw_0",
+@"if (sunkus_kb_check_pressed(ord(""D"")))",
+@"if (sunkus_kb_check_pressed(vk_f2))");
 
 
 UndertaleGameObject obj_rhythmgame = Data.GameObjects.ByName("obj_rhythmgame");
