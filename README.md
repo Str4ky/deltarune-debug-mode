@@ -1,18 +1,11 @@
-# <img src="https://github.com/user-attachments/assets/d4adee43-9ac0-4a28-a464-32bad31baebb" width="32" align="absmiddle" alt="icon" /> Deltarune Custom Debug Mode
+<img src="https://github.com/user-attachments/assets/ac88831a-bccd-4507-ae9d-c50faf9420e7" width="500" alt="logo"/>
 
 Custom debug mode scripts to use with Undertale Mod Tool for Deltarune.\
 Only works with paid version of the game and the LTS demo from the Steam beta.
 
 Initially created for the french fan translation team [Deltarune FR](https://deltarune-fr.com).
 
-#### (‼️Ce readme est également disponible en français‼️)
-
-[![English](https://img.shields.io/badge/Read_in-English-blue)](README.md)
-[![Français](https://img.shields.io/badge/Voir_en-Français-red)](README.fr-FR.md)
-
-<img width="768" height="432" alt="image" src="https://github.com/user-attachments/assets/eca4d41e-cba4-42eb-8cbf-86e623d0b4e4" />
-
----
+[![Français](https://img.shields.io/badge/Readme_disponible_-en_Français-red)](README.fr-FR.md)
 
 ## 📖 Installation
 
