@@ -66,7 +66,7 @@ Ex. for chapter 2 : `"...\UndertaleModCli.exe" load ".../DELTARUNE/chapter2_wind
 | <kbd>V</kbd> | Skip enemy's turn |
 | <kbd>Alt</kbd> + <kbd>P</kbd> | Disable battle dialog autoskip |
 
-#### Triche
+#### Cheat
 | Touche(s) | Description |
 | :--- | :--- |
 | <kbd>G</kbd> | Toggle *Godmode* |
