@@ -14,7 +14,7 @@ Initially created for the french fan translation team [Deltarune FR](https://del
 
 ## 📖 Installation
 
-* Download the `scripts.zip` file from the <a href="releases">releases</a> menu.
+* Download the `scripts.zip` file from the [releases](https://github.com/Str4ky/deltarune-debug-mode/releases) menu.
 * Extract the zip file.
 
 ### Installation with UTMT GUI
