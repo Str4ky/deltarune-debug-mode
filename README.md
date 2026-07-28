@@ -5,7 +5,7 @@ Only works with paid version of the game and the LTS demo from the Steam beta.
 
 Initially created for the french fan translation team [Deltarune FR](https://deltarune-fr.com).
 
-[![Français](https://img.shields.io/badge/Readme_disponible_-en_Français-red)](README.fr-FR.md)
+[![Français](https://img.shields.io/badge/Readme_disponible-en_Français-red)](README.fr-FR.md)
 
 ## 📖 Installation
 
