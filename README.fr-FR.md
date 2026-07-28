@@ -7,8 +7,6 @@ Conçu initialement pour l'équipe de fan traduction francophone [Deltarune FR](
 
 [![English](https://img.shields.io/badge/Read_this_readme-in_English-blue)](README.md)
 
----
-
 ## 📖 Installation
 
 * Télécharger le fichier `scripts.zip` depuis le menu <a href="releases">releases</a>.
