@@ -83,4 +83,4 @@ For those, controls are still the one they have been assigned to and have been u
 
 ## Contribution
 
-If you have any suggestions or encounter bugs, feal free to let us know!
+If you have any suggestions or encounter bugs, feel free to let us know!
