@@ -2283,6 +2283,14 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
     if (variable_global_exists(""dload_cur_inv"") && global.dload_cur_inv == 1)
         keep_inv = true;
     
+	var option_flags = [8, 11, 15, 16, 17, 25, 1391];
+	var cache_option_flags = [];
+	for (var i = 0; i < array_length(option_flags); i++)
+    {
+		_cur_flag = option_flags[i];
+		cache_option_flags[_cur_flag] = global.flag[_cur_flag];
+    }
+	
     var cache_inv = 0;
     var cache_invc = 0;
     var cache_charweapon = [];
@@ -2348,9 +2356,6 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
         }
     }
     
-    var bk_simplify_vfx = global.flag[8];
-    var bk_autorun = global.flag[11];
-    var bk_audio_vol = global.flag[17];
     var file = string(arg0);
     
     if (file == """" || string_length(file) < 3)
@@ -2795,6 +2800,12 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
             ossafe_file_text_readln(myfileid);
         }
     }
+
+	for (var i = 0; i < array_length(option_flags); i++)
+    {
+		_cur_flag = option_flags[i];
+        global.flag[_cur_flag] = cache_option_flags[_cur_flag];
+    }
     
     global.plot = ossafe_file_text_read_real(myfileid);
     ossafe_file_text_readln(myfileid);
@@ -3011,12 +3022,10 @@ importGroup.QueueReplace("gml_GlobalScript_scr_debug_load",
     {
         room_goto(__loadedroom);
     }
-    
-    global.flag[8] = bk_simplify_vfx;
-    global.flag[11] = bk_autorun;
-    global.flag[17] = bk_audio_vol;
+
     global.dload_cur_inv = 0;
-}");
+}
+");
 
 
 UndertaleScript scr_debug_fullheal = Data.Scripts.ByName("scr_debug_fullheal");
@@ -6632,7 +6641,7 @@ function dmenu_state_interact()
                 scr_debug_print(dstr(""Overwrote save: "", ""Sauvegarde écrasée : "") + target_name);
                 snd_play(snd_save);
             }
-            else if (string_copy(check_name, 1, 4) == dstr(""Load"", ""Charger""))
+            else if (string_copy(check_name, 1, (global.dlang == ""en"") ? 4 : 7) == dstr(""Load"", ""Charger""))
             {
                 var target_path = global.debug_selected_save_section;
                 
@@ -7344,7 +7353,8 @@ function dmenu_state_interact()
             snd_play(snd_error);
             scr_debug_print(dstr(""Invalid selection!"", ""Sélection invalide !""));
     }
-}");
+}
+");
 
 
 importGroup.QueueReplace(obj_dmenu_system.EventHandlerFor(EventType.Draw, (uint)0, Data),
