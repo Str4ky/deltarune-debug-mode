@@ -68,7 +68,7 @@ Ex. for chapter 2 : `"...\UndertaleModCli.exe" load ".../DELTARUNE/chapter2_wind
 | <kbd>H</kbd> | Fully restore party PV |
 | <kbd>T</kbd> | Fill and empty TP bar |
 | <kbd>M</kbd> + <kbd>1</kbd> | Add 100 D$ to inventory |
-| <kbd>M</kbd> + <kbd>2</kbd> | Remove 100 $ to inventory |
+| <kbd>M</kbd> + <kbd>2</kbd> | Remove 100 D$ to inventory |
 
 ## More functions
 
