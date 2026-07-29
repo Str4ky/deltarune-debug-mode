@@ -48,8 +48,13 @@ global.dpause_dialog = 0;
 
 UndertaleScript scr_debug_print = Data.Scripts.ByName("scr_debug_print");
 importGroup.QueueReplace("gml_GlobalScript_scr_debug_print",
-@"function scr_debug_print(arg0)
+@"function scr_debug_print(arg0, arg1 = false)
 {
+    if (global.debug == 0 && !arg1)
+    {
+        exit;
+    }
+
     if (!instance_exists(obj_debug_gui))
     {
         instance_create(__view_get(e__VW.XView, 0) + 10, __view_get(e__VW.YView, 0) + 10, obj_debug_gui);
@@ -2178,7 +2183,7 @@ importGroup.QueueAppend(obj_time.EventHandlerFor(EventType.Step, (uint)0, Data),
     if (global.debug)
         scr_debug_print(dstr(""Debug Mode activated!"", ""Mode Debug activé !""));
     else
-        scr_debug_print(dstr(""Debug Mode deactivated!"", ""Mode Debug désactivé !""));
+        scr_debug_print(dstr(""Debug Mode deactivated!"", ""Mode Debug désactivé !""), true);
 }
 
 if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
@@ -2193,6 +2198,25 @@ if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custo
 			scr_debug_print(dstr(""Godmode disabled"", ""Godmode désactivé""));
     }
     
+    if (keyboard_check_pressed(ord(""P"")) && !keyboard_check(vk_alt))
+    {
+        if (!variable_global_exists(""speed_fps""))
+            global.speed_fps = 30;
+
+        if (global.speed_fps == 30)
+        {
+            global.speed_fps = 1;
+            game_set_speed(1, gamespeed_fps);
+            scr_debug_print(dstr(""FPS to 1"", ""FPS à 1""));
+        }
+        else
+        {
+            global.speed_fps = 30;
+            game_set_speed(30, gamespeed_fps);
+            scr_debug_print(dstr(""FPS to 30"", ""FPS à 30""));
+        }
+    }
+
     if (keyboard_check_pressed(ord(""O"")))
     {
         if (!variable_global_exists(""speed_fps""))
@@ -2378,7 +2402,7 @@ UndertaleGameObject obj_battlecontroller = Data.GameObjects.ByName("obj_battleco
 importGroup.QueueAppend(obj_battlecontroller.EventHandlerFor(EventType.Step, (uint)0, Data),
 @"if (scr_debug() && (!instance_number(obj_dmenu_system) || !global.dreading_custom_flag))
 {
-    if (keyboard_check_pressed(ord(""P"")))
+    if (keyboard_check_pressed(ord(""P"")) && keyboard_check(vk_alt))
     {
         global.dpause_dialog = !global.dpause_dialog;
 
@@ -6787,7 +6811,7 @@ if (dmenu_active)
 
 if (dkeys_helper == 1)
 {
-    dkeys_data = [string(dstr(""F10 - Toggle debug mode"", ""F10 - Activer/désactiver le debug mode"")), string(dstr(""S - Save game"", ""S - Sauvegarder la partie"")), string(dstr(""L - Load last save"", ""L - Charger la dernière sauvegarde"")), string(dstr(""R - Reload room | Backspace+R - Restart game"", ""R - Charger la salle | Retour arrière+R - Redémarrer le jeu"")), string(dstr(""M+1 | M+2 - Add/remove 100 D$"", ""M+1 | M+2 - Ajouter/retirer 100 D$"")), string(dstr(""Delete - Go to previous room"", ""Suppr - Se rendre à la salle précédente"")), string(dstr(""Insert - Go to next room"", ""Insert - Se rendre à la salle suivante"")), string(dstr(""G - Toggle godmode"", ""G - Activer/désactiver le godmode"")), string(dstr(""W - Skip battle | Shift+W - Skip battle with recruit"", ""W - Passer un combat | Shift+W - Passer un combat avec recrue"")), string(dstr(""V - Skip enemy turn"", ""V - Passer le tour de l'ennemi"")), string(dstr(""H - Restore party HP"", ""H - Restaurer les HP du party"")), string(dstr(""T - Fill/empty TP bar"", ""T - Remplir/vider la barre de TP"")), string(dstr(""P - Disable/restore bubble dialog autoskip"", ""P - Désactiver/rétablir l'autoskip des bulles de dialogue"")), string(dstr(""O - Toggle 30, 60, 120 FPS"", ""O - Basculer entre 30, 60 et 120 FPS"")), string(dstr(""Backspace - Skip intro sequence (Ch1)"", ""Retour arrière - Passer le segment d'intro (Ch1)"")), string(dstr(""Middle Click - Room Editor"", ""Clic milieu - Éditeur de salle""))];
+    dkeys_data = [string(dstr(""F10 - Toggle debug mode"", ""F10 - Activer/désactiver le debug mode"")), string(dstr(""S - Save game"", ""S - Sauvegarder la partie"")), string(dstr(""L - Load last save"", ""L - Charger la dernière sauvegarde"")), string(dstr(""R - Reload room | Backspace+R - Restart game"", ""R - Charger la salle | Retour arrière+R - Redémarrer le jeu"")), string(dstr(""M+1 | M+2 - Add/remove 100 D$"", ""M+1 | M+2 - Ajouter/retirer 100 D$"")), string(dstr(""Delete - Go to previous room"", ""Suppr - Se rendre à la salle précédente"")), string(dstr(""Insert - Go to next room"", ""Insert - Se rendre à la salle suivante"")), string(dstr(""G - Toggle godmode"", ""G - Activer/désactiver le godmode"")), string(dstr(""W - Skip battle | Shift+W - Skip battle with recruit"", ""W - Passer un combat | Shift+W - Passer un combat avec recrue"")), string(dstr(""V - Skip enemy turn"", ""V - Passer le tour de l'ennemi"")), string(dstr(""H - Restore party HP"", ""H - Restaurer les HP du party"")), string(dstr(""T - Fill/empty TP bar"", ""T - Remplir/vider la barre de TP"")), string(dstr(""P -Set game to 1 FPS | Alt+P - Disable/restore bubble dialog autoskip"", ""P - Mettre le jeu à 1 FPS | Alt+P - Désactiver/rétablir l'autoskip des bulles de dialogue"")), string(dstr(""O - Toggle 30, 60, 120 FPS"", ""O - Basculer entre 30, 60 et 120 FPS"")), string(dstr(""Backspace - Skip intro sequence (Ch1)"", ""Retour arrière - Passer le segment d'intro (Ch1)"")), string(dstr(""Middle Click - Room Editor"", ""Clic milieu - Éditeur de salle""))];
     
     menu_width = 264;
     menu_length = 204;
